@@ -3,9 +3,17 @@ import { useNavigate, Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import api from '../../services/api'
 
+const ROLES = [
+  { value: 'student', label: '🎓 Student', desc: 'Track your OJT hours & evaluations' },
+  { value: 'supervisor', label: '🏢 Company Supervisor', desc: 'Review logs & evaluate students' },
+  { value: 'coordinator', label: '📋 School Coordinator', desc: 'Manage OJT assignments' },
+  { value: 'faculty', label: '👨‍🏫 Faculty Adviser', desc: 'Monitor student performance' },
+]
+
 export default function RegisterPage() {
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'student' })
   const [loading, setLoading] = useState(false)
+  const [showPw, setShowPw] = useState(false)
   const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
@@ -13,68 +21,126 @@ export default function RegisterPage() {
     setLoading(true)
     try {
       await api.post('/auth/register', form)
-      toast.success('Account created! Please login.')
+      toast.success('Account created! Please sign in.')
       navigate('/login')
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Registration failed')
+      toast.error(err.response?.data?.error || 'Registration failed.')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4">
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 w-full max-w-md">
-        <div className="mb-8 text-center">
-          <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-xl mx-auto mb-4">O</div>
+    <div className="auth-bg py-8">
+      {/* Decorative blobs */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-violet-600/20 rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl" />
+      </div>
+
+      <div className="auth-card relative fade-in">
+        {/* Logo */}
+        <div className="flex flex-col items-center mb-7">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600
+                          flex items-center justify-center shadow-2xl shadow-indigo-900/60 mb-4">
+            <span className="text-white font-extrabold text-2xl">O</span>
+          </div>
           <h1 className="text-2xl font-bold text-white">Create Account</h1>
-          <p className="text-gray-400 text-sm mt-1">Join the OJT Tracker</p>
+          <p className="text-sm text-slate-500 mt-1">Join the OJT Tracking System</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {[
-            { label: 'Full Name', key: 'name', type: 'text', placeholder: 'Juan dela Cruz' },
-            { label: 'Email', key: 'email', type: 'email', placeholder: 'you@example.com' },
-            { label: 'Password', key: 'password', type: 'password', placeholder: '••••••••' },
-          ].map(f => (
-            <div key={f.key}>
-              <label className="block text-sm text-gray-400 mb-1">{f.label}</label>
-              <input
-                type={f.type} required
-                value={form[f.key]}
-                onChange={e => setForm({ ...form, [f.key]: e.target.value })}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:border-blue-500"
-                placeholder={f.placeholder}
-              />
-            </div>
-          ))}
-
-          <div>
-            <label className="block text-sm text-gray-400 mb-1">Role</label>
-            <select
-              value={form.role}
-              onChange={e => setForm({ ...form, role: e.target.value })}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:border-blue-500"
-            >
-              <option value="student">Student</option>
-              <option value="supervisor">Company Supervisor</option>
-              <option value="coordinator">School Coordinator</option>
-              <option value="faculty">Faculty Adviser</option>
-            </select>
+          {/* Full Name */}
+          <div className="input-group">
+            <label className="input-label">Full Name</label>
+            <input
+              id="reg-name"
+              type="text" required
+              value={form.name}
+              onChange={e => setForm({ ...form, name: e.target.value })}
+              className="input"
+              placeholder="Juan dela Cruz"
+            />
           </div>
 
-          <button
-            type="submit" disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition disabled:opacity-50"
-          >
-            {loading ? 'Creating account...' : 'Create Account'}
+          {/* Email */}
+          <div className="input-group">
+            <label className="input-label">Email Address</label>
+            <input
+              id="reg-email"
+              type="email" required autoComplete="email"
+              value={form.email}
+              onChange={e => setForm({ ...form, email: e.target.value })}
+              className="input"
+              placeholder="you@example.com"
+            />
+          </div>
+
+          {/* Password */}
+          <div className="input-group">
+            <label className="input-label">Password</label>
+            <div className="relative">
+              <input
+                id="reg-password"
+                type={showPw ? 'text' : 'password'} required minLength={6}
+                value={form.password}
+                onChange={e => setForm({ ...form, password: e.target.value })}
+                className="input pr-10"
+                placeholder="Min. 6 characters"
+              />
+              <button type="button" onClick={() => setShowPw(!showPw)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300">
+                {showPw
+                  ? <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
+                  : <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                }
+              </button>
+            </div>
+          </div>
+
+          {/* Role selector */}
+          <div className="input-group">
+            <label className="input-label">I am a...</label>
+            <div className="grid grid-cols-1 gap-2">
+              {ROLES.map(r => (
+                <label key={r.value}
+                  className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all
+                    ${form.role === r.value
+                      ? 'border-indigo-500 bg-indigo-500/10 text-white'
+                      : 'border-slate-700 bg-slate-800/40 text-slate-400 hover:border-slate-600'}`}
+                >
+                  <input
+                    type="radio" name="role" value={r.value}
+                    checked={form.role === r.value}
+                    onChange={() => setForm({ ...form, role: r.value })}
+                    className="hidden"
+                  />
+                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0
+                    ${form.role === r.value ? 'border-indigo-500' : 'border-slate-600'}`}>
+                    {form.role === r.value && <div className="w-2 h-2 rounded-full bg-indigo-500" />}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">{r.label}</p>
+                    <p className="text-xs text-slate-500">{r.desc}</p>
+                  </div>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <button id="reg-submit" type="submit" disabled={loading} className="btn btn-primary btn-lg w-full justify-center mt-1">
+            {loading ? <><span className="spinner" /> Creating account...</> : 'Create Account'}
           </button>
         </form>
 
-        <p className="text-center text-sm text-gray-500 mt-6">
-          Already have an account?{' '}
-          <Link to="/login" className="text-blue-400 hover:underline">Sign in</Link>
-        </p>
+        <div className="mt-5 text-center">
+          <p className="text-sm text-slate-500">
+            Already have an account?{' '}
+            <Link to="/login" className="text-indigo-400 font-medium hover:text-indigo-300 transition-colors">
+              Sign in
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   )
