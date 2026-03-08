@@ -8,22 +8,22 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 var DB *gorm.DB
 
 func ConnectDB() {
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-		GetEnv("DB_USER", "root"),
-		GetEnv("DB_PASSWORD", ""),
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Manila",
 		GetEnv("DB_HOST", "localhost"),
-		GetEnv("DB_PORT", "3306"),
+		GetEnv("DB_USER", "postgres"),
+		GetEnv("DB_PASSWORD", "postgres"),
 		GetEnv("DB_NAME", "ojt_system"),
+		GetEnv("DB_PORT", "5432"),
 	)
 
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal("Failed to connect to database:", err)
 	}

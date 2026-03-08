@@ -1,0 +1,28 @@
+# Environment files (sensitive!)
+backend/.env
+frontend/.env
+.env
+
+# Go binaries
+backend/ojt-system
+backend/*.exe
+backend/bin/
+
+# Go test cache
+backend/testdata/
+
+# Node modules
+frontend/node_modules/
+node_modules/
+
+# Build output
+frontend/dist/
+frontend/build/
+
+# OS & editor
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+Thumbs.db

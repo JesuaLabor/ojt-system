@@ -9,10 +9,10 @@ import (
 // ─── User ───────────────────────────────────────────────
 type User struct {
 	gorm.Model
-	Name        string `gorm:"not null" json:"name"`
-	Email       string `gorm:"uniqueIndex;not null" json:"email"`
-	Password    string `gorm:"not null" json:"-"`
-	Role        string `gorm:"type:enum('student','supervisor','coordinator','faculty');not null" json:"role"`
+	Name         string `gorm:"not null" json:"name"`
+	Email        string `gorm:"uniqueIndex;not null" json:"email"`
+	Password     string `gorm:"not null" json:"-"`
+	Role         string `gorm:"type:varchar(20);not null" json:"role"`
 	ProfilePhoto string `json:"profile_photo"`
 }
 
@@ -26,7 +26,7 @@ type OJTAssignment struct {
 	RequiredHours float64   `gorm:"default:600" json:"required_hours"`
 	StartDate     time.Time `json:"start_date"`
 	EndDate       time.Time `json:"end_date"`
-	Status        string    `gorm:"type:enum('active','completed','withdrawn');default:'active'" json:"status"`
+	Status        string    `gorm:"type:varchar(20);default:'active'" json:"status"`
 
 	Student     User `gorm:"foreignKey:StudentID" json:"student,omitempty"`
 	Supervisor  User `gorm:"foreignKey:SupervisorID" json:"supervisor,omitempty"`
@@ -36,13 +36,13 @@ type OJTAssignment struct {
 // ─── Time Log ────────────────────────────────────────────
 type TimeLog struct {
 	gorm.Model
-	StudentID   uint      `gorm:"not null" json:"student_id"`
-	ClockIn     time.Time `gorm:"not null" json:"clock_in"`
-	ClockOut    *time.Time `json:"clock_out"`
-	TotalHours  float64   `json:"total_hours"`
-	Status      string    `gorm:"type:enum('pending','approved','rejected');default:'pending'" json:"status"`
-	Remarks     string    `json:"remarks"`
-	ApprovedBy  *uint     `json:"approved_by"`
+	StudentID  uint       `gorm:"not null" json:"student_id"`
+	ClockIn    time.Time  `gorm:"not null" json:"clock_in"`
+	ClockOut   *time.Time `json:"clock_out"`
+	TotalHours float64    `json:"total_hours"`
+	Status     string     `gorm:"type:varchar(20);default:'pending'" json:"status"`
+	Remarks    string     `json:"remarks"`
+	ApprovedBy *uint      `json:"approved_by"`
 
 	Student User `gorm:"foreignKey:StudentID" json:"student,omitempty"`
 }
@@ -71,7 +71,7 @@ type Document struct {
 	StudentID uint   `gorm:"not null" json:"student_id"`
 	Type      string `gorm:"not null" json:"type"` // MOA, Endorsement, Waiver, Insurance
 	FileURL   string `gorm:"not null" json:"file_url"`
-	Status    string `gorm:"type:enum('pending','approved','rejected');default:'pending'" json:"status"`
+	Status    string `gorm:"type:varchar(20);default:'pending'" json:"status"`
 
 	Student User `gorm:"foreignKey:StudentID" json:"student,omitempty"`
 }
