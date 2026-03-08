@@ -74,5 +74,14 @@ func RegisterRoutes(r *gin.Engine) {
 				controllers.GetLatestEvaluation, // GET /api/evaluations/:student_id/latest
 			)
 		}
+
+		// ── Reports ───────────────────────────────────────────────────────────
+		reports := protected.Group("/reports")
+		{
+			reports.GET("/:student_id/pdf",
+				middleware.RoleMiddleware("supervisor", "coordinator", "faculty"),
+				controllers.GenerateStudentReport, // GET /api/reports/:student_id/pdf
+			)
+		}
 	}
 }
