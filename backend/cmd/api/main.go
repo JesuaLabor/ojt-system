@@ -27,6 +27,9 @@ func main() {
 	// Setup CORS
 	config.SetupCORS(r)
 
+	// Serve static files (uploads)
+	r.Static("/uploads", "./uploads")
+
 	// Register all routes
 	routes.RegisterRoutes(r)
 

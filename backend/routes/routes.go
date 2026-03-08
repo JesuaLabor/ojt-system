@@ -10,6 +10,10 @@ import (
 func RegisterRoutes(r *gin.Engine) {
 	api := r.Group("/api")
 
+	api.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{"status": "ok", "version": "v1.1"})
+	})
+
 	// ─── Public Routes ────────────────────────────────────────────────────────
 	auth := api.Group("/auth")
 	{
@@ -83,5 +87,9 @@ func RegisterRoutes(r *gin.Engine) {
 				controllers.GenerateStudentReport, // GET /api/reports/:student_id/pdf
 			)
 		}
+
+		// ── Documents ─────────────────────────────────────────────────────────
+		protected.POST("/documents", controllers.UploadDocument) // POST /api/documents
+		protected.GET("/documents", controllers.GetMyDocuments)  // GET  /api/documents
 	}
 }

@@ -68,10 +68,11 @@ type Evaluation struct {
 // ─── Document ────────────────────────────────────────────
 type Document struct {
 	gorm.Model
-	StudentID uint   `gorm:"not null" json:"student_id"`
-	Type      string `gorm:"not null" json:"type"` // MOA, Endorsement, Waiver, Insurance
-	FileURL   string `gorm:"not null" json:"file_url"`
-	Status    string `gorm:"type:varchar(20);default:'pending'" json:"status"`
+	StudentID       uint   `gorm:"not null" json:"student_id"`
+	Type            string `gorm:"not null" json:"type"` // MOA, Endorsement, Waiver, Insurance
+	FileURL         string `gorm:"not null" json:"file_url"`
+	Status          string `gorm:"type:varchar(20);default:'pending'" json:"status"`
+	RejectionReason string `json:"rejection_reason"`
 
 	Student User `gorm:"foreignKey:StudentID" json:"student,omitempty"`
 }
