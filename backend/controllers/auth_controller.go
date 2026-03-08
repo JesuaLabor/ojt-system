@@ -12,17 +12,59 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// ─── Input Structs ───────────────────────────────────────────────────────────
+
 type RegisterInput struct {
-	Name     string `json:"name" binding:"required"`
-	Email    string `json:"email" binding:"required,email"`
+	Name     string `json:"name"     binding:"required"`
+	Email    string `json:"email"    binding:"required,email"`
 	Password string `json:"password" binding:"required,min=6"`
-	Role     string `json:"role" binding:"required,oneof=student supervisor coordinator faculty"`
+	Role     string `json:"role"     binding:"required,oneof=student supervisor coordinator faculty"`
 }
 
 type LoginInput struct {
-	Email    string `json:"email" binding:"required,email"`
+	Email    string `json:"email"    binding:"required,email"`
 	Password string `json:"password" binding:"required"`
 }
+
+type UpdateProfileInput struct {
+	Name         string `json:"name"`
+	ProfilePhoto string `json:"profile_photo"`
+}
+
+type ChangePasswordInput struct {
+	CurrentPassword string `json:"current_password" binding:"required"`
+	NewPassword     string `json:"new_password"     binding:"required,min=6"`
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+func generateToken(user models.User) (string, error) {
+	claims := middleware.Claims{
+		UserID: user.ID,
+		Email:  user.Email,
+		Role:   user.Role,
+		Name:   user.Name,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString([]byte(config.GetEnv("JWT_SECRET", "secret")))
+}
+
+func userResponse(user models.User) gin.H {
+	return gin.H{
+		"id":            user.ID,
+		"name":          user.Name,
+		"email":         user.Email,
+		"role":          user.Role,
+		"profile_photo": user.ProfilePhoto,
+		"created_at":    user.CreatedAt,
+	}
+}
+
+// ─── POST /api/auth/register ─────────────────────────────────────────────────
 
 func Register(c *gin.Context) {
 	var input RegisterInput
@@ -31,7 +73,7 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	// Hash password
+	// Hash password with bcrypt
 	hashed, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
@@ -46,20 +88,24 @@ func Register(c *gin.Context) {
 	}
 
 	if result := config.DB.Create(&user); result.Error != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Email already exists"})
+		c.JSON(http.StatusConflict, gin.H{"error": "Email already exists"})
+		return
+	}
+
+	tokenStr, err := generateToken(user)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
 		return
 	}
 
 	c.JSON(http.StatusCreated, gin.H{
 		"message": "User registered successfully",
-		"user": gin.H{
-			"id":    user.ID,
-			"name":  user.Name,
-			"email": user.Email,
-			"role":  user.Role,
-		},
+		"token":   tokenStr,
+		"user":    userResponse(user),
 	})
 }
+
+// ─── POST /api/auth/login ─────────────────────────────────────────────────────
 
 func Login(c *gin.Context) {
 	var input LoginInput
@@ -70,6 +116,7 @@ func Login(c *gin.Context) {
 
 	var user models.User
 	if result := config.DB.Where("email = ?", input.Email).First(&user); result.Error != nil {
+		// Generic message to avoid user enumeration
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 		return
 	}
@@ -79,20 +126,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	// Generate JWT
-	claims := middleware.Claims{
-		UserID: user.ID,
-		Email:  user.Email,
-		Role:   user.Role,
-		Name:   user.Name,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
-		},
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenStr, err := token.SignedString([]byte(config.GetEnv("JWT_SECRET", "secret")))
+	tokenStr, err := generateToken(user)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
 		return
@@ -100,23 +134,94 @@ func Login(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"token": tokenStr,
-		"user": gin.H{
-			"id":    user.ID,
-			"name":  user.Name,
-			"email": user.Email,
-			"role":  user.Role,
-		},
+		"user":  userResponse(user),
 	})
 }
 
+// ─── GET /api/me ──────────────────────────────────────────────────────────────
+
 func GetMe(c *gin.Context) {
-	userID, _ := c.Get("userID")
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
 	var user models.User
-	config.DB.First(&user, userID)
+	if result := config.DB.First(&user, userID); result.Error != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, userResponse(user))
+}
+
+// ─── PUT /api/me ──────────────────────────────────────────────────────────────
+
+func UpdateProfile(c *gin.Context) {
+	userID, _ := c.Get("userID")
+
+	var input UpdateProfileInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var user models.User
+	if result := config.DB.First(&user, userID); result.Error != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	// Only update fields that were provided
+	updates := map[string]interface{}{}
+	if input.Name != "" {
+		updates["name"] = input.Name
+	}
+	if input.ProfilePhoto != "" {
+		updates["profile_photo"] = input.ProfilePhoto
+	}
+
+	config.DB.Model(&user).Updates(updates)
+	config.DB.First(&user, userID) // Reload updated record
+
 	c.JSON(http.StatusOK, gin.H{
-		"id":    user.ID,
-		"name":  user.Name,
-		"email": user.Email,
-		"role":  user.Role,
+		"message": "Profile updated successfully",
+		"user":    userResponse(user),
 	})
+}
+
+// ─── POST /api/auth/change-password ──────────────────────────────────────────
+
+func ChangePassword(c *gin.Context) {
+	userID, _ := c.Get("userID")
+
+	var input ChangePasswordInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var user models.User
+	if result := config.DB.First(&user, userID); result.Error != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	// Verify current password
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.CurrentPassword)); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Current password is incorrect"})
+		return
+	}
+
+	// Hash new password
+	hashed, err := bcrypt.GenerateFromPassword([]byte(input.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash new password"})
+		return
+	}
+
+	config.DB.Model(&user).Update("password", string(hashed))
+
+	c.JSON(http.StatusOK, gin.H{"message": "Password changed successfully"})
 }
