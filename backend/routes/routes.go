@@ -67,7 +67,11 @@ func RegisterRoutes(r *gin.Engine) {
 			evaluations.GET("/me", controllers.GetMyEvaluations) // GET /api/evaluations/me
 			evaluations.GET("/:student_id",
 				middleware.RoleMiddleware("supervisor", "coordinator", "faculty"),
-				controllers.GetStudentEvaluations, // GET /api/evaluations/:student_id
+				controllers.GetStudentEvaluations, // GET /api/evaluations/:student_id?period=Midterm
+			)
+			evaluations.GET("/:student_id/latest",
+				middleware.RoleMiddleware("supervisor", "coordinator", "faculty"),
+				controllers.GetLatestEvaluation, // GET /api/evaluations/:student_id/latest
 			)
 		}
 	}
