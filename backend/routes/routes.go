@@ -101,5 +101,24 @@ func RegisterRoutes(r *gin.Engine) {
 			supervisor.PATCH("/notifications/read-all", controllers.MarkAllNotificationsRead) // PATCH /api/supervisor/notifications/read-all
 			supervisor.GET("/activity", controllers.GetSupervisorActivity)                // GET   /api/supervisor/activity
 		}
+
+		// ── Coordinator ───────────────────────────────────────────────────────
+		coordinator := protected.Group("/coordinator")
+		coordinator.Use(middleware.RoleMiddleware("coordinator"))
+		{
+			coordinator.GET("/students", controllers.GetCoordinatorStudents) // GET /api/coordinator/students
+			coordinator.GET("/stats", controllers.GetCoordinatorStats)       // GET /api/coordinator/stats
+		}
+
+		// ── Assignments ───────────────────────────────────────────────────────
+		assignments := protected.Group("/assignments")
+		assignments.Use(middleware.RoleMiddleware("coordinator")) // Only coordinators manage assignments
+		{
+			assignments.GET("/", controllers.GetAssignments)           // GET    /api/assignments
+			assignments.GET("/options", controllers.GetAssignmentOptions) // GET    /api/assignments/options
+			assignments.POST("/", controllers.CreateAssignment)        // POST   /api/assignments
+			assignments.PATCH("/:id", controllers.UpdateAssignment)    // PATCH  /api/assignments/:id
+			assignments.DELETE("/:id", controllers.DeleteAssignment)   // DELETE /api/assignments/:id
+		}
 	}
 }
