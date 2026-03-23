@@ -1,5 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 import useAuthStore from '../../store/authStore'
+import api from '../../services/api'
 
 // ── Role-based navigation config ────────────────────────────────────────────
 const NAV = {
@@ -13,7 +15,7 @@ const NAV = {
     supervisor: [
         { to: '/supervisor', label: 'Dashboard', icon: IconGrid },
         { to: '/supervisor/students', label: 'Students', icon: IconUsers },
-        { to: '/supervisor/timelogs', label: 'Time Logs', icon: IconClock },
+        { to: '/supervisor/timelogs', label: 'Time Logs', icon: IconClock, badgeKey: 'pendingApprovals' },
         { to: '/supervisor/evaluations', label: 'Evaluations', icon: IconStar },
         { to: '/supervisor/reports', label: 'Reports', icon: IconChart },
     ],
@@ -36,7 +38,7 @@ const NAV = {
 // ── Role display config ───────────────────────────────────────────────────────
 const ROLE_META = {
     student: { label: 'Student', color: 'text-cyan-400', dot: 'bg-cyan-400' },
-    supervisor: { label: 'Supervisor', color: 'text-purple-400', dot: 'bg-purple-400' },
+    supervisor: { label: 'Supervisor', color: 'text-teal-400', dot: 'bg-teal-400' },
     coordinator: { label: 'Coordinator', color: 'text-orange-400', dot: 'bg-orange-400' },
     faculty: { label: 'Faculty Adviser', color: 'text-emerald-400', dot: 'bg-emerald-400' },
 }
@@ -46,6 +48,18 @@ export default function Sidebar({ open, onClose }) {
     const navigate = useNavigate()
     const links = NAV[user?.role] || []
     const meta = ROLE_META[user?.role] || {}
+    const [badges, setBadges] = useState({})
+
+    // Fetch pending approvals count for supervisor
+    useEffect(() => {
+        if (user?.role === 'supervisor') {
+            api.get('/supervisor/students')
+                .then(res => {
+                    setBadges({ pendingApprovals: res.data?.total_pending_approvals || 0 })
+                })
+                .catch(() => {})
+        }
+    }, [user?.role])
 
     const handleLogout = () => {
         logout()
@@ -68,8 +82,8 @@ export default function Sidebar({ open, onClose }) {
             >
                 {/* Logo / Brand */}
                 <div className="flex items-center gap-3 px-5 py-5 border-b border-slate-800">
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600
-                          flex items-center justify-center flex-shrink-0 shadow-lg shadow-indigo-900/50">
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-teal-600 to-cyan-600
+                          flex items-center justify-center flex-shrink-0 shadow-lg shadow-teal-900/50">
                         <span className="text-white font-bold text-base">O</span>
                     </div>
                     <div className="flex-1 min-w-0">
@@ -89,7 +103,7 @@ export default function Sidebar({ open, onClose }) {
                 {/* User info strip */}
                 <div className="px-4 py-3 mx-3 mt-3 rounded-xl bg-slate-800/60 border border-slate-700/50">
                     <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-teal-500 to-cyan-600
                             flex items-center justify-center flex-shrink-0">
                             <span className="text-white text-xs font-bold">
                                 {user?.name?.charAt(0).toUpperCase()}
@@ -108,7 +122,7 @@ export default function Sidebar({ open, onClose }) {
                 {/* Nav links */}
                 <nav className="flex-1 overflow-y-auto py-3 px-3 space-y-0.5">
                     <p className="section-label">Navigation</p>
-                    {links.map(({ to, label, icon: Icon }) => (
+                    {links.map(({ to, label, icon: Icon, badgeKey }) => (
                         <NavLink
                             key={to}
                             to={to}
@@ -117,7 +131,14 @@ export default function Sidebar({ open, onClose }) {
                             onClick={onClose}
                         >
                             <Icon className="icon" />
-                            <span>{label}</span>
+                            <span className="flex-1">{label}</span>
+                            {badgeKey && badges[badgeKey] > 0 && (
+                                <span className="ml-auto min-w-[20px] h-5 px-1.5 rounded-full bg-amber-500
+                                    text-white text-[10px] font-bold flex items-center justify-center
+                                    shadow-lg shadow-amber-900/50 animate-pulse">
+                                    {badges[badgeKey]}
+                                </span>
+                            )}
                         </NavLink>
                     ))}
                 </nav>

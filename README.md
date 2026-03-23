@@ -5,7 +5,7 @@ A full-stack web application to digitalize the OJT process.
 ## Tech Stack
 - **Frontend**: React + Vite + Tailwind CSS
 - **Backend**: Go + Gin Framework + GORM
-- **Database**: MySQL
+- **Database**: PostgreSQL
 - **Auth**: JWT
 
 ## Project Structure

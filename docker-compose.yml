@@ -2,16 +2,15 @@ version: '3.8'
 
 services:
   db:
-    image: mysql:8.0
+    image: postgres:14-alpine
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: ojt_system
-      MYSQL_USER: ojt_user
-      MYSQL_PASSWORD: ojt_password
+      POSTGRES_USER: ojt_user
+      POSTGRES_PASSWORD: ojt_password
+      POSTGRES_DB: ojt_system
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - postgres_data:/var/lib/postgresql/data
 
   backend:
     build: ./backend
@@ -19,7 +18,7 @@ services:
       - "8080:8080"
     environment:
       DB_HOST: db
-      DB_PORT: 3306
+      DB_PORT: 5432
       DB_USER: ojt_user
       DB_PASSWORD: ojt_password
       DB_NAME: ojt_system
@@ -40,4 +39,4 @@ services:
       VITE_API_URL: http://localhost:8080/api
 
 volumes:
-  mysql_data:
+  postgres_data:

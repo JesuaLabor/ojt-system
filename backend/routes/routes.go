@@ -91,5 +91,15 @@ func RegisterRoutes(r *gin.Engine) {
 		// ── Documents ─────────────────────────────────────────────────────────
 		protected.POST("/documents", controllers.UploadDocument) // POST /api/documents
 		protected.GET("/documents", controllers.GetMyDocuments)  // GET  /api/documents
+
+		// ── Supervisor ────────────────────────────────────────────────────────
+		supervisor := protected.Group("/supervisor")
+		supervisor.Use(middleware.RoleMiddleware("supervisor"))
+		{
+			supervisor.GET("/students", controllers.GetSupervisorStudents)                // GET   /api/supervisor/students
+			supervisor.GET("/notifications", controllers.GetSupervisorNotifications)      // GET   /api/supervisor/notifications
+			supervisor.PATCH("/notifications/read-all", controllers.MarkAllNotificationsRead) // PATCH /api/supervisor/notifications/read-all
+			supervisor.GET("/activity", controllers.GetSupervisorActivity)                // GET   /api/supervisor/activity
+		}
 	}
 }
