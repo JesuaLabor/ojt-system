@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom'
 import Layout from '../../components/layout/Layout'
 import Overview from './Overview'
 import Evaluations from './Evaluations'
+import SupervisorTimeLogs from './TimeLogs'
 
 // Placeholder shells (to be built in later phases)
 const Placeholder = ({ title }) => (
@@ -18,7 +19,7 @@ export default function SupervisorDashboard() {
       <Routes>
         <Route index element={<Overview />} />
         <Route path="students" element={<Placeholder title="My Students" />} />
-        <Route path="timelogs" element={<Placeholder title="Time Log Approvals" />} />
+        <Route path="timelogs" element={<SupervisorTimeLogs />} />
         <Route path="evaluations" element={<Evaluations />} />
         <Route path="reports" element={<Placeholder title="Reports" />} />
       </Routes>
