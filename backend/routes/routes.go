@@ -119,6 +119,14 @@ func RegisterRoutes(r *gin.Engine) {
 			coordinator.GET("/stats", controllers.GetCoordinatorStats)       // GET /api/coordinator/stats
 		}
 
+		// ── Faculty ───────────────────────────────────────────────────────────
+		faculty := protected.Group("/faculty")
+		faculty.Use(middleware.RoleMiddleware("faculty"))
+		{
+			faculty.GET("/students", controllers.GetCoordinatorStudents) // GET /api/faculty/students
+			faculty.GET("/stats", controllers.GetCoordinatorStats)       // GET /api/faculty/stats
+		}
+
 		// ── Assignments ───────────────────────────────────────────────────────
 		assignments := protected.Group("/assignments")
 		assignments.Use(middleware.RoleMiddleware("coordinator")) // Only coordinators manage assignments

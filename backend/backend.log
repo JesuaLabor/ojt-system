@@ -1,0 +1,98 @@
+2026/03/25 00:30:40 Database connected successfully
+2026/03/25 00:30:40 Database migrated successfully
+[GIN-debug] [WARNING] Creating an Engine instance with the Logger and Recovery middleware already attached.
+
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /uploads/*filepath        --> github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1 (4 handlers)
+[GIN-debug] HEAD   /uploads/*filepath        --> github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1 (4 handlers)
+[GIN-debug] GET    /api/health               --> ojt-system/routes.RegisterRoutes.func1 (4 handlers)
+[GIN-debug] POST   /api/auth/register        --> ojt-system/controllers.Register (4 handlers)
+[GIN-debug] POST   /api/auth/login           --> ojt-system/controllers.Login (4 handlers)
+[GIN-debug] POST   /api/auth/change-password --> ojt-system/controllers.ChangePassword (5 handlers)
+[GIN-debug] GET    /api/me                   --> ojt-system/controllers.GetMe (5 handlers)
+[GIN-debug] PUT    /api/me                   --> ojt-system/controllers.UpdateProfile (5 handlers)
+[GIN-debug] POST   /api/me/avatar            --> ojt-system/controllers.UploadAvatar (5 handlers)
+[GIN-debug] POST   /api/timelogs/            --> ojt-system/controllers.CreateTimeLog (5 handlers)
+[GIN-debug] POST   /api/timelogs/clockin     --> ojt-system/controllers.ClockIn (5 handlers)
+[GIN-debug] PATCH  /api/timelogs/clockout    --> ojt-system/controllers.ClockOut (5 handlers)
+[GIN-debug] GET    /api/timelogs/            --> ojt-system/controllers.GetMyTimeLogs (5 handlers)
+[GIN-debug] GET    /api/timelogs/:student_id --> ojt-system/controllers.GetStudentTimeLogs (6 handlers)
+[GIN-debug] GET    /api/timelogs/:student_id/summary --> ojt-system/controllers.GetStudentSummary (6 handlers)
+[GIN-debug] PATCH  /api/timelogs/:id/approve --> ojt-system/controllers.ApproveTimeLog (6 handlers)
+[GIN-debug] PATCH  /api/timelogs/:id/reject  --> ojt-system/controllers.RejectTimeLog (6 handlers)
+[GIN-debug] POST   /api/evaluations/         --> ojt-system/controllers.CreateEvaluation (6 handlers)
+[GIN-debug] GET    /api/evaluations/me       --> ojt-system/controllers.GetMyEvaluations (5 handlers)
+[GIN-debug] GET    /api/evaluations/:student_id --> ojt-system/controllers.GetStudentEvaluations (6 handlers)
+[GIN-debug] GET    /api/evaluations/:student_id/latest --> ojt-system/controllers.GetLatestEvaluation (6 handlers)
+[GIN-debug] GET    /api/reports/:student_id/pdf --> ojt-system/controllers.GenerateStudentReport (6 handlers)
+[GIN-debug] POST   /api/documents            --> ojt-system/controllers.UploadDocument (5 handlers)
+[GIN-debug] GET    /api/documents            --> ojt-system/controllers.GetMyDocuments (5 handlers)
+[GIN-debug] GET    /api/notifications/       --> ojt-system/controllers.GetMyNotifications (5 handlers)
+[GIN-debug] PATCH  /api/notifications/:id/read --> ojt-system/controllers.MarkNotificationRead (5 handlers)
+[GIN-debug] PATCH  /api/notifications/read-all --> ojt-system/controllers.MarkAllNotificationsReadGlobal (5 handlers)
+[GIN-debug] GET    /api/supervisor/students  --> ojt-system/controllers.GetSupervisorStudents (6 handlers)
+[GIN-debug] GET    /api/supervisor/notifications --> ojt-system/controllers.GetSupervisorNotifications (6 handlers)
+[GIN-debug] PATCH  /api/supervisor/notifications/read-all --> ojt-system/controllers.MarkAllNotificationsRead (6 handlers)
+[GIN-debug] GET    /api/supervisor/activity  --> ojt-system/controllers.GetSupervisorActivity (6 handlers)
+[GIN-debug] GET    /api/coordinator/students --> ojt-system/controllers.GetCoordinatorStudents (6 handlers)
+[GIN-debug] GET    /api/coordinator/stats    --> ojt-system/controllers.GetCoordinatorStats (6 handlers)
+[GIN-debug] GET    /api/faculty/students     --> ojt-system/controllers.GetCoordinatorStudents (6 handlers)
+[GIN-debug] GET    /api/faculty/stats        --> ojt-system/controllers.GetCoordinatorStats (6 handlers)
+[GIN-debug] GET    /api/assignments/         --> ojt-system/controllers.GetAssignments (6 handlers)
+[GIN-debug] GET    /api/assignments/options  --> ojt-system/controllers.GetAssignmentOptions (6 handlers)
+[GIN-debug] POST   /api/assignments/         --> ojt-system/controllers.CreateAssignment (6 handlers)
+[GIN-debug] PATCH  /api/assignments/:id      --> ojt-system/controllers.UpdateAssignment (6 handlers)
+[GIN-debug] DELETE /api/assignments/:id      --> ojt-system/controllers.DeleteAssignment (6 handlers)
+2026/03/25 00:30:40 Server running on port 8080
+[GIN-debug] [WARNING] You trusted all proxies, this is NOT safe. We recommend you to set a value.
+Please check https://pkg.go.dev/github.com/gin-gonic/gin#readme-don-t-trust-all-proxies for details.
+[GIN-debug] Listening and serving HTTP on :8080
+[GIN] 2026/03/25 - 00:30:54 | 204 |      46.709µs |             ::1 | OPTIONS  "/api/notifications/"
+[GIN] 2026/03/25 - 00:30:54 | 200 |    2.174761ms |             ::1 | GET      "/api/notifications/"
+[GIN] 2026/03/25 - 00:31:10 | 204 |      11.471µs |             ::1 | OPTIONS  "/api/faculty/students"
+[GIN] 2026/03/25 - 00:31:10 | 204 |      13.355µs |             ::1 | OPTIONS  "/api/faculty/students"
+
+2026/03/25 00:31:10 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/coordinator_controller.go:91 [35;1mrecord not found
+[0m[33m[0.234ms] [34;1m[rows:0][0m SELECT * FROM "evaluations" WHERE student_id = 7 AND "evaluations"."deleted_at" IS NULL ORDER BY created_at desc,"evaluations"."id" LIMIT 1
+[GIN] 2026/03/25 - 00:31:10 | 200 |    6.251416ms |             ::1 | GET      "/api/faculty/students"
+
+2026/03/25 00:31:10 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/coordinator_controller.go:91 [35;1mrecord not found
+[0m[33m[0.252ms] [34;1m[rows:0][0m SELECT * FROM "evaluations" WHERE student_id = 7 AND "evaluations"."deleted_at" IS NULL ORDER BY created_at desc,"evaluations"."id" LIMIT 1
+[GIN] 2026/03/25 - 00:31:10 | 200 |     4.78638ms |             ::1 | GET      "/api/faculty/students"
+
+2026/03/25 00:31:12 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/coordinator_controller.go:91 [35;1mrecord not found
+[0m[33m[0.338ms] [34;1m[rows:0][0m SELECT * FROM "evaluations" WHERE student_id = 7 AND "evaluations"."deleted_at" IS NULL ORDER BY created_at desc,"evaluations"."id" LIMIT 1
+[GIN] 2026/03/25 - 00:31:12 | 200 |    4.024436ms |             ::1 | GET      "/api/faculty/students"
+
+2026/03/25 00:31:12 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/coordinator_controller.go:91 [35;1mrecord not found
+[0m[33m[0.120ms] [34;1m[rows:0][0m SELECT * FROM "evaluations" WHERE student_id = 7 AND "evaluations"."deleted_at" IS NULL ORDER BY created_at desc,"evaluations"."id" LIMIT 1
+[GIN] 2026/03/25 - 00:31:12 | 200 |    3.198931ms |             ::1 | GET      "/api/faculty/students"
+
+2026/03/25 00:31:15 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/coordinator_controller.go:91 [35;1mrecord not found
+[0m[33m[0.184ms] [34;1m[rows:0][0m SELECT * FROM "evaluations" WHERE student_id = 7 AND "evaluations"."deleted_at" IS NULL ORDER BY created_at desc,"evaluations"."id" LIMIT 1
+[GIN] 2026/03/25 - 00:31:15 | 200 |     2.45407ms |             ::1 | GET      "/api/faculty/students"
+
+2026/03/25 00:31:15 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/coordinator_controller.go:91 [35;1mrecord not found
+[0m[33m[0.195ms] [34;1m[rows:0][0m SELECT * FROM "evaluations" WHERE student_id = 7 AND "evaluations"."deleted_at" IS NULL ORDER BY created_at desc,"evaluations"."id" LIMIT 1
+[GIN] 2026/03/25 - 00:31:15 | 200 |    2.451535ms |             ::1 | GET      "/api/faculty/students"
+[GIN] 2026/03/25 - 00:31:16 | 204 |       15.72µs |             ::1 | OPTIONS  "/api/faculty/students"
+[GIN] 2026/03/25 - 00:31:16 | 204 |      14.567µs |             ::1 | OPTIONS  "/api/faculty/students"
+
+2026/03/25 00:31:16 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/coordinator_controller.go:91 [35;1mrecord not found
+[0m[33m[0.142ms] [34;1m[rows:0][0m SELECT * FROM "evaluations" WHERE student_id = 7 AND "evaluations"."deleted_at" IS NULL ORDER BY created_at desc,"evaluations"."id" LIMIT 1
+[GIN] 2026/03/25 - 00:31:16 | 200 |    3.323588ms |             ::1 | GET      "/api/faculty/students"
+
+2026/03/25 00:31:16 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/coordinator_controller.go:91 [35;1mrecord not found
+[0m[33m[0.124ms] [34;1m[rows:0][0m SELECT * FROM "evaluations" WHERE student_id = 7 AND "evaluations"."deleted_at" IS NULL ORDER BY created_at desc,"evaluations"."id" LIMIT 1
+[GIN] 2026/03/25 - 00:31:16 | 200 |    2.333342ms |             ::1 | GET      "/api/faculty/students"
+[GIN] 2026/03/25 - 00:31:19 | 204 |      14.297µs |             ::1 | OPTIONS  "/api/timelogs/7?status=approved"
+[GIN] 2026/03/25 - 00:31:19 | 204 |       3.837µs |             ::1 | OPTIONS  "/api/evaluations/7"
+[GIN] 2026/03/25 - 00:31:19 | 200 |     2.01582ms |             ::1 | GET      "/api/timelogs/7?status=approved"
+[GIN] 2026/03/25 - 00:31:19 | 200 |   11.518828ms |             ::1 | GET      "/api/evaluations/7"
+[GIN] 2026/03/25 - 00:31:23 | 204 |      13.776µs |             ::1 | OPTIONS  "/api/notifications/"
+[GIN] 2026/03/25 - 00:31:23 | 200 |    1.970404ms |             ::1 | GET      "/api/notifications/"
+[GIN] 2026/03/25 - 00:31:31 | 204 |      20.038µs |             ::1 | OPTIONS  "/api/notifications/"
+[GIN] 2026/03/25 - 00:31:31 | 200 |    2.743399ms |             ::1 | GET      "/api/notifications/"
