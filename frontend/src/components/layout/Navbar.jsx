@@ -75,12 +75,20 @@ export default function Navbar({ onMenuClick }) {
                 {/* User avatar pill */}
                 <div className="flex items-center gap-2.5 bg-slate-800/60 border border-slate-700/60
                         rounded-full pl-1 pr-3 py-1 cursor-default">
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600
-                          flex items-center justify-center flex-shrink-0">
-                        <span className="text-white text-xs font-bold">
-                            {user?.name?.charAt(0).toUpperCase()}
-                        </span>
-                    </div>
+                    {user?.profile_photo ? (
+                        <img 
+                            src={user.profile_photo} 
+                            alt="Avatar" 
+                            className="w-7 h-7 rounded-full object-cover flex-shrink-0 border border-slate-600/50"
+                        />
+                    ) : (
+                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600
+                              flex items-center justify-center flex-shrink-0">
+                            <span className="text-white text-xs font-bold">
+                                {user?.name?.charAt(0).toUpperCase()}
+                            </span>
+                        </div>
+                    )}
                     <div className="hidden sm:block">
                         <p className="text-xs font-semibold text-white leading-none">
                             {user?.name?.split(' ')[0]}

@@ -32,6 +32,7 @@ func RegisterRoutes(r *gin.Engine) {
 		// ── Current User ──────────────────────────────────────────────────────
 		protected.GET("me", controllers.GetMe)         // GET  /api/me
 		protected.PUT("me", controllers.UpdateProfile) // PUT  /api/me
+		protected.POST("me/avatar", controllers.UploadAvatar) // POST /api/me/avatar
 
 		// ── Time Logs ─────────────────────────────────────────────────────────
 		timelogs := protected.Group("/timelogs")

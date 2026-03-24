@@ -1,10 +1,13 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"ojt-system/config"
 	"ojt-system/middleware"
 	"ojt-system/models"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -188,6 +191,54 @@ func UpdateProfile(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Profile updated successfully",
 		"user":    userResponse(user),
+	})
+}
+
+// ─── POST /api/me/avatar ──────────────────────────────────────────────────────
+
+func UploadAvatar(c *gin.Context) {
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	file, err := c.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No file uploaded"})
+		return
+	}
+
+	// Create uploads directory if it doesn't exist
+	uploadDir := "uploads"
+	if _, err := os.Stat(uploadDir); os.IsNotExist(err) {
+		os.MkdirAll(uploadDir, 0755)
+	}
+
+	// Make unique filename
+	filename := fmt.Sprintf("avatar_%v_%d%s", userID, time.Now().Unix(), filepath.Ext(file.Filename))
+	savePath := filepath.Join(uploadDir, filename)
+
+	if err := c.SaveUploadedFile(file, savePath); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save file"})
+		return
+	}
+
+	// Update user profile_photo
+	fileURL := fmt.Sprintf("http://localhost:8080/uploads/%s", filename)
+
+	var user models.User
+	if result := config.DB.First(&user, userID); result.Error != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	config.DB.Model(&user).Update("profile_photo", fileURL)
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Avatar uploaded successfully",
+		"profile_photo": fileURL,
+		"user": userResponse(user),
 	})
 }
 

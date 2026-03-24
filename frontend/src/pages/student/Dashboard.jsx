@@ -4,15 +4,9 @@ import Overview from './Overview'
 import TimeLogs from './TimeLogs'
 import StudentEvaluations from './Evaluations'
 import StudentDocuments from './Documents'
+import Profile from './Profile'
 
-// Placeholder shells (to be built in later phases)
-const Placeholder = ({ title }) => (
-  <div className="flex flex-col items-center justify-center min-h-[60vh] text-slate-600">
-    <p className="text-4xl mb-3">🚧</p>
-    <p className="text-lg font-semibold text-slate-400">{title}</p>
-    <p className="text-sm mt-1">Coming soon…</p>
-  </div>
-)
+
 
 export default function StudentDashboard() {
   return (
@@ -22,7 +16,7 @@ export default function StudentDashboard() {
         <Route path="timelogs" element={<TimeLogs />} />
         <Route path="evaluations" element={<StudentEvaluations />} />
         <Route path="documents" element={<StudentDocuments />} />
-        <Route path="profile" element={<Placeholder title="My Profile" />} />
+        <Route path="profile" element={<Profile />} />
       </Routes>
     </Layout>
   )

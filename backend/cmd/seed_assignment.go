@@ -11,7 +11,7 @@ func main() {
 	config.ConnectDB()
 
 	assignment := models.OJTAssignment{
-		StudentID:     9,  // test@example.com
+		StudentID:     9, // test@example.com
 		CompanyName:   "Tech Innovators Inc.",
 		SupervisorID:  11, // supervisor@example.com
 		RequiredHours: 600,
