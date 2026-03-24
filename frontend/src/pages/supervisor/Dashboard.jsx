@@ -4,6 +4,7 @@ import Overview from './Overview'
 import Evaluations from './Evaluations'
 import SupervisorTimeLogs from './TimeLogs'
 import SupervisorStudents from './Students'
+import SupervisorReports from './Reports'
 
 // Placeholder shells (to be built in later phases)
 const Placeholder = ({ title }) => (
@@ -22,7 +23,7 @@ export default function SupervisorDashboard() {
         <Route path="students" element={<SupervisorStudents />} />
         <Route path="timelogs" element={<SupervisorTimeLogs />} />
         <Route path="evaluations" element={<Evaluations />} />
-        <Route path="reports" element={<Placeholder title="Reports" />} />
+        <Route path="reports" element={<SupervisorReports />} />
       </Routes>
     </Layout>
   )
