@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom'
 import Layout from '../../components/layout/Layout'
 import Overview from './Overview'
 import Assignments from './Assignments'
+import Reports from './Reports'
 
 // Placeholder shells (to be built in later phases)
 const Placeholder = ({ title }) => (
@@ -21,7 +22,7 @@ export default function CoordinatorDashboard() {
         <Route path="assignments" element={<Assignments />} />
         <Route path="timelogs" element={<Placeholder title="Time Logs Review" />} />
         <Route path="evaluations" element={<Placeholder title="Evaluations Review" />} />
-        <Route path="reports" element={<Placeholder title="Generated Reports" />} />
+        <Route path="reports" element={<Reports />} />
       </Routes>
     </Layout>
   )
