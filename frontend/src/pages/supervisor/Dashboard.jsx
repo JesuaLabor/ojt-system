@@ -3,6 +3,7 @@ import Layout from '../../components/layout/Layout'
 import Overview from './Overview'
 import Evaluations from './Evaluations'
 import SupervisorTimeLogs from './TimeLogs'
+import SupervisorStudents from './Students'
 
 // Placeholder shells (to be built in later phases)
 const Placeholder = ({ title }) => (
@@ -18,7 +19,7 @@ export default function SupervisorDashboard() {
     <Layout>
       <Routes>
         <Route index element={<Overview />} />
-        <Route path="students" element={<Placeholder title="My Students" />} />
+        <Route path="students" element={<SupervisorStudents />} />
         <Route path="timelogs" element={<SupervisorTimeLogs />} />
         <Route path="evaluations" element={<Evaluations />} />
         <Route path="reports" element={<Placeholder title="Reports" />} />
