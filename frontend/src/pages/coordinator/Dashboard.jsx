@@ -3,6 +3,9 @@ import Layout from '../../components/layout/Layout'
 import Overview from './Overview'
 import Assignments from './Assignments'
 import Reports from './Reports'
+import CoordinatorTimeLogs from './TimeLogs'
+import CoordinatorStudents from './Students'
+import CoordinatorEvaluations from './Evaluations'
 
 // Placeholder shells (to be built in later phases)
 const Placeholder = ({ title }) => (
@@ -18,10 +21,10 @@ export default function CoordinatorDashboard() {
     <Layout>
       <Routes>
         <Route index element={<Overview />} />
-        <Route path="students" element={<Placeholder title="Manage Students" />} />
+        <Route path="students" element={<CoordinatorStudents />} />
         <Route path="assignments" element={<Assignments />} />
-        <Route path="timelogs" element={<Placeholder title="Time Logs Review" />} />
-        <Route path="evaluations" element={<Placeholder title="Evaluations Review" />} />
+        <Route path="timelogs" element={<CoordinatorTimeLogs />} />
+        <Route path="evaluations" element={<CoordinatorEvaluations />} />
         <Route path="reports" element={<Reports />} />
       </Routes>
     </Layout>
