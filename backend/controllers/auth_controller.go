@@ -57,11 +57,18 @@ func generateToken(user models.User) (string, error) {
 }
 
 func userResponse(user models.User) gin.H {
+	// Fallback to active for older rows
+	status := user.Status
+	if status == "" {
+		status = "active"
+	}
+
 	return gin.H{
 		"id":            user.ID,
 		"name":          user.Name,
 		"email":         user.Email,
 		"role":          user.Role,
+		"status":        status,
 		"profile_photo": user.ProfilePhoto,
 		"created_at":    user.CreatedAt,
 	}
@@ -83,11 +90,18 @@ func Register(c *gin.Context) {
 		return
 	}
 
+	// Coordinators and Faculty default to "active" so they can approve others. Students/Supervisors are "pending".
+	status := "pending"
+	if input.Role == "coordinator" || input.Role == "faculty" {
+		status = "active"
+	}
+
 	user := models.User{
 		Name:     input.Name,
 		Email:    input.Email,
 		Password: string(hashed),
 		Role:     input.Role,
+		Status:   status,
 	}
 
 	if result := config.DB.Create(&user); result.Error != nil {
@@ -121,6 +135,11 @@ func Login(c *gin.Context) {
 	if result := config.DB.Where("email = ?", input.Email).First(&user); result.Error != nil {
 		// Generic message to avoid user enumeration
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
+		return
+	}
+
+	if user.Status == "rejected" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Your account application has been rejected. Please contact the coordinator."})
 		return
 	}
 

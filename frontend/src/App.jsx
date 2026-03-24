@@ -6,6 +6,7 @@ import useAuthStore from './store/authStore'
 // Auth Pages
 import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
+import PendingApproval from './pages/auth/PendingApproval'
 
 // Role Dashboards
 import StudentDashboard from './pages/student/Dashboard'
@@ -16,6 +17,8 @@ import UIKit from './pages/UIKit'
 
 // Role-based redirect
 function RoleRedirect({ user }) {
+  if (user.status === 'pending') return <Navigate to="/waiting-room" replace />
+  
   const routes = {
     student: '/student',
     supervisor: '/supervisor',
@@ -29,6 +32,10 @@ function RoleRedirect({ user }) {
 function PrivateRoute({ children, allowedRoles }) {
   const { user, token } = useAuthStore()
   if (!token) return <Navigate to="/login" replace />
+  
+  // If user is pending, they can only access waiting-room (which isn't a PrivateRoute in this logic)
+  if (user?.status === 'pending') return <Navigate to="/waiting-room" replace />
+
   if (allowedRoles && !allowedRoles.includes(user?.role)) return <Navigate to="/login" replace />
   return children
 }
@@ -47,6 +54,7 @@ export default function App() {
         {/* Public */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/waiting-room" element={<PendingApproval />} />
         <Route path="/ui-kit" element={<UIKit />} />
 
         {/* Auto redirect based on role */}

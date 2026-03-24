@@ -13,6 +13,7 @@ type User struct {
 	Email        string `gorm:"uniqueIndex;not null" json:"email"`
 	Password     string `gorm:"not null" json:"-"`
 	Role         string `gorm:"type:varchar(20);not null" json:"role"`
+	Status       string `gorm:"type:varchar(20);default:'pending'" json:"status"`
 	ProfilePhoto string `json:"profile_photo"`
 }
 
