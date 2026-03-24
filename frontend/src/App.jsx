@@ -12,6 +12,7 @@ import StudentDashboard from './pages/student/Dashboard'
 import SupervisorDashboard from './pages/supervisor/Dashboard'
 import CoordinatorDashboard from './pages/coordinator/Dashboard'
 import FacultyDashboard from './pages/faculty/Dashboard'
+import UIKit from './pages/UIKit'
 
 // Role-based redirect
 function RoleRedirect({ user }) {
@@ -46,6 +47,7 @@ export default function App() {
         {/* Public */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/ui-kit" element={<UIKit />} />
 
         {/* Auto redirect based on role */}
         <Route path="/" element={

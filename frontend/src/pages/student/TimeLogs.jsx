@@ -222,18 +222,18 @@ export default function TimeLogs() {
                 {activeLog && <div className="mb-6" />}
 
                 {/* Clock In / Clock Out CTA */}
-                <div className="flex justify-center">
+                <div className="flex justify-center px-4 sm:px-0">
                     {activeLog ? (
                         // ── Clock Out button ─────────────────────────────────────────
                         <button
                             id="btn-clock-out"
                             onClick={handleClockOut}
                             disabled={clockBusy}
-                            className="relative group"
+                            className="relative group w-full sm:w-auto"
                         >
                             {/* Pulsing ring */}
                             <span className="absolute inset-0 rounded-full bg-red-500/20 animate-ping" />
-                            <span className={`relative flex items-center gap-3 px-12 py-4 rounded-full text-base font-bold
+                            <span className={`relative flex items-center justify-center gap-3 w-full sm:w-auto px-12 py-4 rounded-full text-base font-bold
                                bg-gradient-to-r from-red-600 to-rose-600 text-white
                                shadow-xl shadow-red-900/50 transition-all duration-200
                                ${clockBusy ? 'opacity-70 scale-95' : 'hover:scale-105 hover:shadow-red-800/60'}`}>
@@ -250,9 +250,9 @@ export default function TimeLogs() {
                             id="btn-clock-in"
                             onClick={handleClockIn}
                             disabled={clockBusy}
-                            className="relative group"
+                            className="relative group w-full sm:w-auto"
                         >
-                            <span className={`relative flex items-center gap-3 px-12 py-4 rounded-full text-base font-bold
+                            <span className={`relative flex items-center justify-center gap-3 w-full sm:w-auto px-12 py-4 rounded-full text-base font-bold
                                bg-gradient-to-r from-emerald-600 to-green-500 text-white
                                shadow-xl shadow-emerald-900/50 transition-all duration-200
                                ${clockBusy ? 'opacity-70 scale-95' : 'hover:scale-105 hover:shadow-emerald-800/60'}`}>

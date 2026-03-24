@@ -71,14 +71,14 @@ export default function Sidebar({ open, onClose }) {
             {/* Mobile overlay */}
             {open && (
                 <div
-                    className="fixed inset-0 z-30 bg-black/60 backdrop-blur-sm lg:hidden"
+                    className="fixed inset-0 z-30 bg-black/60 backdrop-blur-sm md:hidden"
                     onClick={onClose}
                 />
             )}
 
             {/* Sidebar panel */}
             <aside
-                className={`sidebar ${open ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
+                className={`sidebar ${open ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}
             >
                 {/* Logo / Brand */}
                 <div className="flex items-center gap-3 px-5 py-5 border-b border-slate-800">
@@ -93,7 +93,7 @@ export default function Sidebar({ open, onClose }) {
                     {/* Close on mobile */}
                     <button
                         onClick={onClose}
-                        className="lg:hidden w-7 h-7 flex items-center justify-center rounded-lg
+                        className="md:hidden w-7 h-7 flex items-center justify-center rounded-lg
                        text-slate-500 hover:text-white hover:bg-slate-800 transition-colors"
                     >
                         <IconX className="w-4 h-4" />

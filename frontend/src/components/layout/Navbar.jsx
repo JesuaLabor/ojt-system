@@ -46,7 +46,7 @@ export default function Navbar({ onMenuClick }) {
                 <button
                     id="sidebar-toggle"
                     onClick={onMenuClick}
-                    className="lg:hidden w-9 h-9 flex items-center justify-center rounded-xl
+                    className="md:hidden w-9 h-9 flex items-center justify-center rounded-xl
                      bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700
                      transition-colors"
                     aria-label="Toggle menu"

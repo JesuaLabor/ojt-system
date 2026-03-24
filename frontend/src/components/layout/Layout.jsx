@@ -10,10 +10,10 @@ export default function Layout({ children }) {
             {/* Sidebar — fixed on desktop, slide-in on mobile */}
             <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-            {/* Main area (offset by sidebar width on lg+) */}
-            <div className="flex-1 flex flex-col lg:ml-[260px] min-w-0">
+            {/* Main area (offset by sidebar width on md+) */}
+            <div className="flex-1 flex flex-col md:ml-[260px] min-w-0">
                 <Navbar onMenuClick={() => setSidebarOpen(true)} />
-                <main className="flex-1 p-5 lg:p-7 fade-in">
+                <main className="flex-1 p-5 md:p-7 fade-in">
                     {children}
                 </main>
             </div>
