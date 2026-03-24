@@ -92,6 +92,14 @@ func RegisterRoutes(r *gin.Engine) {
 		protected.POST("/documents", controllers.UploadDocument) // POST /api/documents
 		protected.GET("/documents", controllers.GetMyDocuments)  // GET  /api/documents
 
+		// ── Notifications ─────────────────────────────────────────────────────
+		notifications := protected.Group("/notifications")
+		{
+			notifications.GET("/", controllers.GetMyNotifications)            // GET   /api/notifications
+			notifications.PATCH("/:id/read", controllers.MarkNotificationRead) // PATCH /api/notifications/:id/read
+			notifications.PATCH("/read-all", controllers.MarkAllNotificationsReadGlobal) // PATCH /api/notifications/read-all
+		}
+
 		// ── Supervisor ────────────────────────────────────────────────────────
 		supervisor := protected.Group("/supervisor")
 		supervisor.Use(middleware.RoleMiddleware("supervisor"))

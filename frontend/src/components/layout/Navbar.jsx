@@ -1,5 +1,6 @@
 import { useLocation } from 'react-router-dom'
 import useAuthStore from '../../store/authStore'
+import NotificationsDropdown from './NotificationsDropdown'
 
 // Map route segments to readable breadcrumb names
 const ROUTE_LABELS = {
@@ -57,7 +58,7 @@ export default function Navbar({ onMenuClick }) {
                 <Breadcrumbs />
             </div>
 
-            {/* Right: Date/Time + User avatar */}
+            {/* Right: Date/Time + Notifications + User avatar */}
             <div className="flex items-center gap-4">
                 {/* Clock */}
                 <div className="hidden sm:flex flex-col items-end">
@@ -67,6 +68,9 @@ export default function Navbar({ onMenuClick }) {
 
                 {/* Divider */}
                 <div className="w-px h-8 bg-slate-800 hidden sm:block" />
+
+                {/* Notifications Bell Dropdown */}
+                <NotificationsDropdown />
 
                 {/* User avatar pill */}
                 <div className="flex items-center gap-2.5 bg-slate-800/60 border border-slate-700/60
