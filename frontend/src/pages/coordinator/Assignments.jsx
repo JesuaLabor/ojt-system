@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import toast from 'react-hot-toast'
 import api from '../../services/api'
 import { format } from 'date-fns'
@@ -205,139 +206,139 @@ export default function CoordinatorAssignments() {
             </div>
 
             {/* Create/Edit Modal */}
-            {showCreate && (
+            {showCreate && createPortal(
                 <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="absolute inset-0" onClick={() => setShowCreate(false)} />
                     <div className="flex min-h-full items-center justify-center p-4">
-                    <form onSubmit={handleSubmit} className="relative bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-lg animate-in zoom-in-95 duration-200 my-4">
-                        <div className="px-6 py-5 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
-                            <h2 className="text-lg font-bold text-white">{editAssignment ? 'Edit Assignment' : 'Create New Assignment'}</h2>
-                            <button type="button" onClick={() => setShowCreate(false)} className="text-slate-500 hover:text-white transition"><IconX /></button>
-                        </div>
-
-                        <div className="p-6 space-y-4">
-                            <div className="input-group">
-                                <label className="input-label">Student</label>
-                                <select
-                                    name="student_id"
-                                    value={formData.student_id}
-                                    onChange={handleInputChange}
-                                    required
-                                    disabled={!!editAssignment} // Can't swap student easily once created, better to recreate
-                                    className={`input ${editAssignment ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                >
-                                    <option value="" disabled>Select Student</option>
-                                    {editAssignment && (
-                                        <option value={editAssignment.student_id}>{editAssignment.student_name}</option>
-                                    )}
-                                    {options.students.map(s => (
-                                        <option key={s.id} value={s.id}>{s.name}</option>
-                                    ))}
-                                </select>
+                        <form onSubmit={handleSubmit} className="relative bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-lg animate-in zoom-in-95 duration-200 my-4">
+                            <div className="px-6 py-5 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
+                                <h2 className="text-lg font-bold text-white">{editAssignment ? 'Edit Assignment' : 'Create New Assignment'}</h2>
+                                <button type="button" onClick={() => setShowCreate(false)} className="text-slate-500 hover:text-white transition"><IconX /></button>
                             </div>
 
-                            <div className="input-group">
-                                <label className="input-label">Company Name</label>
-                                <select
-                                    name="company_name"
-                                    value={formData.company_name}
-                                    onChange={handleInputChange}
-                                    required
-                                    className="input"
-                                >
-                                    <option value="" disabled>Select Company</option>
-                                    {options.companies.map(c => (
-                                        <option key={c.id} value={c.name}>{c.name}</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div className="input-group">
-                                <label className="input-label">Assigned Supervisor</label>
-                                <select
-                                    name="supervisor_id"
-                                    value={formData.supervisor_id}
-                                    onChange={handleInputChange}
-                                    required
-                                    className="input"
-                                >
-                                    <option value="" disabled>Select Supervisor</option>
-                                    {options.supervisors.map(s => (
-                                        <option key={s.id} value={s.id}>{s.name}</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div className="input-group">
-                                <label className="input-label">Required Hours</label>
-                                <input
-                                    type="number"
-                                    name="required_hours"
-                                    value={formData.required_hours}
-                                    onChange={handleInputChange}
-                                    required
-                                    min="1"
-                                    className="input"
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="p-6 space-y-4">
                                 <div className="input-group">
-                                    <label className="input-label">Start Date</label>
-                                    <input
-                                        type="date"
-                                        name="start_date"
-                                        value={formData.start_date}
-                                        onChange={handleInputChange}
-                                        required
-                                        className="input"
-                                    />
-                                </div>
-                                <div className="input-group">
-                                    <label className="input-label">End Date</label>
-                                    <input
-                                        type="date"
-                                        name="end_date"
-                                        value={formData.end_date}
-                                        onChange={handleInputChange}
-                                        required
-                                        className="input"
-                                    />
-                                </div>
-                            </div>
-
-                            {editAssignment && (
-                                <div className="input-group pt-2">
-                                    <label className="input-label">Status</label>
+                                    <label className="input-label">Student</label>
                                     <select
-                                        name="status"
-                                        value={formData.status}
+                                        name="student_id"
+                                        value={formData.student_id}
+                                        onChange={handleInputChange}
+                                        required
+                                        disabled={!!editAssignment} // Can't swap student easily once created, better to recreate
+                                        className={`input ${editAssignment ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    >
+                                        <option value="" disabled>Select Student</option>
+                                        {editAssignment && (
+                                            <option value={editAssignment.student_id}>{editAssignment.student_name}</option>
+                                        )}
+                                        {options.students.map(s => (
+                                            <option key={s.id} value={s.id}>{s.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div className="input-group">
+                                    <label className="input-label">Company Name</label>
+                                    <select
+                                        name="company_name"
+                                        value={formData.company_name}
                                         onChange={handleInputChange}
                                         required
                                         className="input"
                                     >
-                                        <option value="active">Active</option>
-                                        <option value="withdrawn">Withdrawn</option>
-                                        <option value="completed">Completed</option>
+                                        <option value="" disabled>Select Company</option>
+                                        {options.companies.map(c => (
+                                            <option key={c.id} value={c.name}>{c.name}</option>
+                                        ))}
                                     </select>
                                 </div>
-                            )}
-                        </div>
 
-                        <div className="px-6 py-4 border-t border-slate-800 bg-slate-900/50 flex justify-end gap-3">
-                            <button type="button" onClick={() => setShowCreate(false)} className="btn btn-ghost text-sm">Cancel</button>
-                            <button type="submit" disabled={submitting} className="btn bg-orange-600 hover:bg-orange-500 text-white text-sm">
-                                {submitting ? <span className="spinner w-4 h-4 mr-2" /> : null}
-                                {editAssignment ? 'Save Changes' : 'Create Assignment'}
-                            </button>
-                        </div>
-                    </form>
+                                <div className="input-group">
+                                    <label className="input-label">Assigned Supervisor</label>
+                                    <select
+                                        name="supervisor_id"
+                                        value={formData.supervisor_id}
+                                        onChange={handleInputChange}
+                                        required
+                                        className="input"
+                                    >
+                                        <option value="" disabled>Select Supervisor</option>
+                                        {options.supervisors.map(s => (
+                                            <option key={s.id} value={s.id}>{s.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div className="input-group">
+                                    <label className="input-label">Required Hours</label>
+                                    <input
+                                        type="number"
+                                        name="required_hours"
+                                        value={formData.required_hours}
+                                        onChange={handleInputChange}
+                                        required
+                                        min="1"
+                                        className="input"
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="input-group">
+                                        <label className="input-label">Start Date</label>
+                                        <input
+                                            type="date"
+                                            name="start_date"
+                                            value={formData.start_date}
+                                            onChange={handleInputChange}
+                                            required
+                                            className="input"
+                                        />
+                                    </div>
+                                    <div className="input-group">
+                                        <label className="input-label">End Date</label>
+                                        <input
+                                            type="date"
+                                            name="end_date"
+                                            value={formData.end_date}
+                                            onChange={handleInputChange}
+                                            required
+                                            className="input"
+                                        />
+                                    </div>
+                                </div>
+
+                                {editAssignment && (
+                                    <div className="input-group pt-2">
+                                        <label className="input-label">Status</label>
+                                        <select
+                                            name="status"
+                                            value={formData.status}
+                                            onChange={handleInputChange}
+                                            required
+                                            className="input"
+                                        >
+                                            <option value="active">Active</option>
+                                            <option value="withdrawn">Withdrawn</option>
+                                            <option value="completed">Completed</option>
+                                        </select>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="px-6 py-4 border-t border-slate-800 bg-slate-900/50 flex justify-end gap-3">
+                                <button type="button" onClick={() => setShowCreate(false)} className="btn btn-ghost text-sm">Cancel</button>
+                                <button type="submit" disabled={submitting} className="btn bg-orange-600 hover:bg-orange-500 text-white text-sm">
+                                    {submitting ? <span className="spinner w-4 h-4 mr-2" /> : null}
+                                    {editAssignment ? 'Save Changes' : 'Create Assignment'}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
-            )}
+                , document.body)}
 
             {/* Delete Confirmation Dialog */}
-            {deleteId && (
+            {deleteId && createPortal(
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="absolute inset-0" onClick={() => setDeleteId(null)} />
                     <div className="relative bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden p-6 text-center animate-in zoom-in-95 duration-200">
@@ -352,7 +353,7 @@ export default function CoordinatorAssignments() {
                         </div>
                     </div>
                 </div>
-            )}
+                , document.body)}
         </div>
     )
 }
