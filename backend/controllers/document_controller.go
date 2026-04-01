@@ -102,3 +102,104 @@ func GetMyDocuments(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"documents": resp})
 }
+
+// ─── Coordinator Document Approvals ────────────────────────────────────────
+
+// GetAllDocuments returns all documents (with optional status filter) for coordinators
+func GetAllDocuments(c *gin.Context) {
+	status := c.Query("status")
+	var documents []models.Document
+	query := config.DB.Preload("Student")
+
+	if status != "" {
+		query = query.Where("status = ?", status)
+	}
+
+	query.Order("created_at desc").Find(&documents)
+
+	// Format response to match frontend expectations
+	type DocResponse struct {
+		ID              uint      `json:"id"`
+		StudentName     string    `json:"student_name"`
+		DocumentType    string    `json:"document_type"`
+		FileURL         string    `json:"file_url"`
+		Status          string    `json:"status"`
+		CreatedAt       time.Time `json:"created_at"`
+		RejectionReason string    `json:"rejection_reason"`
+	}
+
+	var resp []DocResponse
+	for _, d := range documents {
+		studentName := "Unknown Student"
+		if d.Student.Name != "" {
+			studentName = d.Student.Name
+		}
+		resp = append(resp, DocResponse{
+			ID:              d.ID,
+			StudentName:     studentName,
+			DocumentType:    d.Type,
+			FileURL:         d.FileURL,
+			Status:          d.Status,
+			CreatedAt:       d.CreatedAt,
+			RejectionReason: d.RejectionReason,
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{"documents": resp})
+}
+
+// ApproveDocument approves a student document
+func ApproveDocument(c *gin.Context) {
+	id := c.Param("id")
+
+	var doc models.Document
+	if err := config.DB.First(&doc, id).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Document not found"})
+		return
+	}
+
+	doc.Status = "approved"
+	doc.RejectionReason = "" // Clear rejection reason if previously rejected
+	config.DB.Save(&doc)
+
+	// Create notification for the student
+	config.DB.Create(&models.Notification{
+		UserID:  doc.StudentID,
+		Message: fmt.Sprintf("Your %s document has been approved.", doc.Type),
+		Link:    "/student/documents",
+	})
+
+	c.JSON(http.StatusOK, gin.H{"message": "Document approved", "status": doc.Status})
+}
+
+// RejectDocument rejects a student document with a reason
+func RejectDocument(c *gin.Context) {
+	id := c.Param("id")
+
+	var req struct {
+		Reason string `json:"reason" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Rejection reason is required"})
+		return
+	}
+
+	var doc models.Document
+	if err := config.DB.First(&doc, id).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Document not found"})
+		return
+	}
+
+	doc.Status = "rejected"
+	doc.RejectionReason = req.Reason
+	config.DB.Save(&doc)
+
+	// Create notification for the student
+	config.DB.Create(&models.Notification{
+		UserID:  doc.StudentID,
+		Message: fmt.Sprintf("Your %s document was rejected. Reason: %s", doc.Type, req.Reason),
+		Link:    "/student/documents",
+	})
+
+	c.JSON(http.StatusOK, gin.H{"message": "Document rejected", "status": doc.Status})
+}

@@ -8,6 +8,7 @@ import CoordinatorTimeLogs from './TimeLogs'
 import CoordinatorStudents from './Students'
 import CoordinatorEvaluations from './Evaluations'
 import UserApprovals from './UserApprovals'
+import CoordinatorDocuments from './Documents'
 
 // Placeholder shells (to be built in later phases)
 const Placeholder = ({ title }) => (
@@ -27,6 +28,7 @@ export default function CoordinatorDashboard() {
         <Route path="approvals" element={<UserApprovals />} />
         <Route path="companies" element={<Companies />} />
         <Route path="assignments" element={<Assignments />} />
+        <Route path="documents" element={<CoordinatorDocuments />} />
         <Route path="timelogs" element={<CoordinatorTimeLogs />} />
         <Route path="evaluations" element={<CoordinatorEvaluations />} />
         <Route path="reports" element={<Reports />} />

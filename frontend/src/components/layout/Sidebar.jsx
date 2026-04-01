@@ -25,6 +25,7 @@ const NAV = {
         { to: '/coordinator/students', label: 'Students', icon: IconUsers },
         { to: '/coordinator/companies', label: 'Companies', icon: IconOfficeBuilding },
         { to: '/coordinator/assignments', label: 'Assignments', icon: IconBriefcase },
+        { to: '/coordinator/documents', label: 'Documents', icon: IconDoc },
         { to: '/coordinator/timelogs', label: 'Time Logs', icon: IconClock },
         { to: '/coordinator/evaluations', label: 'Evaluations', icon: IconStar },
         { to: '/coordinator/reports', label: 'Reports', icon: IconChart },
