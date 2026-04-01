@@ -5,6 +5,7 @@ import (
 	"log"
 	"ojt-system/models"
 	"os"
+	"strings"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -46,8 +47,26 @@ func MigrateDB() {
 }
 
 func SetupCORS(r *gin.Engine) {
+	allowedOrigins := []string{
+		"http://localhost:5173",
+		"http://127.0.0.1:5173",
+		"http://localhost:5174",
+		"http://127.0.0.1:5174",
+	}
+
+	// Support comma-separated FRONTEND_URL env var, e.g.:
+	// FRONTEND_URL=https://ojt-system.vercel.app,https://ojt-system-git-develop.vercel.app
+	if frontendURL := os.Getenv("FRONTEND_URL"); frontendURL != "" {
+		for _, url := range strings.Split(frontendURL, ",") {
+			url = strings.TrimSpace(url)
+			if url != "" {
+				allowedOrigins = append(allowedOrigins, url)
+			}
+		}
+	}
+
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:5174", "http://127.0.0.1:5174", os.Getenv("FRONTEND_URL")},
+		AllowOrigins:     allowedOrigins,
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization", "X-Requested-With"},
 		ExposeHeaders:    []string{"Content-Length"},
