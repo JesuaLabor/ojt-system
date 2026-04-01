@@ -1,15 +1,10 @@
 {
-  "version": 2,
-  "builds": [
+  "buildCommand": "cd frontend && npm install && npm run build",
+  "outputDirectory": "frontend/dist",
+  "rewrites": [
     {
-      "src": "backend/cmd/api/main.go",
-      "use": "@vercel/go"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "backend/cmd/api/main.go"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
