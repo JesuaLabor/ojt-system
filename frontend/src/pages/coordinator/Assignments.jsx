@@ -206,9 +206,10 @@ export default function CoordinatorAssignments() {
 
             {/* Create/Edit Modal */}
             {showCreate && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto">
+                <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="absolute inset-0" onClick={() => setShowCreate(false)} />
-                    <form onSubmit={handleSubmit} className="relative bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200 my-auto">
+                    <div className="flex min-h-full items-center justify-center p-4">
+                    <form onSubmit={handleSubmit} className="relative bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-lg animate-in zoom-in-95 duration-200 my-4">
                         <div className="px-6 py-5 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
                             <h2 className="text-lg font-bold text-white">{editAssignment ? 'Edit Assignment' : 'Create New Assignment'}</h2>
                             <button type="button" onClick={() => setShowCreate(false)} className="text-slate-500 hover:text-white transition"><IconX /></button>
@@ -331,6 +332,7 @@ export default function CoordinatorAssignments() {
                             </button>
                         </div>
                     </form>
+                    </div>
                 </div>
             )}
 
