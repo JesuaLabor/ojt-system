@@ -115,6 +115,8 @@ func GetCoordinatorStudents(c *gin.Context) {
 		})
 	}
 
+	//test
+
 	c.JSON(http.StatusOK, gin.H{
 		"summary": gin.H{
 			"total_students":      totalStudents,
