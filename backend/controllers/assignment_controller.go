@@ -116,12 +116,21 @@ func GetAssignmentOptions(c *gin.Context) {
 		supervisorOptions = append(supervisorOptions, Option{ID: s.ID, Name: s.Name})
 	}
 
+	var companies []models.Company
+	config.DB.Where("status = 'active'").Order("name asc").Find(&companies)
+	var companyOptions []Option
+	for _, comp := range companies {
+		companyOptions = append(companyOptions, Option{ID: comp.ID, Name: comp.Name})
+	}
+
 	if availableStudents == nil { availableStudents = []Option{} }
 	if supervisorOptions == nil { supervisorOptions = []Option{} }
+	if companyOptions == nil { companyOptions = []Option{} }
 
 	c.JSON(http.StatusOK, gin.H{
 		"students":    availableStudents,
 		"supervisors": supervisorOptions,
+		"companies":   companyOptions,
 	})
 }
 

@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom'
 import Layout from '../../components/layout/Layout'
 import Overview from './Overview'
 import Assignments from './Assignments'
+import Companies from './Companies'
 import Reports from './Reports'
 import CoordinatorTimeLogs from './TimeLogs'
 import CoordinatorStudents from './Students'
@@ -24,6 +25,7 @@ export default function CoordinatorDashboard() {
         <Route index element={<Overview />} />
         <Route path="students" element={<CoordinatorStudents />} />
         <Route path="approvals" element={<UserApprovals />} />
+        <Route path="companies" element={<Companies />} />
         <Route path="assignments" element={<Assignments />} />
         <Route path="timelogs" element={<CoordinatorTimeLogs />} />
         <Route path="evaluations" element={<CoordinatorEvaluations />} />

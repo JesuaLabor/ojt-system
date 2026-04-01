@@ -6,10 +6,11 @@ import { format } from 'date-fns'
 const IconEdit = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
 const IconDelete = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
 const IconPlus = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+const IconX = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
 
 export default function CoordinatorAssignments() {
     const [assignments, setAssignments] = useState([])
-    const [options, setOptions] = useState({ students: [], supervisors: [] })
+    const [options, setOptions] = useState({ students: [], supervisors: [], companies: [] })
     const [loading, setLoading] = useState(true)
     const [submitting, setSubmitting] = useState(false)
 
@@ -37,7 +38,7 @@ export default function CoordinatorAssignments() {
                 api.get('/assignments/options')
             ])
             setAssignments(assRes.data?.assignments || [])
-            setOptions(optRes.data || { students: [], supervisors: [] })
+            setOptions(optRes.data || { students: [], supervisors: [], companies: [] })
         } catch (err) {
             console.error(err)
             toast.error('Failed to load assignments data')
@@ -236,15 +237,18 @@ export default function CoordinatorAssignments() {
 
                             <div className="input-group">
                                 <label className="input-label">Company Name</label>
-                                <input 
-                                    type="text" 
+                                <select 
                                     name="company_name" 
                                     value={formData.company_name} 
                                     onChange={handleInputChange} 
                                     required 
-                                    placeholder="e.g. Acme Corp" 
-                                    className="input" 
-                                />
+                                    className="input"
+                                >
+                                    <option value="" disabled>Select Company</option>
+                                    {options.companies.map(c => (
+                                        <option key={c.id} value={c.name}>{c.name}</option>
+                                    ))}
+                                </select>
                             </div>
 
                             <div className="input-group">

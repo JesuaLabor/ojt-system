@@ -17,6 +17,17 @@ type User struct {
 	ProfilePhoto string `json:"profile_photo"`
 }
 
+// ─── Company ────────────────────────────────────────────
+type Company struct {
+	gorm.Model
+	Name          string `gorm:"not null" json:"name"`
+	Address       string `json:"address"`
+	ContactPerson string `json:"contact_person"`
+	ContactEmail  string `json:"contact_email"`
+	ContactPhone  string `json:"contact_phone"`
+	Status        string `gorm:"type:varchar(20);default:'active'" json:"status"`
+}
+
 // ─── OJT Assignment ─────────────────────────────────────
 type OJTAssignment struct {
 	gorm.Model

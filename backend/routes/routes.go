@@ -142,5 +142,15 @@ func RegisterRoutes(r *gin.Engine) {
 			assignments.PATCH("/:id", controllers.UpdateAssignment)    // PATCH  /api/assignments/:id
 			assignments.DELETE("/:id", controllers.DeleteAssignment)   // DELETE /api/assignments/:id
 		}
+
+		// ── Companies ─────────────────────────────────────────────────────────
+		companies := protected.Group("/companies")
+		companies.Use(middleware.RoleMiddleware("coordinator")) // Only coordinators manage companies
+		{
+			companies.GET("/", controllers.GetCompanies)       // GET    /api/companies
+			companies.POST("/", controllers.CreateCompany)      // POST   /api/companies
+			companies.PATCH("/:id", controllers.UpdateCompany) // PATCH  /api/companies/:id
+			companies.DELETE("/:id", controllers.DeleteCompany) // DELETE /api/companies/:id
+		}
 	}
 }
