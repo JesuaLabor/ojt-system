@@ -1,0 +1,3 @@
+backend/
+*.sh
+docker-compose.yml
