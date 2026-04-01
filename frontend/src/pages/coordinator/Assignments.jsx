@@ -53,9 +53,9 @@ export default function CoordinatorAssignments() {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target
-        setFormData(prev => ({ 
-            ...prev, 
-            [name]: name === 'student_id' || name === 'supervisor_id' || name === 'required_hours' ? Number(value) : value 
+        setFormData(prev => ({
+            ...prev,
+            [name]: name === 'student_id' || name === 'supervisor_id' || name === 'required_hours' ? Number(value) : value
         }))
     }
 
@@ -92,7 +92,7 @@ export default function CoordinatorAssignments() {
                 toast.success('Assignment created successfully')
             }
             setShowCreate(false)
-            fetchData() 
+            fetchData()
         } catch (err) {
             toast.error(err.response?.data?.error || 'Operation failed')
         } finally {
@@ -119,7 +119,7 @@ export default function CoordinatorAssignments() {
                     <h1 className="page-title">OJT Assignments</h1>
                     <p className="page-sub mt-1">Manage corporate deployments and supervisor delegations.</p>
                 </div>
-                <button 
+                <button
                     onClick={openCreate}
                     className="btn bg-orange-600 hover:bg-orange-500 text-white shadow-lg shadow-orange-900/30 font-medium whitespace-nowrap"
                 >
@@ -180,14 +180,14 @@ export default function CoordinatorAssignments() {
                                         </td>
                                         <td className="text-right">
                                             <div className="flex justify-end items-center gap-2">
-                                                <button 
+                                                <button
                                                     onClick={() => openEdit(a)}
                                                     className="w-7 h-7 flex items-center justify-center rounded-md bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition"
                                                     title="Edit Assignment"
                                                 >
                                                     <IconEdit />
                                                 </button>
-                                                <button 
+                                                <button
                                                     onClick={() => setDeleteId(a.id)}
                                                     className="w-7 h-7 flex items-center justify-center rounded-md bg-red-500/10 text-red-400 hover:text-white hover:bg-red-500 transition"
                                                     title="Delete Assignment"
@@ -217,11 +217,11 @@ export default function CoordinatorAssignments() {
                         <div className="p-6 space-y-4">
                             <div className="input-group">
                                 <label className="input-label">Student</label>
-                                <select 
-                                    name="student_id" 
-                                    value={formData.student_id} 
-                                    onChange={handleInputChange} 
-                                    required 
+                                <select
+                                    name="student_id"
+                                    value={formData.student_id}
+                                    onChange={handleInputChange}
+                                    required
                                     disabled={!!editAssignment} // Can't swap student easily once created, better to recreate
                                     className={`input ${editAssignment ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 >
@@ -237,11 +237,11 @@ export default function CoordinatorAssignments() {
 
                             <div className="input-group">
                                 <label className="input-label">Company Name</label>
-                                <select 
-                                    name="company_name" 
-                                    value={formData.company_name} 
-                                    onChange={handleInputChange} 
-                                    required 
+                                <select
+                                    name="company_name"
+                                    value={formData.company_name}
+                                    onChange={handleInputChange}
+                                    required
                                     className="input"
                                 >
                                     <option value="" disabled>Select Company</option>
@@ -253,10 +253,10 @@ export default function CoordinatorAssignments() {
 
                             <div className="input-group">
                                 <label className="input-label">Assigned Supervisor</label>
-                                <select 
-                                    name="supervisor_id" 
-                                    value={formData.supervisor_id} 
-                                    onChange={handleInputChange} 
+                                <select
+                                    name="supervisor_id"
+                                    value={formData.supervisor_id}
+                                    onChange={handleInputChange}
                                     required
                                     className="input"
                                 >
@@ -269,49 +269,49 @@ export default function CoordinatorAssignments() {
 
                             <div className="input-group">
                                 <label className="input-label">Required Hours</label>
-                                <input 
-                                    type="number" 
-                                    name="required_hours" 
-                                    value={formData.required_hours} 
-                                    onChange={handleInputChange} 
+                                <input
+                                    type="number"
+                                    name="required_hours"
+                                    value={formData.required_hours}
+                                    onChange={handleInputChange}
                                     required
                                     min="1"
-                                    className="input" 
+                                    className="input"
                                 />
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="input-group">
                                     <label className="input-label">Start Date</label>
-                                    <input 
-                                        type="date" 
-                                        name="start_date" 
-                                        value={formData.start_date} 
-                                        onChange={handleInputChange} 
-                                        required 
-                                        className="input" 
+                                    <input
+                                        type="date"
+                                        name="start_date"
+                                        value={formData.start_date}
+                                        onChange={handleInputChange}
+                                        required
+                                        className="input"
                                     />
                                 </div>
                                 <div className="input-group">
                                     <label className="input-label">End Date</label>
-                                    <input 
-                                        type="date" 
-                                        name="end_date" 
-                                        value={formData.end_date} 
-                                        onChange={handleInputChange} 
-                                        required 
-                                        className="input" 
+                                    <input
+                                        type="date"
+                                        name="end_date"
+                                        value={formData.end_date}
+                                        onChange={handleInputChange}
+                                        required
+                                        className="input"
                                     />
                                 </div>
                             </div>
-                            
+
                             {editAssignment && (
                                 <div className="input-group pt-2">
                                     <label className="input-label">Status</label>
-                                    <select 
-                                        name="status" 
-                                        value={formData.status} 
-                                        onChange={handleInputChange} 
+                                    <select
+                                        name="status"
+                                        value={formData.status}
+                                        onChange={handleInputChange}
                                         required
                                         className="input"
                                     >
