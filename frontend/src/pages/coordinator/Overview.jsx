@@ -293,9 +293,17 @@ export default function CoordinatorOverview() {
                                     >
                                         <td>
                                             <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-lg bg-orange-500/20 text-orange-400 flex items-center justify-center font-bold text-xs flex-shrink-0">
-                                                    {student.student_name.charAt(0)}
-                                                </div>
+                                                {student.profile_photo ? (
+                                                    <img
+                                                        src={student.profile_photo}
+                                                        alt="Avatar"
+                                                        className="w-8 h-8 rounded-lg object-cover flex-shrink-0 border border-slate-700/50"
+                                                    />
+                                                ) : (
+                                                    <div className="w-8 h-8 rounded-lg bg-orange-500/20 text-orange-400 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                                                        {student.student_name.charAt(0)}
+                                                    </div>
+                                                )}
                                                 <div>
                                                     <p className="text-sm font-semibold text-white group-hover:text-orange-400 transition-colors">{student.student_name}</p>
                                                     <p className="text-[11px] text-slate-500 truncate max-w-[150px]">{student.student_email}</p>
