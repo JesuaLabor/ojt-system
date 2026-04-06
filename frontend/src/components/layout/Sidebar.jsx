@@ -2,6 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import useAuthStore from '../../store/authStore'
 import api from '../../services/api'
+import ConfirmModal from '../ui/ConfirmModal'
 import logo from '../../assets/ojt_logo.png'
 
 // ── Role-based navigation config ────────────────────────────────────────────
@@ -56,6 +57,7 @@ export default function Sidebar({ open, onClose }) {
     const links = NAV[user?.role] || []
     const meta = ROLE_META[user?.role] || {}
     const [badges, setBadges] = useState({})
+    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
 
     // Fetch badges
     useEffect(() => {
@@ -76,12 +78,27 @@ export default function Sidebar({ open, onClose }) {
     }, [user?.role])
 
     const handleLogout = () => {
+        setShowLogoutConfirm(true)
+    }
+
+    const confirmLogout = () => {
+        setShowLogoutConfirm(false)
         logout()
         navigate('/login')
     }
 
     return (
         <>
+            {showLogoutConfirm && (
+                <ConfirmModal
+                    title="Sign Out"
+                    message="Are you sure you want to sign out? Any unsaved changes may be lost."
+                    confirmText="Sign Out"
+                    confirmStyle="bg-red-600 hover:bg-red-500"
+                    onConfirm={confirmLogout}
+                    onCancel={() => setShowLogoutConfirm(false)}
+                />
+            )}
             {/* Mobile overlay */}
             {open && (
                 <div

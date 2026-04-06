@@ -28,15 +28,39 @@ function RoleRedirect({ user }) {
   return <Navigate to={routes[user.role] || '/login'} replace />
 }
 
+// Full-screen loading splash shown while fetchMe() is in flight
+function AuthLoading() {
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      minHeight: '100vh', background: '#030712'
+    }}>
+      <div style={{
+        width: 40, height: 40, border: '3px solid #1e293b',
+        borderTop: '3px solid #14b8a6', borderRadius: '50%',
+        animation: 'spin 0.8s linear infinite'
+      }} />
+      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+    </div>
+  )
+}
+
 // Protected Route
 function PrivateRoute({ children, allowedRoles }) {
-  const { user, token } = useAuthStore()
-  if (!token) return <Navigate to="/login" replace />
-  
-  // If user is pending, they can only access waiting-room (which isn't a PrivateRoute in this logic)
-  if (user?.status === 'pending') return <Navigate to="/waiting-room" replace />
+  const { user, token, isLoading } = useAuthStore()
 
-  if (allowedRoles && !allowedRoles.includes(user?.role)) return <Navigate to="/login" replace />
+  // No token at all → go to login
+  if (!token) return <Navigate to="/login" replace />
+
+  // Token exists but user not yet fetched (e.g. page refresh) → wait
+  if (!user || isLoading) return <AuthLoading />
+
+  // Pending users go to waiting room
+  if (user.status === 'pending') return <Navigate to="/waiting-room" replace />
+
+  // Wrong role → go to login
+  if (allowedRoles && !allowedRoles.includes(user.role)) return <Navigate to="/login" replace />
+
   return children
 }
 

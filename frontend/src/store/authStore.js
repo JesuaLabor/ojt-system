@@ -21,12 +21,13 @@ const useAuthStore = create((set) => ({
   },
 
   fetchMe: async () => {
+    set({ isLoading: true })
     try {
       const res = await api.get('/me')
-      set({ user: res.data })
+      set({ user: res.data, isLoading: false })
     } catch {
       localStorage.removeItem('ojt_token')
-      set({ user: null, token: null })
+      set({ user: null, token: null, isLoading: false })
     }
   },
 }))
