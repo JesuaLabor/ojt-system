@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import api from '../../services/api'
+import Avatar from '../../components/ui/Avatar'
 
 // ── Icons ──────────────────────────────────────────────────────────────────────
 const IconSearch = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
@@ -67,17 +68,15 @@ function StudentDetailsModal({ student, onClose }) {
 
                 <div className="px-6 pb-6 relative">
                     {/* Avatar */}
-                    {student.profile_photo ? (
-                        <img
-                            src={student.profile_photo}
-                            alt={student.student_name}
-                            className="absolute -top-12 left-6 w-20 h-20 rounded-2xl object-cover border-4 border-slate-900 shadow-xl"
-                        />
-                    ) : (
-                        <div className="absolute -top-12 left-6 w-20 h-20 rounded-2xl bg-gradient-to-br from-orange-500 to-rose-600 flex items-center justify-center border-4 border-slate-900 shadow-xl">
-                            <span className="text-2xl font-black text-white">{student.student_name.charAt(0)}</span>
-                        </div>
-                    )}
+                    <Avatar
+                        photo={student.profile_photo}
+                        name={student.student_name}
+                        size="w-20 h-20"
+                        shape="rounded-2xl"
+                        gradient="from-orange-500 to-rose-600"
+                        textSize="text-2xl"
+                        className="absolute -top-12 left-6 border-4 border-slate-900 shadow-xl"
+                    />
 
                     <div className="pt-10 flex items-start justify-between">
                         <div>
@@ -301,17 +300,14 @@ export default function CoordinatorOverview() {
                                     >
                                         <td>
                                             <div className="flex items-center gap-3">
-                                                {student.profile_photo ? (
-                                                    <img
-                                                        src={student.profile_photo}
-                                                        alt="Avatar"
-                                                        className="w-8 h-8 rounded-lg object-cover flex-shrink-0 border border-slate-700/50"
-                                                    />
-                                                ) : (
-                                                    <div className="w-8 h-8 rounded-lg bg-orange-500/20 text-orange-400 flex items-center justify-center font-bold text-xs flex-shrink-0">
-                                                        {student.student_name.charAt(0)}
-                                                    </div>
-                                                )}
+                                                <Avatar
+                                                    photo={student.profile_photo}
+                                                    name={student.student_name}
+                                                    size="w-8 h-8"
+                                                    shape="rounded-lg"
+                                                    gradient="from-orange-500 to-rose-500"
+                                                    textSize="text-xs"
+                                                />
                                                 <div>
                                                     <p className="text-sm font-semibold text-white group-hover:text-orange-400 transition-colors">{student.student_name}</p>
                                                     <p className="text-[11px] text-slate-500 truncate max-w-[150px]">{student.student_email}</p>

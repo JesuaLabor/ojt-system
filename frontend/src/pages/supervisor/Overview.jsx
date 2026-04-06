@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../../services/api'
 import useAuthStore from '../../store/authStore'
+import Avatar from '../../components/ui/Avatar'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const round2 = (n) => Math.round(n * 100) / 100
@@ -72,21 +73,13 @@ function StudentCard({ student, onViewLogs, onEvaluate }) {
             {/* Header */}
             <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
-                    {student.profile_photo ? (
-                        <img
-                            src={student.profile_photo}
-                            alt="Avatar"
-                            className="w-11 h-11 rounded-full object-cover flex-shrink-0 border border-slate-700/50 shadow-lg"
-                        />
-                    ) : (
-                        <div className="w-11 h-11 rounded-full bg-gradient-to-br from-teal-500 to-cyan-600
-                                flex items-center justify-center flex-shrink-0 shadow-lg shadow-teal-900/30
-                                group-hover:shadow-teal-800/50 transition-shadow">
-                            <span className="text-white text-sm font-bold">
-                                {student.student_name?.charAt(0).toUpperCase()}
-                            </span>
-                        </div>
-                    )}
+                    <Avatar
+                        photo={student.profile_photo}
+                        name={student.student_name}
+                        size="w-11 h-11"
+                        gradient="from-teal-500 to-cyan-600"
+                        className="border border-slate-700/50 shadow-lg group-hover:shadow-teal-800/50 transition-shadow"
+                    />
                     <div className="min-w-0">
                         <p className="text-sm font-semibold text-white truncate">{student.student_name}</p>
                         <p className="text-xs text-slate-500 truncate">{student.company_name}</p>

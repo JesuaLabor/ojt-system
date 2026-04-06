@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../../services/api'
+import Avatar from '../../components/ui/Avatar'
 
 // ── Status Badge ──────────────────────────────────────────────────────────────
 function StatusBadge({ status }) {
@@ -111,20 +112,12 @@ export default function SupervisorStudents() {
                         <tr key={student.student_id} className="table-row">
                             <td className="table-cell">
                                 <div className="flex items-center gap-3">
-                                    {student.profile_photo ? (
-                                        <img 
-                                            src={student.profile_photo} 
-                                            alt="Avatar" 
-                                            className="w-10 h-10 rounded-full object-cover flex-shrink-0 border border-slate-700/50"
-                                        />
-                                    ) : (
-                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-teal-500 to-cyan-600
-                                                flex items-center justify-center flex-shrink-0">
-                                            <span className="text-white text-sm font-bold">
-                                                {student.student_name?.charAt(0).toUpperCase()}
-                                            </span>
-                                        </div>
-                                    )}
+                                    <Avatar
+                                        photo={student.profile_photo}
+                                        name={student.student_name}
+                                        gradient="from-teal-500 to-cyan-600"
+                                        className="border border-slate-700/50"
+                                    />
                                     <div>
                                         <p className="font-semibold text-white">{student.student_name}</p>
                                         <p className="text-xs text-slate-500">{student.student_email}</p>
