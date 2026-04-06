@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
 import api from '../../services/api'
@@ -14,6 +14,13 @@ export default function Profile() {
   const [avatarFile, setAvatarFile] = useState(null)
   const [avatarPreview, setAvatarPreview] = useState(user?.profile_photo || '')
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false)
+
+  // Keep avatar preview in sync with the user store (e.g. after a successful upload)
+  useEffect(() => {
+    if (!avatarFile) {
+      setAvatarPreview(user?.profile_photo || '')
+    }
+  }, [user?.profile_photo])
 
   // Password Change State
   const [passwordData, setPasswordData] = useState({
