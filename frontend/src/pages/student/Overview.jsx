@@ -8,7 +8,6 @@ import api from '../../services/api'
 import useAuthStore from '../../store/authStore'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
-const REQUIRED_HOURS = 600
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -110,6 +109,7 @@ export default function Overview() {
     const { user } = useAuthStore()
     const [logs, setLogs] = useState([])
     const [evals, setEvals] = useState([])
+    const [requiredHours, setRequiredHours] = useState(600)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
 
@@ -121,6 +121,7 @@ export default function Overview() {
                     api.get('/evaluations/me'),
                 ])
                 setLogs(logsRes.data?.logs || [])
+                setRequiredHours(logsRes.data?.required_hours || 600)
                 setEvals(evalsRes.data?.evaluations || [])
             } catch (err) {
                 setError('Failed to load dashboard data.')
@@ -136,8 +137,8 @@ export default function Overview() {
     const approvedHours = round2(logs.filter(l => l.status === 'approved').reduce((s, l) => s + l.total_hours, 0))
     const pendingHours = round2(logs.filter(l => l.status === 'pending').reduce((s, l) => s + l.total_hours, 0))
     const totalLogged = round2(approvedHours + pendingHours)
-    const remainingHours = Math.max(0, round2(REQUIRED_HOURS - approvedHours))
-    const progressPct = Math.min(100, round2((approvedHours / REQUIRED_HOURS) * 100))
+    const remainingHours = Math.max(0, round2(requiredHours - approvedHours))
+    const progressPct = Math.min(100, round2((approvedHours / requiredHours) * 100))
     const daysRemaining = Math.ceil(remainingHours / 8)
     const avgScore = avgEvalScore(evals)
     const weeklyData = getWeeklyData(logs)
@@ -202,7 +203,7 @@ export default function Overview() {
                             icon="📅"
                             value={progressPct >= 100 ? 'Done!' : `${daysRemaining}d`}
                             label="Est. Days Remaining"
-                            sub={`${remainingHours}h left of ${REQUIRED_HOURS}h`}
+                            sub={`${remainingHours}h left of ${requiredHours}h`}
                             accent="bg-cyan-500/15 text-cyan-400"
                         />
                         <StatCard
@@ -225,7 +226,7 @@ export default function Overview() {
                             <p className="text-xs text-slate-500 mt-0.5">
                                 <span className="text-indigo-400 font-semibold">{approvedHours}h</span> approved
                                 {pendingHours > 0 && <> · <span className="text-amber-400 font-semibold">{pendingHours}h</span> pending</>}
-                                {' '}· <span className="text-slate-400">{REQUIRED_HOURS}h required</span>
+                                {' '}· <span className="text-slate-400">{requiredHours}h required</span>
                             </p>
                         </div>
                         <div className="text-right">
@@ -240,7 +241,7 @@ export default function Overview() {
                         {pendingHours > 0 && (
                             <div
                                 className="absolute top-0 left-0 h-full rounded-full bg-amber-500/30"
-                                style={{ width: `${Math.min(100, round2(((approvedHours + pendingHours) / REQUIRED_HOURS) * 100))}%` }}
+                                style={{ width: `${Math.min(100, round2(((approvedHours + pendingHours) / requiredHours) * 100))}%` }}
                             />
                         )}
                         {/* Approved fill */}

@@ -163,9 +163,18 @@ func GetMyTimeLogs(c *gin.Context) {
 	var logs []models.TimeLog
 	query.Find(&logs)
 
+	var assignment models.OJTAssignment
+	config.DB.Where("student_id = ?", userID).First(&assignment)
+
+	requiredHours := 600.0
+	if assignment.RequiredHours > 0 {
+		requiredHours = assignment.RequiredHours
+	}
+
 	c.JSON(http.StatusOK, gin.H{
-		"total": len(logs),
-		"logs":  logs,
+		"total":          len(logs),
+		"logs":           logs,
+		"required_hours": requiredHours,
 	})
 }
 
