@@ -5,7 +5,7 @@ import api from '../../services/api'
 import useAuthStore from '../../store/authStore'
 
 export default function Profile() {
-  const { user, fetchMe } = useAuthStore()
+  const { user, fetchMe, updateUser } = useAuthStore()
 
   // Profile Update State
   const [profileData, setProfileData] = useState({
@@ -60,9 +60,15 @@ export default function Profile() {
       if (avatarFile) {
         const formData = new FormData()
         formData.append('file', avatarFile)
-        await api.post('/me/avatar', formData, {
+        const avatarRes = await api.post('/me/avatar', formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         })
+        // Immediately apply the returned Cloudinary URL — don't wait for fetchMe
+        const newPhotoURL = avatarRes.data?.profile_photo
+        if (newPhotoURL) {
+          updateUser({ profile_photo: newPhotoURL })
+          setAvatarPreview(newPhotoURL)
+        }
       }
 
       await fetchMe() // update local user state

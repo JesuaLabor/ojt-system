@@ -57,5 +57,9 @@ func UploadImage(file multipart.File, publicID string, folder string) (string, e
 		return "", fmt.Errorf("cloudinary upload failed: %w", err)
 	}
 
+	if resp.SecureURL == "" {
+		return "", fmt.Errorf("cloudinary returned an empty URL — check credentials and upload settings")
+	}
+
 	return resp.SecureURL, nil
 }

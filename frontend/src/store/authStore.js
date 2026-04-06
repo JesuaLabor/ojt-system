@@ -20,6 +20,9 @@ const useAuthStore = create((set) => ({
     set({ user: null, token: null })
   },
 
+  // Patch specific fields in the user object without a full re-fetch
+  updateUser: (updates) => set(state => ({ user: { ...state.user, ...updates } })),
+
   fetchMe: async () => {
     set({ isLoading: true })
     try {
