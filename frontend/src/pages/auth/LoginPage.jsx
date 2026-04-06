@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import useAuthStore from '../../store/authStore'
+import logo from '../../assets/ojt_logo.png'
 
 export default function LoginPage() {
   const [form, setForm] = useState({ email: '', password: '' })
@@ -37,9 +38,12 @@ export default function LoginPage() {
       <div className="auth-card relative fade-in">
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600
-                          flex items-center justify-center shadow-2xl shadow-indigo-900/60 mb-4">
-            <span className="text-white font-extrabold text-2xl">O</span>
+          <div className="w-16 h-16 rounded-2xl bg-white/10 p-1 flex items-center justify-center shadow-2xl shadow-indigo-900/40 mb-4">
+            <img
+              src={logo}
+              alt="Logo"
+              className="w-full h-full object-cover rounded-xl"
+            />
           </div>
           <h1 className="text-2xl font-bold text-white">Welcome back</h1>
           <p className="text-sm text-slate-500 mt-1">Sign in to OJT Tracker</p>

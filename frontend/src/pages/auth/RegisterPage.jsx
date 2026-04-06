@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import api from '../../services/api'
+import logo from '../../assets/ojt_logo.png'
 
 const ROLES = [
   { value: 'student', label: '🎓 Student', desc: 'Track your OJT hours & evaluations' },
@@ -41,9 +42,12 @@ export default function RegisterPage() {
       <div className="auth-card relative fade-in">
         {/* Logo */}
         <div className="flex flex-col items-center mb-7">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600
-                          flex items-center justify-center shadow-2xl shadow-indigo-900/60 mb-4">
-            <span className="text-white font-extrabold text-2xl">O</span>
+          <div className="w-16 h-16 rounded-2xl bg-white/10 p-1 flex items-center justify-center shadow-2xl shadow-indigo-900/40 mb-4">
+            <img
+              src={logo}
+              alt="Logo"
+              className="w-full h-full object-cover rounded-xl"
+            />
           </div>
           <h1 className="text-2xl font-bold text-white">Create Account</h1>
           <p className="text-sm text-slate-500 mt-1">Join the OJT Tracking System</p>

@@ -2,6 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import useAuthStore from '../../store/authStore'
 import api from '../../services/api'
+import logo from '../../assets/ojt_logo.png'
 
 // ── Role-based navigation config ────────────────────────────────────────────
 const NAV = {
@@ -60,14 +61,14 @@ export default function Sidebar({ open, onClose }) {
                 .then(res => {
                     setBadges(prev => ({ ...prev, pendingApprovals: res.data?.total_pending_approvals || 0 }))
                 })
-                .catch(() => {})
+                .catch(() => { })
         }
         if (user?.role === 'coordinator') {
             api.get('/coordinator/users/pending')
                 .then(res => {
                     setBadges(prev => ({ ...prev, pendingUsers: res.data?.users?.length || 0 }))
                 })
-                .catch(() => {})
+                .catch(() => { })
         }
     }, [user?.role])
 
@@ -92,9 +93,12 @@ export default function Sidebar({ open, onClose }) {
             >
                 {/* Logo / Brand */}
                 <div className="flex items-center gap-3 px-5 py-5 border-b border-slate-800">
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-teal-600 to-cyan-600
-                          flex items-center justify-center flex-shrink-0 shadow-lg shadow-teal-900/50">
-                        <span className="text-white font-bold text-base">O</span>
+                    <div className="w-10 h-10 rounded-xl bg-white/10 p-0.5 flex items-center justify-center flex-shrink-0 shadow-lg shadow-teal-900/20">
+                        <img
+                            src={logo}
+                            alt="Logo"
+                            className="w-full h-full object-cover rounded-lg"
+                        />
                     </div>
                     <div className="flex-1 min-w-0">
                         <p className="text-sm font-bold text-white leading-none">OJT Tracker</p>
@@ -114,9 +118,9 @@ export default function Sidebar({ open, onClose }) {
                 <div className="px-4 py-3 mx-3 mt-3 rounded-xl bg-slate-800/60 border border-slate-700/50">
                     <div className="flex items-center gap-2.5">
                         {user?.profile_photo ? (
-                            <img 
-                                src={user.profile_photo} 
-                                alt="Avatar" 
+                            <img
+                                src={user.profile_photo}
+                                alt="Avatar"
                                 className="w-8 h-8 rounded-full object-cover flex-shrink-0 border border-slate-600/50"
                             />
                         ) : (
