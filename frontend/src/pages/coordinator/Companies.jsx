@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import toast from 'react-hot-toast'
 import api from '../../services/api'
 
@@ -81,7 +82,7 @@ export default function CoordinatorCompanies() {
                 toast.success('Company created successfully')
             }
             setShowCreate(false)
-            fetchData() 
+            fetchData()
         } catch (err) {
             toast.error(err.response?.data?.error || 'Operation failed')
         } finally {
@@ -108,7 +109,7 @@ export default function CoordinatorCompanies() {
                     <h1 className="page-title">Partner Companies</h1>
                     <p className="page-sub mt-1">Manage corporate partners for OJT deployments.</p>
                 </div>
-                <button 
+                <button
                     onClick={openCreate}
                     className="btn bg-orange-600 hover:bg-orange-500 text-white shadow-lg shadow-orange-900/30 font-medium whitespace-nowrap"
                 >
@@ -161,13 +162,13 @@ export default function CoordinatorCompanies() {
                                         </td>
                                         <td className="text-right">
                                             <div className="flex justify-end items-center gap-2">
-                                                <button 
+                                                <button
                                                     onClick={() => openEdit(c)}
                                                     className="w-7 h-7 flex items-center justify-center rounded-md bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition"
                                                 >
                                                     <IconEdit />
                                                 </button>
-                                                <button 
+                                                <button
                                                     onClick={() => setDeleteId(c.id)}
                                                     className="w-7 h-7 flex items-center justify-center rounded-md bg-red-500/10 text-red-400 hover:text-white hover:bg-red-500 transition"
                                                 >
@@ -183,119 +184,125 @@ export default function CoordinatorCompanies() {
                 </div>
             </div>
 
-            {showCreate && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+            {/* Create/Edit Modal */}
+            {showCreate && createPortal(
+                <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="absolute inset-0" onClick={() => setShowCreate(false)} />
-                    <form onSubmit={handleSubmit} className="relative bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
-                        <div className="px-6 py-5 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
-                            <h2 className="text-lg font-bold text-white">{editCompany ? 'Edit Company' : 'Add New Company'}</h2>
-                            <button type="button" onClick={() => setShowCreate(false)} className="text-slate-500 hover:text-white transition"><IconX /></button>
-                        </div>
-
-                        <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
-                            <div className="input-group">
-                                <label className="input-label">Company Name</label>
-                                <input 
-                                    type="text" 
-                                    name="name" 
-                                    value={formData.name} 
-                                    onChange={handleInputChange} 
-                                    required 
-                                    placeholder="e.g. Acme Corp" 
-                                    className="input" 
-                                />
+                    <div className="flex min-h-full items-center justify-center p-4">
+                        <form onSubmit={handleSubmit} className="relative bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-lg animate-in zoom-in-95 duration-200 my-4">
+                            <div className="px-6 py-5 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
+                                <h2 className="text-lg font-bold text-white">{editCompany ? 'Edit Company' : 'Add New Company'}</h2>
+                                <button type="button" onClick={() => setShowCreate(false)} className="text-slate-500 hover:text-white transition"><IconX /></button>
                             </div>
 
-                            <div className="input-group">
-                                <label className="input-label">Address</label>
-                                <textarea 
-                                    name="address" 
-                                    value={formData.address} 
-                                    onChange={handleInputChange} 
-                                    placeholder="Full office address" 
-                                    className="input min-h-[80px]" 
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="p-6 space-y-4">
                                 <div className="input-group">
-                                    <label className="input-label">Contact Person</label>
-                                    <input 
-                                        type="text" 
-                                        name="contact_person" 
-                                        value={formData.contact_person} 
-                                        onChange={handleInputChange} 
-                                        placeholder="Name of contact" 
-                                        className="input" 
+                                    <label className="input-label">Company Name</label>
+                                    <input
+                                        type="text"
+                                        name="name"
+                                        value={formData.name}
+                                        onChange={handleInputChange}
+                                        required
+                                        placeholder="e.g. Acme Corp"
+                                        className="input"
                                     />
                                 </div>
+
                                 <div className="input-group">
-                                    <label className="input-label">Phone Number</label>
-                                    <input 
-                                        type="text" 
-                                        name="contact_phone" 
-                                        value={formData.contact_phone} 
-                                        onChange={handleInputChange} 
-                                        placeholder="0917-000-0000" 
-                                        className="input" 
+                                    <label className="input-label">Address</label>
+                                    <textarea
+                                        name="address"
+                                        value={formData.address}
+                                        onChange={handleInputChange}
+                                        placeholder="Full office address"
+                                        className="input min-h-[80px]"
                                     />
                                 </div>
-                            </div>
-                            
-                            <div className="input-group">
-                                <label className="input-label">Email Address</label>
-                                <input 
-                                    type="email" 
-                                    name="contact_email" 
-                                    value={formData.contact_email} 
-                                    onChange={handleInputChange} 
-                                    placeholder="hr@company.com" 
-                                    className="input" 
-                                />
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="input-group">
+                                        <label className="input-label">Contact Person</label>
+                                        <input
+                                            type="text"
+                                            name="contact_person"
+                                            value={formData.contact_person}
+                                            onChange={handleInputChange}
+                                            placeholder="Name of contact"
+                                            className="input"
+                                        />
+                                    </div>
+                                    <div className="input-group">
+                                        <label className="input-label">Phone Number</label>
+                                        <input
+                                            type="text"
+                                            name="contact_phone"
+                                            value={formData.contact_phone}
+                                            onChange={handleInputChange}
+                                            placeholder="0917-000-0000"
+                                            className="input"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="input-group">
+                                    <label className="input-label">Email Address</label>
+                                    <input
+                                        type="email"
+                                        name="contact_email"
+                                        value={formData.contact_email}
+                                        onChange={handleInputChange}
+                                        placeholder="hr@company.com"
+                                        className="input"
+                                    />
+                                </div>
+
+                                <div className="input-group">
+                                    <label className="input-label">Status</label>
+                                    <select
+                                        name="status"
+                                        value={formData.status}
+                                        onChange={handleInputChange}
+                                        required
+                                        className="input"
+                                    >
+                                        <option value="active">Active</option>
+                                        <option value="inactive">Inactive</option>
+                                    </select>
+                                </div>
                             </div>
 
-                            <div className="input-group">
-                                <label className="input-label">Status</label>
-                                <select 
-                                    name="status" 
-                                    value={formData.status} 
-                                    onChange={handleInputChange} 
-                                    required
-                                    className="input"
-                                >
-                                    <option value="active">Active</option>
-                                    <option value="inactive">Inactive</option>
-                                </select>
+                            <div className="px-6 py-4 border-t border-slate-800 bg-slate-900/50 flex justify-end gap-3">
+                                <button type="button" onClick={() => setShowCreate(false)} className="btn btn-ghost text-sm">Cancel</button>
+                                <button type="submit" disabled={submitting} className="btn bg-orange-600 hover:bg-orange-500 text-white text-sm">
+                                    {submitting ? <span className="spinner w-4 h-4 mr-2" /> : null}
+                                    {editCompany ? 'Save Changes' : 'Create Company'}
+                                </button>
                             </div>
-                        </div>
-
-                        <div className="px-6 py-4 border-t border-slate-800 bg-slate-900/50 flex justify-end gap-3">
-                            <button type="button" onClick={() => setShowCreate(false)} className="btn btn-ghost text-sm">Cancel</button>
-                            <button type="submit" disabled={submitting} className="btn bg-orange-600 hover:bg-orange-500 text-white text-sm">
-                                {submitting ? <span className="spinner w-4 h-4 mr-2" /> : null}
-                                {editCompany ? 'Save Changes' : 'Create Company'}
-                            </button>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
                 </div>
-            )}
+            , document.body)}
 
-            {deleteId && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+            {/* Delete Confirmation Dialog */}
+            {deleteId && createPortal(
+                <div className="fixed inset-0 z-[60] overflow-y-auto bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="absolute inset-0" onClick={() => setDeleteId(null)} />
-                    <div className="relative bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden p-6 text-center animate-in zoom-in-95 duration-200">
-                        <div className="w-16 h-16 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center mx-auto mb-4">
-                            <IconDelete className="w-8 h-8" />
-                        </div>
-                        <h3 className="text-xl font-bold text-white mb-2">Delete Company?</h3>
-                        <p className="text-sm text-slate-400 mb-6">This will permanently remove the company record. Active student assignments will still retain the company name as a string.</p>
-                        <div className="flex gap-3 w-full">
-                            <button onClick={() => setDeleteId(null)} className="btn btn-ghost flex-1 justify-center">Cancel</button>
-                            <button onClick={confirmDelete} className="btn bg-red-600 hover:bg-red-500 text-white flex-1 justify-center">Delete</button>
+                    <div className="flex min-h-full items-center justify-center p-4">
+                        <div className="relative bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden p-6 text-center animate-in zoom-in-95 duration-200 my-4">
+                            <div className="w-16 h-16 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center mx-auto mb-4">
+                                <IconDelete className="w-8 h-8" />
+                            </div>
+                            <h3 className="text-xl font-bold text-white mb-2">Delete Company?</h3>
+                            <p className="text-sm text-slate-400 mb-6">This will permanently remove the company record. Active student assignments will still retain the company name as a string.</p>
+                            <div className="flex gap-3 w-full">
+                                <button onClick={() => setDeleteId(null)} className="btn btn-ghost flex-1 justify-center">Cancel</button>
+                                <button onClick={confirmDelete} className="btn bg-red-600 hover:bg-red-500 text-white flex-1 justify-center">Delete</button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            )}
+            , document.body)}
         </div>
     )
 }
