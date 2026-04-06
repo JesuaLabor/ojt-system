@@ -21,13 +21,21 @@ func main() {
 	// Auto-migrate models
 	config.MigrateDB()
 
+	// Init Cloudinary (warn but don't fatal — dev may not have creds yet)
+	if err := config.InitCloudinary(); err != nil {
+		log.Printf("⚠️  Cloudinary not configured: %v", err)
+		log.Println("   Avatar uploads will fail until CLOUDINARY_* env vars are set.")
+	} else {
+		log.Println("✅ Cloudinary initialised")
+	}
+
 	// Setup Gin router
 	r := gin.Default()
 
 	// Setup CORS
 	config.SetupCORS(r)
 
-	// Serve static files (uploads)
+	// Keep /uploads route for backward-compat with any old local avatars
 	r.Static("/uploads", "./uploads")
 
 	// Register all routes

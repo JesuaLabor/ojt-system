@@ -6,8 +6,6 @@ import (
 	"ojt-system/config"
 	"ojt-system/middleware"
 	"ojt-system/models"
-	"os"
-	"path/filepath"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -222,30 +220,29 @@ func UploadAvatar(c *gin.Context) {
 		return
 	}
 
-	file, err := c.FormFile("file")
+	fileHeader, err := c.FormFile("file")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "No file uploaded"})
 		return
 	}
 
-	// Create uploads directory if it doesn't exist
-	uploadDir := "uploads"
-	if _, err := os.Stat(uploadDir); os.IsNotExist(err) {
-		os.MkdirAll(uploadDir, 0755)
+	// Open the uploaded file for streaming to Cloudinary
+	src, err := fileHeader.Open()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read file"})
+		return
 	}
+	defer src.Close()
 
-	// Make unique filename
-	filename := fmt.Sprintf("avatar_%v_%d%s", userID, time.Now().Unix(), filepath.Ext(file.Filename))
-	savePath := filepath.Join(uploadDir, filename)
-
-	if err := c.SaveUploadedFile(file, savePath); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save file"})
+	// Upload to Cloudinary
+	publicID := fmt.Sprintf("avatar_%v_%d", userID, time.Now().Unix())
+	fileURL, err := config.UploadImage(src, publicID, "ojt-system/avatars")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload image: " + err.Error()})
 		return
 	}
 
-	// Update user profile_photo
-	fileURL := fmt.Sprintf("http://localhost:8080/uploads/%s", filename)
-
+	// Persist the Cloudinary URL to the database
 	var user models.User
 	if result := config.DB.First(&user, userID); result.Error != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
@@ -253,11 +250,12 @@ func UploadAvatar(c *gin.Context) {
 	}
 
 	config.DB.Model(&user).Update("profile_photo", fileURL)
+	config.DB.First(&user, userID) // Reload
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Avatar uploaded successfully",
+		"message":       "Avatar uploaded successfully",
 		"profile_photo": fileURL,
-		"user": userResponse(user),
+		"user":          userResponse(user),
 	})
 }
 
