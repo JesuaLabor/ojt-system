@@ -112,9 +112,9 @@ func GetSupervisorStudents(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"total_students":         len(students),
+		"total_students":          len(students),
 		"total_pending_approvals": totalPendingApprovals,
-		"students":               students,
+		"students":                students,
 	})
 }
 
@@ -132,8 +132,8 @@ func GetSupervisorNotifications(c *gin.Context) {
 	config.DB.Model(&models.Notification{}).Where("user_id = ? AND is_read = false", userID).Count(&unreadCount)
 
 	c.JSON(http.StatusOK, gin.H{
-		"total":        len(notifications),
-		"unread_count": unreadCount,
+		"total":         len(notifications),
+		"unread_count":  unreadCount,
 		"notifications": notifications,
 	})
 }

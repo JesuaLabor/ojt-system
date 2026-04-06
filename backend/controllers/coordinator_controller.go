@@ -21,6 +21,7 @@ func GetCoordinatorStudents(c *gin.Context) {
 		StudentID      uint    `json:"student_id"`
 		StudentName    string  `json:"student_name"`
 		StudentEmail   string  `json:"student_email"`
+		ProfilePhoto   string  `json:"profile_photo"`
 		CompanyName    string  `json:"company_name"`
 		SupervisorName string  `json:"supervisor_name"`
 		RequiredHours  float64 `json:"required_hours"`
@@ -102,6 +103,7 @@ func GetCoordinatorStudents(c *gin.Context) {
 			StudentID:      a.StudentID,
 			StudentName:    a.Student.Name,
 			StudentEmail:   a.Student.Email,
+			ProfilePhoto:   a.Student.ProfilePhoto,
 			CompanyName:    a.CompanyName,
 			SupervisorName: a.Supervisor.Name,
 			RequiredHours:  requiredHours,
