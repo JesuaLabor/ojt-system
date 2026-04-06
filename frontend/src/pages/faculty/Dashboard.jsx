@@ -4,6 +4,7 @@ import Overview from './Overview'
 import FacultyStudents from './Students'
 import FacultyEvaluations from './Evaluations'
 import FacultyReports from './Reports'
+import Profile from '../common/Profile'
 
 export default function FacultyDashboard() {
   return (
@@ -13,6 +14,7 @@ export default function FacultyDashboard() {
         <Route path="students" element={<FacultyStudents />} />
         <Route path="evaluations" element={<FacultyEvaluations />} />
         <Route path="reports" element={<FacultyReports />} />
+        <Route path="profile" element={<Profile />} />
       </Routes>
     </Layout>
   )

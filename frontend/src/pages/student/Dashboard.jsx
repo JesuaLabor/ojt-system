@@ -4,7 +4,7 @@ import Overview from './Overview'
 import TimeLogs from './TimeLogs'
 import StudentEvaluations from './Evaluations'
 import StudentDocuments from './Documents'
-import Profile from './Profile'
+import Profile from '../common/Profile'
 
 
 

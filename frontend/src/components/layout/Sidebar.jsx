@@ -19,6 +19,7 @@ const NAV = {
         { to: '/supervisor/timelogs', label: 'Time Logs', icon: IconClock, badgeKey: 'pendingApprovals' },
         { to: '/supervisor/evaluations', label: 'Evaluations', icon: IconStar },
         { to: '/supervisor/reports', label: 'Reports', icon: IconChart },
+        { to: '/supervisor/profile', label: 'My Profile', icon: IconUser },
     ],
     coordinator: [
         { to: '/coordinator', label: 'Dashboard', icon: IconGrid },
@@ -30,12 +31,14 @@ const NAV = {
         { to: '/coordinator/timelogs', label: 'Time Logs', icon: IconClock },
         { to: '/coordinator/evaluations', label: 'Evaluations', icon: IconStar },
         { to: '/coordinator/reports', label: 'Reports', icon: IconChart },
+        { to: '/coordinator/profile', label: 'My Profile', icon: IconUser },
     ],
     faculty: [
         { to: '/faculty', label: 'Dashboard', icon: IconGrid },
         { to: '/faculty/students', label: 'Students', icon: IconUsers },
         { to: '/faculty/evaluations', label: 'Evaluations', icon: IconStar },
         { to: '/faculty/reports', label: 'Reports', icon: IconChart },
+        { to: '/faculty/profile', label: 'My Profile', icon: IconUser },
     ],
 }
 
