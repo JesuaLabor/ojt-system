@@ -24,6 +24,7 @@ function RoleRedirect({ user }) {
     supervisor: '/supervisor',
     coordinator: '/coordinator',
     faculty: '/faculty',
+    admin: '/admin',
   }
   return <Navigate to={routes[user.role] || '/login'} replace />
 }
@@ -79,6 +80,13 @@ export default function App() {
         {/* Coordinator Routes */}
         <Route path="/coordinator/*" element={
           <PrivateRoute allowedRoles={['coordinator']}>
+            <CoordinatorDashboard />
+          </PrivateRoute>
+        } />
+
+        {/* Admin Routes (Super access using Coordinator Dashboard) */}
+        <Route path="/admin/*" element={
+          <PrivateRoute allowedRoles={['admin']}>
             <CoordinatorDashboard />
           </PrivateRoute>
         } />

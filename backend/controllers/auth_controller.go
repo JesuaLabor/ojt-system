@@ -255,9 +255,9 @@ func UploadAvatar(c *gin.Context) {
 	config.DB.Model(&user).Update("profile_photo", fileURL)
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Avatar uploaded successfully",
+		"message":       "Avatar uploaded successfully",
 		"profile_photo": fileURL,
-		"user": userResponse(user),
+		"user":          userResponse(user),
 	})
 }
 

@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -44,6 +45,24 @@ func MigrateDB() {
 		&models.Notification{},
 	)
 	log.Println("Database migrated successfully")
+	seedAdmin()
+}
+
+func seedAdmin() {
+	var count int64
+	DB.Model(&models.User{}).Where("role = ?", "admin").Count(&count)
+	if count == 0 {
+		hashed, _ := bcrypt.GenerateFromPassword([]byte("password@123"), bcrypt.DefaultCost)
+		admin := models.User{
+			Name:     "Super Admin",
+			Email:    "superadmin@gmail.com",
+			Password: string(hashed),
+			Role:     "admin",
+			Status:   "active",
+		}
+		DB.Create(&admin)
+		log.Println("Default super admin account created: superadmin@example.com / password123")
+	}
 }
 
 func SetupCORS(r *gin.Engine) {
