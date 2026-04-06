@@ -67,9 +67,17 @@ function StudentDetailsModal({ student, onClose }) {
 
                 <div className="px-6 pb-6 relative">
                     {/* Avatar */}
-                    <div className="absolute -top-12 left-6 w-20 h-20 rounded-2xl bg-gradient-to-br from-orange-500 to-rose-600 flex items-center justify-center border-4 border-slate-900 shadow-xl">
-                        <span className="text-2xl font-black text-white">{student.student_name.charAt(0)}</span>
-                    </div>
+                    {student.profile_photo ? (
+                        <img
+                            src={student.profile_photo}
+                            alt={student.student_name}
+                            className="absolute -top-12 left-6 w-20 h-20 rounded-2xl object-cover border-4 border-slate-900 shadow-xl"
+                        />
+                    ) : (
+                        <div className="absolute -top-12 left-6 w-20 h-20 rounded-2xl bg-gradient-to-br from-orange-500 to-rose-600 flex items-center justify-center border-4 border-slate-900 shadow-xl">
+                            <span className="text-2xl font-black text-white">{student.student_name.charAt(0)}</span>
+                        </div>
+                    )}
 
                     <div className="pt-10 flex items-start justify-between">
                         <div>
