@@ -32,17 +32,30 @@ func main() {
 	// Setup Gin router
 	r := gin.Default()
 
+	// Add a simple recovery middleware to catch panics
+	r.Use(gin.Recovery())
+
 	// Setup CORS
+	log.Println("⚙️  Setting up CORS...")
 	config.SetupCORS(r)
 
-	// Keep /uploads route for backward-compat with any old local avatars
+	// Health check for Render (root / and /api/health)
+	r.GET("/", func(c *gin.Context) {
+		c.JSON(200, gin.H{"message": "OJT System API is running"})
+	})
+
+	// Keep /uploads route for backward-compat
 	r.Static("/uploads", "./uploads")
 
 	// Register all routes
+	log.Println("🛣️  Registering routes...")
 	routes.RegisterRoutes(r)
 
 	// Start server
 	port := config.GetEnv("PORT", "8080")
-	log.Printf("Server running on port %s", port)
-	r.Run(":" + port)
+	log.Printf("🚀 Server is attempting to start on port %s...", port)
+	
+	if err := r.Run(":" + port); err != nil {
+		log.Fatalf("❌ Server failed to start: %v", err)
+	}
 }
