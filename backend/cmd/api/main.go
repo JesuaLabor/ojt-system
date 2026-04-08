@@ -54,8 +54,10 @@ func main() {
 	// Start server
 	port := config.GetEnv("PORT", "8080")
 	log.Printf("🚀 Server is attempting to start on port %s...", port)
-	
+
 	if err := r.Run(":" + port); err != nil {
 		log.Fatalf("❌ Server failed to start: %v", err)
 	}
+	//test
+
 }
