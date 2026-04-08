@@ -16,21 +16,31 @@ import (
 var DB *gorm.DB
 
 func ConnectDB() {
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=UTC",
-		GetEnv("DB_HOST", "localhost"),
-		GetEnv("DB_USER", "postgres"),
-		GetEnv("DB_PASSWORD", "postgres"),
-		GetEnv("DB_NAME", "ojt_system"),
-		GetEnv("DB_PORT", "5432"),
-	)
+	var dsn string
+	dbURL := os.Getenv("DATABASE_URL")
+
+	if dbURL != "" {
+		// Use the full URL if provided (standard on Render/Heroku)
+		dsn = dbURL
+	} else {
+		// Fallback to manual construction
+		dsn = fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=UTC",
+			GetEnv("DB_HOST", "localhost"),
+			GetEnv("DB_USER", "postgres"),
+			GetEnv("DB_PASSWORD", "postgres"),
+			GetEnv("DB_NAME", "ojt_system"),
+			GetEnv("DB_PORT", "5432"),
+		)
+	}
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
+		log.Printf("❌ Failed to connect to database using DSN: %s", dsn)
 		log.Fatal("Failed to connect to database:", err)
 	}
 
 	DB = db
-	log.Println("Database connected successfully")
+	log.Println("✅ Database connected successfully")
 }
 
 func MigrateDB() {
