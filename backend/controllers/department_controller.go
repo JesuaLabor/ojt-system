@@ -28,12 +28,13 @@ type DepartmentUpdateInput struct {
 // lookups via dept.id. This helper ensures all responses use lowercase keys.
 func deptToMap(d models.Department) gin.H {
 	return gin.H{
-		"id":          d.ID,
-		"name":        d.Name,
-		"code":        d.Code,
-		"description": d.Description,
-		"status":      d.Status,
-		"created_at":  d.CreatedAt,
+		"id":            d.ID,
+		"name":          d.Name,
+		"code":          d.Code,
+		"description":   d.Description,
+		"status":        d.Status,
+		"profile_image": d.ProfileImage,
+		"created_at":    d.CreatedAt,
 	}
 }
 
@@ -226,3 +227,48 @@ func DeleteDepartment(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Department deleted successfully"})
 }
+
+// ─── POST /api/departments/:id/image ──────────────────────────────────────────
+// Coordinator/Admin: upload a profile image for the department.
+
+func UploadDepartmentImage(c *gin.Context) {
+	id := c.Param("id")
+
+	var dept models.Department
+	if result := config.DB.First(&dept, id); result.Error != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Department not found"})
+		return
+	}
+
+	fileHeader, err := c.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No file uploaded"})
+		return
+	}
+
+	src, err := fileHeader.Open()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read file"})
+		return
+	}
+	defer src.Close()
+
+	// Upload to Cloudinary
+	publicID := "dept_" + id + "_" + fileHeader.Filename
+	fileURL, err := config.UploadImage(src, publicID, "ojt-system/departments")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload image: " + err.Error()})
+		return
+	}
+
+	// Update department record
+	config.DB.Model(&dept).Update("profile_image", fileURL)
+	config.DB.First(&dept, id) // reload
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":       "Image uploaded successfully",
+		"profile_image": fileURL,
+		"department":    deptToMap(dept),
+	})
+}
+

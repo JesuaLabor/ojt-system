@@ -9,10 +9,11 @@ import (
 // ─── Department ─────────────────────────────────────────
 type Department struct {
 	gorm.Model
-	Name        string `gorm:"uniqueIndex;not null" json:"name"`        // e.g. "IT Department"
-	Code        string `gorm:"uniqueIndex;not null" json:"code"`        // e.g. "IT", "BSBA", "CRIM"
-	Description string `json:"description"`
-	Status      string `gorm:"type:varchar(20);default:'active'" json:"status"` // active / inactive
+	Name         string `gorm:"uniqueIndex;not null" json:"name"`        // e.g. "IT Department"
+	Code         string `gorm:"uniqueIndex;not null" json:"code"`        // e.g. "IT", "BSBA", "CRIM"
+	Description  string `json:"description"`
+	Status       string `gorm:"type:varchar(20);default:'active'" json:"status"` // active / inactive
+	ProfileImage string `json:"profile_image"`
 }
 
 // ─── User ───────────────────────────────────────────────

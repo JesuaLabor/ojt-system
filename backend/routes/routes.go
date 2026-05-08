@@ -174,6 +174,10 @@ func RegisterRoutes(r *gin.Engine) {
 				middleware.RoleMiddleware("coordinator", "admin"),
 				controllers.UpdateDepartment, // PATCH /api/departments/:id
 			)
+			departments.POST("/:id/image",
+				middleware.RoleMiddleware("coordinator", "admin"),
+				controllers.UploadDepartmentImage, // POST /api/departments/:id/image
+			)
 			departments.DELETE("/:id",
 				middleware.RoleMiddleware("coordinator", "admin"),
 				controllers.DeleteDepartment, // DELETE /api/departments/:id

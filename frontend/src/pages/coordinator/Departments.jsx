@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import api from '../../services/api'
 import toast from 'react-hot-toast'
 
@@ -32,6 +33,14 @@ function IconX({ className }) {
     )
 }
 
+function IconPhoto({ className }) {
+    return (
+        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+    )
+}
+
 // ── Department Form Modal ──────────────────────────────────────────────────────
 function DeptModal({ dept, onClose, onSaved }) {
     const isEdit = !!dept
@@ -40,21 +49,39 @@ function DeptModal({ dept, onClose, onSaved }) {
         code: dept?.code || '',
         description: dept?.description || '',
     })
+    const [imageFile, setImageFile] = useState(null)
+    const [imagePreview, setImagePreview] = useState(dept?.profile_image || null)
     const [saving, setSaving] = useState(false)
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0]
+        if (file) {
+            setImageFile(file)
+            setImagePreview(URL.createObjectURL(file))
+        }
+    }
 
     const handleSubmit = async (e) => {
         e.preventDefault()
         setSaving(true)
         try {
+            let deptId = dept?.id ?? dept?.ID
             if (isEdit) {
-                // dept.id (new backend) or dept.ID (gorm default uppercase) — handle both
-                const deptId = dept.id ?? dept.ID
                 await api.patch(`/departments/${deptId}`, form)
-                toast.success('Department updated!')
             } else {
-                await api.post('/departments/', form)
-                toast.success('Department created!')
+                const res = await api.post('/departments/', form)
+                deptId = res.data.department.id
             }
+
+            if (imageFile && deptId) {
+                const formData = new FormData()
+                formData.append('file', imageFile)
+                await api.post(`/departments/${deptId}/image`, formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                })
+            }
+
+            toast.success(isEdit ? 'Department updated!' : 'Department created!')
             onSaved()
             onClose()
         } catch (err) {
@@ -64,58 +91,86 @@ function DeptModal({ dept, onClose, onSaved }) {
         }
     }
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
-            <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 w-full max-w-md shadow-2xl fade-in">
-                <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-white font-bold text-lg">{isEdit ? 'Edit Department' : 'New Department'}</h2>
-                    <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-white hover:bg-slate-800 transition-colors">
-                        <IconX className="w-4 h-4" />
-                    </button>
-                </div>
+    return createPortal(
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="absolute inset-0" onClick={onClose} />
+            <div className="flex min-h-full items-center justify-center p-4">
+                <form onSubmit={handleSubmit} className="relative bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-lg animate-in zoom-in-95 duration-200 my-4">
+                    <div className="px-6 py-5 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
+                        <h2 className="text-lg font-bold text-white">{isEdit ? 'Edit Department' : 'Add New Department'}</h2>
+                        <button type="button" onClick={onClose} className="text-slate-500 hover:text-white transition"><IconX /></button>
+                    </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="input-group">
-                        <label className="input-label">Department Name</label>
-                        <input
-                            type="text" required
-                            value={form.name}
-                            onChange={e => setForm({ ...form, name: e.target.value })}
-                            className="input"
-                            placeholder="e.g. IT Department"
-                        />
+                    <div className="p-6 space-y-4">
+                        {/* Expert UI/UX Avatar Upload */}
+                        <div className="flex justify-center pb-6">
+                            <div className="relative group">
+                                <label className="flex items-center justify-center w-28 h-28 rounded-full cursor-pointer bg-slate-800 border-[3px] border-slate-700 hover:border-indigo-500 transition-all overflow-hidden shadow-2xl ring-4 ring-slate-900/50">
+                                    {imagePreview ? (
+                                        <img src={imagePreview} alt="Preview" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                                    ) : (
+                                        <div className="flex flex-col items-center text-slate-400 group-hover:text-indigo-400 transition-colors">
+                                            <IconPhoto className="w-8 h-8 mb-1" />
+                                            <span className="text-[9px] uppercase tracking-wider font-bold">Logo</span>
+                                        </div>
+                                    )}
+                                    <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
+                                </label>
+
+                                {/* Camera Badge Overlay */}
+                                <div className="absolute bottom-0 right-0 w-9 h-9 bg-indigo-600 rounded-full border-4 border-slate-900 flex items-center justify-center shadow-lg pointer-events-none group-hover:bg-indigo-500 group-hover:scale-110 transition-all">
+                                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Form Fields arranged in grid for a tighter, cleaner look */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div className="input-group sm:col-span-2">
+                                <label className="input-label text-[11px] font-bold text-slate-400 uppercase tracking-wider">Department Name</label>
+                                <input
+                                    type="text" required
+                                    value={form.name}
+                                    onChange={e => setForm({ ...form, name: e.target.value })}
+                                    className="input bg-slate-800/50 focus:bg-slate-800 transition-colors"
+                                    placeholder="e.g. Information Technology"
+                                />
+                            </div>
+                            <div className="input-group">
+                                <label className="input-label text-[11px] font-bold text-slate-400 uppercase tracking-wider">Dept Code</label>
+                                <input
+                                    type="text" required
+                                    value={form.code}
+                                    onChange={e => setForm({ ...form, code: e.target.value.toUpperCase() })}
+                                    className="input bg-slate-800/50 focus:bg-slate-800 transition-colors"
+                                    placeholder="e.g. BSIT"
+                                    maxLength={10}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="input-group">
+                            <label className="input-label text-[11px] font-bold text-slate-400 uppercase tracking-wider">Description <span className="text-slate-600 normal-case tracking-normal">(Optional)</span></label>
+                            <textarea
+                                value={form.description}
+                                onChange={e => setForm({ ...form, description: e.target.value })}
+                                className="input min-h-[80px] resize-none bg-slate-800/50 focus:bg-slate-800 transition-colors"
+                                placeholder="Briefly describe the department's focus..."
+                            />
+                        </div>
                     </div>
-                    <div className="input-group">
-                        <label className="input-label">Department Code</label>
-                        <input
-                            type="text" required
-                            value={form.code}
-                            onChange={e => setForm({ ...form, code: e.target.value.toUpperCase() })}
-                            className="input"
-                            placeholder="e.g. IT, BSBA, CRIM"
-                            maxLength={10}
-                        />
-                        <p className="text-xs text-slate-500 mt-1">Short unique code for the department.</p>
-                    </div>
-                    <div className="input-group">
-                        <label className="input-label">Description <span className="text-slate-600">(optional)</span></label>
-                        <textarea
-                            value={form.description}
-                            onChange={e => setForm({ ...form, description: e.target.value })}
-                            className="input min-h-[80px] resize-none"
-                            placeholder="Brief description of this department..."
-                        />
-                    </div>
-                    <div className="flex gap-3 pt-2">
-                        <button type="button" onClick={onClose} className="btn btn-ghost flex-1">Cancel</button>
-                        <button type="submit" disabled={saving} className="btn btn-primary flex-1 justify-center">
-                            {saving ? <><span className="spinner" /> Saving...</> : isEdit ? 'Save Changes' : 'Create Department'}
+
+                    <div className="px-6 py-4 border-t border-slate-800 bg-slate-900/50 flex justify-end gap-3">
+                        <button type="button" onClick={onClose} className="btn btn-ghost text-sm">Cancel</button>
+                        <button type="submit" disabled={saving} className="btn btn-primary text-sm">
+                            {saving ? <span className="spinner w-4 h-4 mr-2" /> : null}
+                            {isEdit ? 'Save Changes' : 'Create Department'}
                         </button>
                     </div>
                 </form>
             </div>
         </div>
-    )
+        , document.body)
 }
 
 // ── Members Panel Modal ────────────────────────────────────────────────────────
@@ -159,9 +214,18 @@ function MembersPanel({ dept, onClose }) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
             <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 w-full max-w-lg shadow-2xl fade-in max-h-[80vh] flex flex-col">
                 <div className="flex items-center justify-between mb-5 flex-shrink-0">
-                    <div>
-                        <h2 className="text-white font-bold text-lg">{dept.name}</h2>
-                        <p className="text-xs text-slate-500 mt-0.5">Department Members</p>
+                    <div className="flex items-center gap-3">
+                        {dept.profile_image ? (
+                            <img src={dept.profile_image} alt="Logo" className="w-10 h-10 rounded-lg object-cover border border-slate-700" />
+                        ) : (
+                            <div className="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center border border-slate-700">
+                                <IconBuilding className="w-5 h-5 text-slate-500" />
+                            </div>
+                        )}
+                        <div>
+                            <h2 className="text-white font-bold text-lg">{dept.name}</h2>
+                            <p className="text-xs text-slate-500 mt-0.5">Department Members</p>
+                        </div>
                     </div>
                     <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-white hover:bg-slate-800 transition-colors">
                         <IconX className="w-4 h-4" />
@@ -266,9 +330,13 @@ export default function Departments() {
                         >
                             {/* Top row */}
                             <div className="flex items-start gap-3">
-                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 font-black text-sm ${ROLE_COLORS[i % ROLE_COLORS.length]}`}>
-                                    {dept.code}
-                                </div>
+                                {dept.profile_image ? (
+                                    <img src={dept.profile_image} alt={dept.code} className="w-10 h-10 rounded-xl object-cover flex-shrink-0 border border-slate-700" />
+                                ) : (
+                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 font-black text-sm ${ROLE_COLORS[i % ROLE_COLORS.length]}`}>
+                                        {dept.code}
+                                    </div>
+                                )}
                                 <div className="min-w-0 flex-1">
                                     <p className="text-white font-bold text-sm leading-snug truncate">{dept.name}</p>
                                     {dept.description && (
