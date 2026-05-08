@@ -1,9 +1,12 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"ojt-system/config"
 	"ojt-system/models"
+	"path/filepath"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -253,8 +256,12 @@ func UploadDepartmentImage(c *gin.Context) {
 	}
 	defer src.Close()
 
-	// Upload to Cloudinary
-	publicID := "dept_" + id + "_" + fileHeader.Filename
+	// Build a safe filename: dept_<id>_<unix_timestamp>.<ext>
+	ext := filepath.Ext(fileHeader.Filename)
+	if ext == "" {
+		ext = ".jpg"
+	}
+	publicID := fmt.Sprintf("dept_%s_%d%s", id, time.Now().Unix(), ext)
 	fileURL, err := config.UploadImage(src, publicID, "ojt-system/departments")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload image: " + err.Error()})
