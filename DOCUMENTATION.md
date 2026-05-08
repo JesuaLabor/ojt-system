@@ -162,7 +162,8 @@ id | name | email (unique) | password (hashed) | role | status | profile_photo
 ### OJTAssignment
 ```
 id | student_id → User | supervisor_id → User | coordinator_id → User
-company_name | required_hours (default 600) | start_date | end_date | status
+department_id → Department | company_name | required_hours (default 600)
+start_date | end_date | status
 ```
 
 ### TimeLog
@@ -516,9 +517,17 @@ Data persists in the `postgres_data` named volume.
 
 | Status | Condition |
 |--------|-----------|
-| `Completed` | approved_hours ≥ required_hours |
-| `On Track` | progress_pct ≥ 30% |
-| `Behind` | progress_pct < 30% |
+| `Completed` | approved_hours ≥ required_hours OR status = 'completed' |
+| `On Track` | progress_pct ≥ 25% (or within first 30 days of start) |
+| `Behind` | progress_pct < 25% AND > 30 days since start |
+
+### Department Assignment Logic
+- **Source of Truth:** Student departments are strictly determined by their **OJT Assignment** record.
+- **Display logic:** Dashboard and roster views resolve the department name via the `Department` relationship on the `OJTAssignment`.
+- **Sync mechanism:** 
+  - When a new assignment is created, it auto-fills with the student's current profile department.
+  - When a student's department is updated during approval, the system automatically updates their active assignment's department.
+- **Rationale:** Allows students to belong to a specific academic department while having an OJT deployment in a different (or specialized) sub-department if required.
 
 ### Evaluation Scoring
 - **5 criteria** scored 0–100: Technical, Communication, Punctuality, Teamwork, Initiative
@@ -551,11 +560,10 @@ Data persists in the `postgres_data` named volume.
 
 ## 15. Changelog
 
-| Date | Version | Change |
-|------|---------|--------|
+| May 8, 2026 | v1.3 | **Enforced Assignment-Based Department Logic.** Replaced profile-fallback display with strict assignment-department linkage. Added auto-sync between student approval and active assignments. Updated assignment form with department auto-fill. |
 | May 8, 2026 | v1.2 | Added `admin` (Super Admin) role. Auto-seeded default account. Admin shares Coordinator Dashboard at `/admin/*`. All coordinator/assignment/company/report routes now also accept `admin` role. |
 | May 2026 | v1.1 | Initial documentation generated. |
 
 ---
 
-*Documentation last updated: May 8, 2026*
+*Documentation last updated: May 9, 2026*
