@@ -66,9 +66,11 @@ type TimeLog struct {
 	ClockIn    time.Time  `gorm:"not null" json:"clock_in"`
 	ClockOut   *time.Time `json:"clock_out"`
 	TotalHours float64    `json:"total_hours"`
-	Status     string     `gorm:"type:varchar(20);default:'pending'" json:"status"`
-	Remarks    string     `json:"remarks"`
-	ApprovedBy *uint      `json:"approved_by"`
+	Status        string     `gorm:"type:varchar(20);default:'pending'" json:"status"`
+	Remarks       string     `json:"remarks"`
+	ApprovedBy    *uint      `json:"approved_by"`
+	ClockInPhoto  string     `json:"clock_in_photo"`
+	ClockOutPhoto string     `json:"clock_out_photo"`
 
 	Student User `gorm:"foreignKey:StudentID" json:"student,omitempty"`
 }

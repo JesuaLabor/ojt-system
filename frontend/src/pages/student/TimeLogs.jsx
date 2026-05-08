@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { format, parseISO } from 'date-fns'
 import toast from 'react-hot-toast'
+import Webcam from 'react-webcam'
 import api from '../../services/api'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -100,12 +101,34 @@ export default function TimeLogs() {
         return () => clearInterval(timerRef.current)
     }, [activeLog])
 
+    // ── Photo Verification ──────────────────────────────────────────────────────
+    const [showCamera, setShowCamera] = useState(false)
+    const [cameraMode, setCameraMode] = useState('in') // 'in' or 'out'
+    const webcamRef = useRef(null)
+
+    // Helper: Convert base64 dataURI to File object
+    const dataURLtoFile = (dataurl, filename) => {
+        let arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+            bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+        while (n--) { u8arr[n] = bstr.charCodeAt(n); }
+        return new File([u8arr], filename, { type: mime });
+    }
+
     // ── Clock In ────────────────────────────────────────────────────────────────
-    const handleClockIn = async () => {
+    const handleClockIn = async (photoData) => {
         setClockBusy(true)
         try {
-            await api.post('/timelogs/clockin')
+            const formData = new FormData()
+            if (photoData) {
+                formData.append('photo', dataURLtoFile(photoData, 'clockin.jpg'))
+            }
+
+            await api.post('/timelogs/clockin', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            })
+            
             toast.success('Clocked in successfully! Have a productive session 🚀')
+            setShowCamera(false)
             await fetchLogs()
         } catch (err) {
             toast.error(err.response?.data?.error || 'Clock-in failed. Please try again.')
@@ -115,12 +138,21 @@ export default function TimeLogs() {
     }
 
     // ── Clock Out ───────────────────────────────────────────────────────────────
-    const handleClockOut = async () => {
+    const handleClockOut = async (photoData) => {
         setClockBusy(true)
         try {
-            const res = await api.patch('/timelogs/clockout')
+            const formData = new FormData()
+            if (photoData) {
+                formData.append('photo', dataURLtoFile(photoData, 'clockout.jpg'))
+            }
+
+            const res = await api.patch('/timelogs/clockout', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            })
+            
             const hours = res.data?.log?.total_hours ?? res.data?.total_hours
             toast.success(`Session ended! ${hours ? `${hours}h logged` : 'Log saved'} ✅`)
+            setShowCamera(false)
             setActiveLog(null)
             setElapsed(0)
             await fetchLogs()
@@ -130,6 +162,21 @@ export default function TimeLogs() {
             setClockBusy(false)
         }
     }
+
+    const openCamera = (mode) => {
+        setCameraMode(mode)
+        setShowCamera(true)
+    }
+
+    const captureAndSubmit = useCallback(() => {
+        const imageSrc = webcamRef.current.getScreenshot()
+        if (!imageSrc) {
+            toast.error('Failed to capture photo. Please check your camera.')
+            return
+        }
+        if (cameraMode === 'in') handleClockIn(imageSrc)
+        else handleClockOut(imageSrc)
+    }, [webcamRef, cameraMode])
 
     // ── Manual Entry ────────────────────────────────────────────────────────────
     const handleManualSubmit = async (e) => {
@@ -157,6 +204,8 @@ export default function TimeLogs() {
             setManualBusy(false)
         }
     }
+
+    const [previewPhoto, setPreviewPhoto] = useState(null)
 
     // ── Filtered logs ───────────────────────────────────────────────────────────
     const filteredLogs = statusFilter === 'all'
@@ -227,7 +276,7 @@ export default function TimeLogs() {
                         // ── Clock Out button ─────────────────────────────────────────
                         <button
                             id="btn-clock-out"
-                            onClick={handleClockOut}
+                            onClick={() => openCamera('out')}
                             disabled={clockBusy}
                             className="relative group w-full sm:w-auto"
                         >
@@ -248,7 +297,7 @@ export default function TimeLogs() {
                         // ── Clock In button ──────────────────────────────────────────
                         <button
                             id="btn-clock-in"
-                            onClick={handleClockIn}
+                            onClick={() => openCamera('in')}
                             disabled={clockBusy}
                             className="relative group w-full sm:w-auto"
                         >
@@ -397,7 +446,7 @@ export default function TimeLogs() {
                     <table className="w-full">
                         <thead>
                             <tr>
-                                {['Date', 'Clock In', 'Clock Out', 'Total Hours', 'Status', 'Remarks'].map(h => (
+                                {['Date', 'Clock In', 'Clock Out', 'Total Hours', 'Status', 'Verification', 'Remarks'].map(h => (
                                     <th key={h} className="table-head first:pl-5 last:pr-5">{h}</th>
                                 ))}
                             </tr>
@@ -444,6 +493,29 @@ export default function TimeLogs() {
                                         <td className="table-cell">
                                             <StatusBadge status={log.status} />
                                         </td>
+                                        <td className="table-cell">
+                                            <div className="flex items-center gap-1.5">
+                                                {log.clock_in_photo && (
+                                                    <button 
+                                                        onClick={() => setPreviewPhoto({ url: log.clock_in_photo, title: 'Clock In Photo', date: log.clock_in })}
+                                                        className="w-7 h-7 rounded border border-slate-700 overflow-hidden hover:border-emerald-500 transition"
+                                                    >
+                                                        <img src={log.clock_in_photo} alt="In" className="w-full h-full object-cover" />
+                                                    </button>
+                                                )}
+                                                {log.clock_out_photo && (
+                                                    <button 
+                                                        onClick={() => setPreviewPhoto({ url: log.clock_out_photo, title: 'Clock Out Photo', date: log.clock_out })}
+                                                        className="w-7 h-7 rounded border border-slate-700 overflow-hidden hover:border-rose-500 transition"
+                                                    >
+                                                        <img src={log.clock_out_photo} alt="Out" className="w-full h-full object-cover" />
+                                                    </button>
+                                                )}
+                                                {!log.clock_in_photo && !log.clock_out_photo && (
+                                                    <span className="text-[10px] text-slate-600 italic">No photo</span>
+                                                )}
+                                            </div>
+                                        </td>
                                         <td className="table-cell pr-5 text-slate-500 text-xs max-w-[160px] truncate">
                                             {log.remarks || <span className="text-slate-700">—</span>}
                                         </td>
@@ -464,6 +536,79 @@ export default function TimeLogs() {
                     </div>
                 )}
             </div>
+            {/* ── Photo Verification Modal ─────────────────────────────────────── */}
+            {showCamera && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+                    <div className="relative w-full max-w-lg bg-slate-900 rounded-2xl overflow-hidden border border-slate-800 shadow-2xl">
+                        <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+                            <div>
+                                <h3 className="text-lg font-bold text-white">Identity Verification</h3>
+                                <p className="text-xs text-slate-500">Please show your face clearly to clock {cameraMode}</p>
+                            </div>
+                            <button 
+                                onClick={() => setShowCamera(false)}
+                                className="text-slate-500 hover:text-white transition"
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
+                        </div>
+
+                        <div className="relative aspect-video bg-black">
+                            <Webcam
+                                audio={false}
+                                ref={webcamRef}
+                                screenshotFormat="image/jpeg"
+                                videoConstraints={{
+                                    facingMode: "user",
+                                    width: 1280,
+                                    height: 720
+                                }}
+                                className="w-full h-full object-cover"
+                            />
+                            {/* Overlay frame */}
+                            <div className="absolute inset-0 border-2 border-dashed border-emerald-500/30 m-8 rounded-xl pointer-events-none" />
+                        </div>
+
+                        <div className="p-6 bg-slate-900/50 flex flex-col gap-4">
+                            <button
+                                onClick={captureAndSubmit}
+                                disabled={clockBusy}
+                                className="btn btn-primary w-full py-4 rounded-xl text-base font-bold shadow-xl shadow-emerald-900/20"
+                            >
+                                {clockBusy ? (
+                                    <><span className="spinner" /> Uploading...</>
+                                ) : (
+                                    <>📸 Capture & Clock {cameraMode === 'in' ? 'In' : 'Out'}</>
+                                )}
+                            </button>
+                            <p className="text-[10px] text-center text-slate-500 italic">
+                                Your photo will be stored for attendance verification purposes.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* ── Photo Preview Modal ────────────────────────────────────────── */}
+            {previewPhoto && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/90 backdrop-blur-sm animate-in zoom-in duration-200">
+                    <div className="relative max-w-2xl w-full">
+                        <button 
+                            onClick={() => setPreviewPhoto(null)}
+                            className="absolute -top-12 right-0 text-white/70 hover:text-white flex items-center gap-2 text-sm"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                            Close
+                        </button>
+                        <div className="bg-slate-900 rounded-2xl overflow-hidden border border-slate-800 shadow-2xl">
+                            <img src={previewPhoto.url} alt="Verification" className="w-full h-auto" />
+                            <div className="p-4 bg-slate-900 border-t border-slate-800">
+                                <h4 className="text-white font-semibold">{previewPhoto.title}</h4>
+                                <p className="text-xs text-slate-500">{fmtDate(previewPhoto.date)} at {fmtTime(previewPhoto.date)}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

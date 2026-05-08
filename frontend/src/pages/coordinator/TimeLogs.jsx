@@ -18,6 +18,7 @@ export default function CoordinatorTimeLogs() {
   
   const [rejectingLogId, setRejectingLogId] = useState(null)
   const [rejectRemarks, setRejectRemarks] = useState('')
+  const [previewPhoto, setPreviewPhoto] = useState(null)
 
   // Load students for the dropdown using coordinator endpoint
   useEffect(() => {
@@ -132,6 +133,7 @@ export default function CoordinatorTimeLogs() {
                   <th className="table-head">Clock Out</th>
                   <th className="table-head">Total Hours</th>
                   <th className="table-head">Status</th>
+                  <th className="table-head">Verification</th>
                   <th className="table-head">Student Remarks</th>
                   <th className="table-head text-right">Actions</th>
                 </tr>
@@ -178,6 +180,29 @@ export default function CoordinatorTimeLogs() {
                         <td className="table-cell text-xs text-slate-400 max-w-[150px] truncate" title={log.remarks}>
                           {log.status === 'rejected' ? <span className="text-red-400">Rejected: {log.remarks}</span> : (log.remarks || '—')}
                         </td>
+                        <td className="table-cell">
+                          <div className="flex items-center gap-1.5">
+                              {log.clock_in_photo && (
+                                  <button 
+                                      onClick={() => setPreviewPhoto({ url: log.clock_in_photo, title: 'Clock In Photo', date: log.clock_in })}
+                                      className="w-8 h-8 rounded border border-slate-700 overflow-hidden hover:border-emerald-500 transition shadow-sm"
+                                  >
+                                      <img src={log.clock_in_photo} alt="In" className="w-full h-full object-cover" />
+                                  </button>
+                              )}
+                              {log.clock_out_photo && (
+                                  <button 
+                                      onClick={() => setPreviewPhoto({ url: log.clock_out_photo, title: 'Clock Out Photo', date: log.clock_out })}
+                                      className="w-8 h-8 rounded border border-slate-700 overflow-hidden hover:border-rose-500 transition shadow-sm"
+                                  >
+                                      <img src={log.clock_out_photo} alt="Out" className="w-full h-full object-cover" />
+                                  </button>
+                              )}
+                              {!log.clock_in_photo && !log.clock_out_photo && (
+                                  <span className="text-[10px] text-slate-600 italic">None</span>
+                              )}
+                          </div>
+                        </td>
                         <td className="table-cell text-right">
                           {log.status === 'pending' && clockOut ? (
                             <div className="flex items-center justify-end gap-2">
@@ -213,6 +238,28 @@ export default function CoordinatorTimeLogs() {
             </table>
           </div>
         </div>
+      )}
+
+      {/* ── Photo Preview Modal ────────────────────────────────────────── */}
+      {previewPhoto && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/90 backdrop-blur-sm animate-in zoom-in duration-200">
+              <div className="relative max-w-2xl w-full">
+                  <button 
+                      onClick={() => setPreviewPhoto(null)}
+                      className="absolute -top-12 right-0 text-white/70 hover:text-white flex items-center gap-2 text-sm"
+                  >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                      Close
+                  </button>
+                  <div className="bg-slate-900 rounded-2xl overflow-hidden border border-slate-800 shadow-2xl">
+                      <img src={previewPhoto.url} alt="Verification" className="w-full h-auto" />
+                      <div className="p-4 bg-slate-900 border-t border-slate-800">
+                          <h4 className="text-white font-semibold">{previewPhoto.title}</h4>
+                          <p className="text-xs text-slate-500">{previewPhoto.date ? format(new Date(previewPhoto.date), 'MMM d, yyyy · h:mm a') : '—'}</p>
+                      </div>
+                  </div>
+              </div>
+          </div>
       )}
     </div>
   )

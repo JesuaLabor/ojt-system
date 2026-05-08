@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"math"
 	"net/http"
 	"ojt-system/config"
@@ -13,9 +14,11 @@ import (
 // ─── Input Structs ────────────────────────────────────────────────────────────
 
 type CreateTimeLogInput struct {
-	ClockIn  string `json:"clock_in"  binding:"required"` // ISO 8601: "2026-03-08T08:00:00Z"
-	ClockOut string `json:"clock_out"`                    // Optional — omit for clock-in only
-	Remarks  string `json:"remarks"`
+	ClockIn       string `json:"clock_in"  binding:"required"` // ISO 8601: "2026-03-08T08:00:00Z"
+	ClockOut      string `json:"clock_out"`                    // Optional — omit for clock-in only
+	Remarks       string `json:"remarks"`
+	ClockInPhoto  string `json:"clock_in_photo"`
+	ClockOutPhoto string `json:"clock_out_photo"`
 }
 
 type RejectTimeLogInput struct {
@@ -66,10 +69,12 @@ func CreateTimeLog(c *gin.Context) {
 	}
 
 	entry := models.TimeLog{
-		StudentID: userID.(uint),
-		ClockIn:   clockIn,
-		Status:    "pending",
-		Remarks:   input.Remarks,
+		StudentID:     userID.(uint),
+		ClockIn:       clockIn,
+		Status:        "pending",
+		Remarks:       input.Remarks,
+		ClockInPhoto:  input.ClockInPhoto,
+		ClockOutPhoto: input.ClockOutPhoto,
 	}
 
 	// If clock_out is provided, calculate total_hours immediately
@@ -114,14 +119,41 @@ func ClockIn(c *gin.Context) {
 		return
 	}
 
-	entry := models.TimeLog{
-		StudentID: userID.(uint),
-		ClockIn:   time.Now(),
-		Status:    "pending",
+	// Handle Photo Upload
+	fileHeader, err := c.FormFile("photo")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Photo is required for clock-in"})
+		return
 	}
 
-	config.DB.Create(&entry)
-	c.JSON(http.StatusCreated, gin.H{"message": "Clocked in successfully", "log": entry})
+	src, err := fileHeader.Open()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read photo"})
+		return
+	}
+	defer src.Close()
+
+	// Upload to Cloudinary
+	publicID := fmt.Sprintf("clockin_%v_%d", userID, time.Now().Unix())
+	photoURL, err := config.UploadImage(src, publicID, "ojt-system/timelogs")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload photo: " + err.Error()})
+		return
+	}
+
+	entry := models.TimeLog{
+		StudentID:    userID.(uint),
+		ClockIn:      time.Now(),
+		Status:       "pending",
+		ClockInPhoto: photoURL,
+	}
+
+	if result := config.DB.Create(&entry); result.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save time log"})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"message": "Clocked in successfully with photo verification", "log": entry})
 }
 
 // ─── PATCH /api/timelogs/clockout ─────────────────────────────────────────────
@@ -136,13 +168,36 @@ func ClockOut(c *gin.Context) {
 		return
 	}
 
+	// Handle Photo Upload
+	fileHeader, err := c.FormFile("photo")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Photo is required for clock-out"})
+		return
+	}
+
+	src, err := fileHeader.Open()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read photo"})
+		return
+	}
+	defer src.Close()
+
+	// Upload to Cloudinary
+	publicID := fmt.Sprintf("clockout_%v_%d", userID, time.Now().Unix())
+	photoURL, err := config.UploadImage(src, publicID, "ojt-system/timelogs")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload photo: " + err.Error()})
+		return
+	}
+
 	now := time.Now()
 	entry.ClockOut = &now
+	entry.ClockOutPhoto = photoURL
 	entry.TotalHours = calcHours(entry.ClockIn, now)
 	config.DB.Save(&entry)
 
 	c.JSON(http.StatusOK, gin.H{
-		"message":     "Clocked out successfully",
+		"message":     "Clocked out successfully with photo verification",
 		"total_hours": entry.TotalHours,
 		"log":         entry,
 	})
