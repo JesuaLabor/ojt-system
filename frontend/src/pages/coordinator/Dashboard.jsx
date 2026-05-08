@@ -3,6 +3,7 @@ import Layout from '../../components/layout/Layout'
 import Overview from './Overview'
 import Assignments from './Assignments'
 import Companies from './Companies'
+import Departments from './Departments'
 import Reports from './Reports'
 import CoordinatorTimeLogs from './TimeLogs'
 import CoordinatorStudents from './Students'
@@ -28,6 +29,7 @@ export default function CoordinatorDashboard() {
         <Route path="students" element={<CoordinatorStudents />} />
         <Route path="approvals" element={<UserApprovals />} />
         <Route path="companies" element={<Companies />} />
+        <Route path="departments" element={<Departments />} />
         <Route path="assignments" element={<Assignments />} />
         <Route path="documents" element={<CoordinatorDocuments />} />
         <Route path="timelogs" element={<CoordinatorTimeLogs />} />

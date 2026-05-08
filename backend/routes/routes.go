@@ -157,5 +157,27 @@ func RegisterRoutes(r *gin.Engine) {
 			companies.PATCH("/:id", controllers.UpdateCompany) // PATCH  /api/companies/:id
 			companies.DELETE("/:id", controllers.DeleteCompany) // DELETE /api/companies/:id
 		}
+
+		// ── Departments ────────────────────────────────────────────────────────
+		departments := protected.Group("/departments")
+		{
+			departments.GET("/", controllers.GetDepartments) // GET /api/departments — all authenticated users
+			departments.GET("/:id/members",
+				middleware.RoleMiddleware("coordinator", "admin"),
+				controllers.GetDepartmentMembers, // GET /api/departments/:id/members
+			)
+			departments.POST("/",
+				middleware.RoleMiddleware("coordinator", "admin"),
+				controllers.CreateDepartment, // POST /api/departments
+			)
+			departments.PATCH("/:id",
+				middleware.RoleMiddleware("coordinator", "admin"),
+				controllers.UpdateDepartment, // PATCH /api/departments/:id
+			)
+			departments.DELETE("/:id",
+				middleware.RoleMiddleware("coordinator", "admin"),
+				controllers.DeleteDepartment, // DELETE /api/departments/:id
+			)
+		}
 	}
 }

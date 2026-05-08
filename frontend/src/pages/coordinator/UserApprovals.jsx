@@ -6,6 +6,9 @@ export default function UserApprovals() {
     const [users, setUsers] = useState([])
     const [loading, setLoading] = useState(true)
     const [activeTab, setActiveTab] = useState('pending') // pending, active, rejected
+    const [departments, setDepartments] = useState([])
+    const [approvingId, setApprovingId] = useState(null) // user ID being approved
+    const [selectedDept, setSelectedDept] = useState('')
 
     const fetchUsers = async (statusArg) => {
         setLoading(true)
@@ -21,25 +24,38 @@ export default function UserApprovals() {
 
     useEffect(() => {
         fetchUsers()
+        api.get('/departments/')
+            .then(res => setDepartments(res.data?.departments || []))
+            .catch(() => {})
     }, [activeTab])
 
     const handleAction = async (id, action) => {
-        console.log('handleAction trigger:', { id, action });
-        try {
-            if (action === 'approve') {
-                console.log('Approving user:', id);
-                await api.patch(`/coordinator/users/${id}/approve`)
+        if (action === 'approve') {
+            // Show inline dept picker if not confirmed yet
+            if (approvingId !== id) {
+                setApprovingId(id)
+                setSelectedDept('')
+                return
+            }
+            // Confirmed — send with optional dept
+            try {
+                const body = selectedDept ? { department_id: Number(selectedDept) } : {}
+                await api.patch(`/coordinator/users/${id}/approve`, body)
                 toast.success('User approved successfully!')
-            } else {
-                console.log('Sending rejection PATCH for user:', id);
+                setApprovingId(null)
+                fetchUsers()
+            } catch (err) {
+                toast.error('Approval failed. Please try again.')
+            }
+        } else {
+            try {
                 await api.patch(`/coordinator/users/${id}/reject`)
                 toast.success('User application has been rejected.')
+                setApprovingId(null)
+                fetchUsers()
+            } catch (err) {
+                toast.error('Action failed. Please try again.')
             }
-            console.log('Action complete, refreshing list...');
-            fetchUsers()
-        } catch (err) {
-            console.error('Action failed:', err);
-            toast.error('Action failed. Please try again.')
         }
     }
 
@@ -116,25 +132,55 @@ export default function UserApprovals() {
                                         <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400">
                                             {u.role}
                                         </span>
+                                        {u.department_name ? (
+                                            <span className="text-[9px] text-teal-400 font-medium">{u.department_name}</span>
+                                        ) : (
+                                            <span className="text-[9px] text-slate-600">No department</span>
+                                        )}
                                         <span className="text-[9px] text-slate-600 font-medium">Joined {u.created_at}</span>
                                     </div>
 
                                     {activeTab === 'pending' ? (
-                                        <div className="flex gap-2">
-                                            <button
-                                                onClick={() => handleAction(u.id, 'approve')}
-                                                className="w-10 h-10 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-900/40 transition-all active:scale-95"
-                                                title="Approve"
-                                            >
-                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
-                                            </button>
-                                            <button
-                                                onClick={() => handleAction(u.id, 'reject')}
-                                                className="w-10 h-10 rounded-lg bg-red-600/10 hover:bg-red-600/20 text-red-500 flex items-center justify-center border border-red-500/10 transition-all active:scale-95"
-                                                title="Reject"
-                                            >
-                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
-                                            </button>
+                                        <div className="flex flex-col gap-2 w-full">
+                                            {approvingId === u.id && (
+                                                <select
+                                                    value={selectedDept}
+                                                    onChange={e => setSelectedDept(e.target.value)}
+                                                    className="input text-xs py-1.5"
+                                                    autoFocus
+                                                >
+                                                    <option value="">— No dept / keep current —</option>
+                                                    {departments.map(d => (
+                                                        <option key={d.id} value={d.id}>{d.name}</option>
+                                                    ))}
+                                                </select>
+                                            )}
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => handleAction(u.id, 'approve')}
+                                                    className={`flex-1 h-9 rounded-lg text-white flex items-center justify-center text-xs font-bold transition-all active:scale-95 ${approvingId === u.id ? 'bg-emerald-500 shadow-lg shadow-emerald-900/40' : 'bg-emerald-600 hover:bg-emerald-500'}`}
+                                                    title={approvingId === u.id ? 'Confirm Approval' : 'Approve'}
+                                                >
+                                                    {approvingId === u.id ? 'Confirm ✓' : '✓ Approve'}
+                                                </button>
+                                                {approvingId === u.id ? (
+                                                    <button
+                                                        onClick={() => setApprovingId(null)}
+                                                        className="w-9 h-9 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 flex items-center justify-center transition-all active:scale-95"
+                                                        title="Cancel"
+                                                    >
+                                                        ✕
+                                                    </button>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => handleAction(u.id, 'reject')}
+                                                        className="w-9 h-9 rounded-lg bg-red-600/10 hover:bg-red-600/20 text-red-500 flex items-center justify-center border border-red-500/10 transition-all active:scale-95"
+                                                        title="Reject"
+                                                    >
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
                                     ) : (
                                         <div className="flex items-center">

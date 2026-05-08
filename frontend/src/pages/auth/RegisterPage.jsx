@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import api from '../../services/api'
@@ -12,16 +12,30 @@ const ROLES = [
 ]
 
 export default function RegisterPage() {
-  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'student' })
+  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'student', department_id: '' })
   const [loading, setLoading] = useState(false)
   const [showPw, setShowPw] = useState(false)
+  const [departments, setDepartments] = useState([])
   const navigate = useNavigate()
+
+  useEffect(() => {
+    api.get('/departments/')
+      .then(res => setDepartments(res.data?.departments || []))
+      .catch(() => {}) // silently fail — departments may not exist yet
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
     try {
-      await api.post('/auth/register', form)
+      const payload = { ...form }
+      // Convert department_id to number or remove if empty
+      if (payload.department_id) {
+        payload.department_id = Number(payload.department_id)
+      } else {
+        delete payload.department_id
+      }
+      await api.post('/auth/register', payload)
       toast.success('Account created! Please sign in.')
       navigate('/login')
     } catch (err) {
@@ -131,6 +145,25 @@ export default function RegisterPage() {
               ))}
             </div>
           </div>
+
+          {/* Department selector — hidden for coordinator */}
+          {form.role !== 'coordinator' && departments.length > 0 && (
+            <div className="input-group">
+              <label className="input-label">Department</label>
+              <select
+                id="reg-department"
+                value={form.department_id}
+                onChange={e => setForm({ ...form, department_id: e.target.value })}
+                className="input"
+              >
+                <option value="">— Select your department —</option>
+                {departments.map(d => (
+                  <option key={d.id} value={d.id}>{d.name}</option>
+                ))}
+              </select>
+              <p className="text-xs text-slate-500 mt-1">You can update this later with your coordinator.</p>
+            </div>
+          )}
 
           <button id="reg-submit" type="submit" disabled={loading} className="btn btn-primary btn-lg w-full justify-center mt-1">
             {loading ? <><span className="spinner" /> Creating account...</> : 'Create Account'}

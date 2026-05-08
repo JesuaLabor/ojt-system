@@ -46,6 +46,7 @@ func ConnectDB() {
 
 func MigrateDB() {
 	DB.AutoMigrate(
+		&models.Department{}, // must be before User (User has FK to Department)
 		&models.User{},
 		&models.Company{},
 		&models.OJTAssignment{},

@@ -16,10 +16,11 @@ import (
 // ─── Input Structs ───────────────────────────────────────────────────────────
 
 type RegisterInput struct {
-	Name     string `json:"name"     binding:"required"`
-	Email    string `json:"email"    binding:"required,email"`
-	Password string `json:"password" binding:"required,min=6"`
-	Role     string `json:"role"     binding:"required,oneof=student supervisor coordinator faculty"`
+	Name         string `json:"name"     binding:"required"`
+	Email        string `json:"email"    binding:"required,email"`
+	Password     string `json:"password" binding:"required,min=6"`
+	Role         string `json:"role"     binding:"required,oneof=student supervisor coordinator faculty"`
+	DepartmentID *uint  `json:"department_id"` // optional — coordinators typically don't need one
 }
 
 type LoginInput struct {
@@ -95,11 +96,12 @@ func Register(c *gin.Context) {
 	}
 
 	user := models.User{
-		Name:     input.Name,
-		Email:    input.Email,
-		Password: string(hashed),
-		Role:     input.Role,
-		Status:   status,
+		Name:         input.Name,
+		Email:        input.Email,
+		Password:     string(hashed),
+		Role:         input.Role,
+		Status:       status,
+		DepartmentID: input.DepartmentID,
 	}
 
 	if result := config.DB.Create(&user); result.Error != nil {

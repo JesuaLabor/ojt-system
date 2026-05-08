@@ -6,15 +6,26 @@ import (
 	"gorm.io/gorm"
 )
 
+// ─── Department ─────────────────────────────────────────
+type Department struct {
+	gorm.Model
+	Name        string `gorm:"uniqueIndex;not null" json:"name"`        // e.g. "IT Department"
+	Code        string `gorm:"uniqueIndex;not null" json:"code"`        // e.g. "IT", "BSBA", "CRIM"
+	Description string `json:"description"`
+	Status      string `gorm:"type:varchar(20);default:'active'" json:"status"` // active / inactive
+}
+
 // ─── User ───────────────────────────────────────────────
 type User struct {
 	gorm.Model
-	Name         string `gorm:"not null" json:"name"`
-	Email        string `gorm:"uniqueIndex;not null" json:"email"`
-	Password     string `gorm:"not null" json:"-"`
-	Role         string `gorm:"type:varchar(20);not null" json:"role"`
-	Status       string `gorm:"type:varchar(20);default:'pending'" json:"status"`
-	ProfilePhoto string `json:"profile_photo"`
+	Name         string      `gorm:"not null" json:"name"`
+	Email        string      `gorm:"uniqueIndex;not null" json:"email"`
+	Password     string      `gorm:"not null" json:"-"`
+	Role         string      `gorm:"type:varchar(20);not null" json:"role"`
+	Status       string      `gorm:"type:varchar(20);default:'pending'" json:"status"`
+	ProfilePhoto string      `json:"profile_photo"`
+	DepartmentID *uint       `json:"department_id"`                                        // nullable — existing users unaffected
+	Department   *Department `gorm:"foreignKey:DepartmentID" json:"department,omitempty"` // eager-loadable
 }
 
 // ─── Company ────────────────────────────────────────────
