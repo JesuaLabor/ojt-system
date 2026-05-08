@@ -13,13 +13,18 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-// Handle 401 globally
+// Handle 401 globally — but skip public endpoints that are allowed to fail silently
+const PUBLIC_ENDPOINTS = ['/departments/', '/auth/']
 api.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401) {
-      useAuthStore.getState().logout()
-      window.location.href = '/login'
+      const url = err.config?.url || ''
+      const isPublic = PUBLIC_ENDPOINTS.some((p) => url.includes(p))
+      if (!isPublic) {
+        useAuthStore.getState().logout()
+        window.location.href = '/login'
+      }
     }
     return Promise.reject(err)
   }

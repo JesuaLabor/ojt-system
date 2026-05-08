@@ -12,23 +12,23 @@ import (
 // ─── Input Structs ────────────────────────────────────────────────────────────
 
 type AssignmentInput struct {
-	StudentID     uint   `json:"student_id" binding:"required"`
-	DepartmentID  uint   `json:"department_id" binding:"required"`
-	SupervisorID  uint   `json:"supervisor_id" binding:"required"`
-	CompanyName   string `json:"company_name" binding:"required"`
+	StudentID     uint    `json:"student_id" binding:"required"`
+	DepartmentID  uint    `json:"department_id" binding:"required"`
+	SupervisorID  uint    `json:"supervisor_id" binding:"required"`
+	CompanyName   string  `json:"company_name" binding:"required"`
 	RequiredHours float64 `json:"required_hours" binding:"required,min=1"`
-	StartDate     string `json:"start_date" binding:"required"`
-	EndDate       string `json:"end_date" binding:"required"`
+	StartDate     string  `json:"start_date" binding:"required"`
+	EndDate       string  `json:"end_date" binding:"required"`
 }
 
 type AssignmentUpdateInput struct {
-	DepartmentID  *uint   `json:"department_id"`
-	SupervisorID  *uint   `json:"supervisor_id"`
-	CompanyName   *string `json:"company_name"`
+	DepartmentID  *uint    `json:"department_id"`
+	SupervisorID  *uint    `json:"supervisor_id"`
+	CompanyName   *string  `json:"company_name"`
 	RequiredHours *float64 `json:"required_hours"`
-	StartDate     *string `json:"start_date"`
-	EndDate       *string `json:"end_date"`
-	Status        *string `json:"status"`
+	StartDate     *string  `json:"start_date"`
+	EndDate       *string  `json:"end_date"`
+	Status        *string  `json:"status"`
 }
 
 // ─── GET /api/assignments ──────────────────────────────────────────────────────
@@ -39,18 +39,18 @@ func GetAssignments(c *gin.Context) {
 	config.DB.Preload("Student").Preload("Department").Preload("Supervisor").Find(&assignments)
 
 	type AssignmentDetail struct {
-		ID             uint   `json:"id"`
-		StudentID      uint   `json:"student_id"`
-		StudentName    string `json:"student_name"`
-		DepartmentID   uint   `json:"department_id"`
-		DepartmentName string `json:"department_name"`
-		CompanyName    string `json:"company_name"`
-		SupervisorID   uint   `json:"supervisor_id"`
-		SupervisorName string `json:"supervisor_name"`
+		ID             uint    `json:"id"`
+		StudentID      uint    `json:"student_id"`
+		StudentName    string  `json:"student_name"`
+		DepartmentID   uint    `json:"department_id"`
+		DepartmentName string  `json:"department_name"`
+		CompanyName    string  `json:"company_name"`
+		SupervisorID   uint    `json:"supervisor_id"`
+		SupervisorName string  `json:"supervisor_name"`
 		RequiredHours  float64 `json:"required_hours"`
-		StartDate      string `json:"start_date"`
-		EndDate        string `json:"end_date"`
-		Status         string `json:"status"`
+		StartDate      string  `json:"start_date"`
+		EndDate        string  `json:"end_date"`
+		Status         string  `json:"status"`
 	}
 
 	var results []AssignmentDetail
@@ -136,10 +136,18 @@ func GetAssignmentOptions(c *gin.Context) {
 		departmentOptions = append(departmentOptions, Option{ID: d.ID, Name: d.Name})
 	}
 
-	if availableStudents == nil { availableStudents = []Option{} }
-	if supervisorOptions == nil { supervisorOptions = []Option{} }
-	if companyOptions == nil { companyOptions = []Option{} }
-	if departmentOptions == nil { departmentOptions = []Option{} }
+	if availableStudents == nil {
+		availableStudents = []Option{}
+	}
+	if supervisorOptions == nil {
+		supervisorOptions = []Option{}
+	}
+	if companyOptions == nil {
+		companyOptions = []Option{}
+	}
+	if departmentOptions == nil {
+		departmentOptions = []Option{}
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"students":    availableStudents,

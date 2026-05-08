@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"ojt-system/config"
 	"ojt-system/models"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,15 +14,15 @@ import (
 // Returns all students with their OJT assignments, hours progress, and latest evaluation.
 
 func GetCoordinatorStudents(c *gin.Context) {
-	// Optional filtering could happen here, but we will send all students and let frontend filter
 	var assignments []models.OJTAssignment
-	config.DB.Preload("Student").Preload("Supervisor").Find(&assignments)
+	config.DB.Preload("Student").Preload("Supervisor").Preload("Department").Find(&assignments)
 
 	type StudentDetail struct {
 		StudentID      uint    `json:"student_id"`
 		StudentName    string  `json:"student_name"`
 		StudentEmail   string  `json:"student_email"`
 		ProfilePhoto   string  `json:"profile_photo"`
+		DepartmentName string  `json:"department_name"`
 		CompanyName    string  `json:"company_name"`
 		SupervisorName string  `json:"supervisor_name"`
 		RequiredHours  float64 `json:"required_hours"`
@@ -37,55 +38,34 @@ func GetCoordinatorStudents(c *gin.Context) {
 	var students []StudentDetail
 	var totalStudents, completedOJT, behindSchedule, pendingEvaluations int
 
-	// Let's get all students who have role='student' just in case some don't have assignments yet?
-	// The prompt implies students with assignments since they have Company, Progress, etc.
 	for _, a := range assignments {
 		totalStudents++
 
-		// Sum approved hours
-		var approvedLogs []models.TimeLog
-		config.DB.Where("student_id = ? AND status = 'approved'", a.StudentID).Find(&approvedLogs)
+		// Calculate Approved Hours
 		var approvedHours float64
-		for _, l := range approvedLogs {
-			approvedHours += l.TotalHours
-		}
-		approvedHours = math.Round(approvedHours*100) / 100
+		config.DB.Model(&models.TimeLog{}).
+			Where("student_id = ? AND status = 'approved'", a.StudentID).
+			Select("COALESCE(SUM(total_hours), 0)").Scan(&approvedHours)
 
-		// Sum pending hours
-		var pendingLogs []models.TimeLog
-		config.DB.Where("student_id = ? AND status = 'pending'", a.StudentID).Find(&pendingLogs)
+		// Calculate Pending Hours
 		var pendingHours float64
-		for _, l := range pendingLogs {
-			pendingHours += l.TotalHours
-		}
-		pendingHours = math.Round(pendingHours*100) / 100
+		config.DB.Model(&models.TimeLog{}).
+			Where("student_id = ? AND status = 'pending'", a.StudentID).
+			Select("COALESCE(SUM(total_hours), 0)").Scan(&pendingHours)
 
-		// Count pending log entries
+		// Count Pending Logs
 		var pendingCount int64
-		config.DB.Model(&models.TimeLog{}).Where("student_id = ? AND status = 'pending'", a.StudentID).Count(&pendingCount)
+		config.DB.Model(&models.TimeLog{}).
+			Where("student_id = ? AND status = 'pending'", a.StudentID).
+			Count(&pendingCount)
 
-		requiredHours := 600.0
+		// Calculate progress
+		progress := 0.0
 		if a.RequiredHours > 0 {
-			requiredHours = a.RequiredHours
+			progress = math.Round((approvedHours / a.RequiredHours) * 100)
 		}
 
-		progress := (approvedHours / requiredHours) * 100
-		if progress > 100 {
-			progress = 100
-		}
-		progress = math.Round(progress*100) / 100
-
-		// Determine status
-		status := "On Track"
-		if approvedHours >= requiredHours {
-			status = "Completed"
-			completedOJT++
-		} else if progress < 30 {
-			status = "Behind"
-			behindSchedule++
-		}
-
-		// Get latest evaluation score
+		// Find latest evaluation
 		var eval models.Evaluation
 		var latestScore float64
 		var latestGrade string
@@ -93,20 +73,25 @@ func GetCoordinatorStudents(c *gin.Context) {
 			latestScore = eval.OverallScore
 			latestGrade = gradeLabel(latestScore)
 		} else {
-			// No evaluation yet, assume pending evaluation needed if progress > 50%
 			if progress >= 50 {
 				pendingEvaluations++
 			}
 		}
+
+		// Resolve department name: use preloaded relation
+		deptName := a.Department.Name
+
+		status := studentStatus(progress, a.StartDate, a.EndDate, a.Status)
 
 		students = append(students, StudentDetail{
 			StudentID:      a.StudentID,
 			StudentName:    a.Student.Name,
 			StudentEmail:   a.Student.Email,
 			ProfilePhoto:   a.Student.ProfilePhoto,
+			DepartmentName: deptName,
 			CompanyName:    a.CompanyName,
 			SupervisorName: a.Supervisor.Name,
-			RequiredHours:  requiredHours,
+			RequiredHours:  a.RequiredHours,
 			CompletedHours: approvedHours,
 			PendingHours:   pendingHours,
 			ProgressPct:    progress,
@@ -115,9 +100,14 @@ func GetCoordinatorStudents(c *gin.Context) {
 			LatestGrade:    latestGrade,
 			PendingLogs:    pendingCount,
 		})
-	}
 
-	//test
+		if a.Status == "completed" || progress >= 100 {
+			completedOJT++
+		}
+		if status == "Behind" {
+			behindSchedule++
+		}
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"summary": gin.H{
@@ -130,8 +120,22 @@ func GetCoordinatorStudents(c *gin.Context) {
 	})
 }
 
-// ─── GET /api/coordinator/stats ────────────────────────────────────────────────
-// Coordinator dashboard summary stats (if requested separately).
+func studentStatus(progress float64, start, end time.Time, currentStatus string) string {
+	if currentStatus == "completed" || progress >= 100 {
+		return "Completed"
+	}
+	
+	now := time.Now()
+	if !end.IsZero() && now.After(end) && progress < 100 {
+		return "Behind"
+	}
+	
+	if progress < 25 && !start.IsZero() && now.Sub(start).Hours() > 24*30 {
+		return "Behind"
+	}
+
+	return "On Track"
+}
 
 func GetCoordinatorStats(c *gin.Context) {
 	var totalStudents int64
@@ -145,9 +149,3 @@ func GetCoordinatorStats(c *gin.Context) {
 		"active_assignments": activeAssignments,
 	})
 }
-
-// Ensure gradeLabel helper exists here if we are compiling the package
-// We could also reuse the one from evaluation_controller.go, but Go package level funcs
-// are visible across files in the same package, so gradeLabel is already defined in
-// evaluation_controller.go! We can just call it natively.
-// Since gradeLabel is in controllers package, it is visible.

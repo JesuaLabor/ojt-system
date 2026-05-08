@@ -96,6 +96,12 @@ function StudentDetailsModal({ student, onClose }) {
                                     <p className="text-sm font-medium text-slate-200">{student.company_name}</p>
                                 </div>
                                 <div>
+                                    <p className="text-[10px] text-slate-500 uppercase">Department</p>
+                                    <p className="text-sm font-medium text-slate-200">
+                                        {student.department_name || <span className="text-slate-500 italic">Not assigned</span>}
+                                    </p>
+                                </div>
+                                <div>
                                     <p className="text-[10px] text-slate-500 uppercase">Supervisor</p>
                                     <p className="text-sm font-medium text-slate-200">{student.supervisor_name || 'Unassigned'}</p>
                                 </div>
@@ -316,6 +322,9 @@ export default function CoordinatorOverview() {
                                         </td>
                                         <td>
                                             <p className="text-sm text-slate-200 font-medium truncate max-w-[150px]">{student.company_name}</p>
+                                            <p className="text-[10px] text-slate-500 uppercase tracking-wider mt-0.5">
+                                                Dept: <span className="text-slate-400 font-semibold">{student.department_name || 'N/A'}</span>
+                                            </p>
                                             <p className="text-[10px] text-slate-500 uppercase tracking-wider mt-0.5" title={student.supervisor_name}>
                                                 Sup: {student.supervisor_name || 'N/A'}
                                             </p>

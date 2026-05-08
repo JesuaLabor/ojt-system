@@ -108,6 +108,7 @@ export default function CoordinatorReports() {
             const exportData = students.map(s => ({
                 'Student Name': s.student_name,
                 'Email': s.student_email,
+                'Department': s.department_name || 'N/A',
                 'Company': s.company_name,
                 'Supervisor': s.supervisor_name,
                 'Status': s.status,

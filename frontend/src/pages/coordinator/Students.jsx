@@ -42,6 +42,7 @@ export default function CoordinatorStudents() {
   const filteredStudents = students.filter(s => 
     s.student_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     s.company_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (s.department_name && s.department_name.toLowerCase().includes(searchQuery.toLowerCase())) ||
     (s.supervisor_name && s.supervisor_name.toLowerCase().includes(searchQuery.toLowerCase()))
   )
 
@@ -57,7 +58,7 @@ export default function CoordinatorStudents() {
         <div className="relative min-w-[320px]">
           <input 
             type="text"
-            placeholder="Search by name, company, or supervisor..."
+            placeholder="Search by name, dept, company..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="input w-full pl-10"
@@ -159,7 +160,10 @@ export default function CoordinatorStudents() {
                             </td>
                             <td className="table-cell">
                                 <p className="text-sm text-slate-300 font-medium">{student.company_name}</p>
-                                <p className="text-[10px] text-slate-500 mt-0.5">
+                                <p className="text-[10px] text-slate-500 mt-0.5 mb-0.5">
+                                   Dept: <span className="text-slate-400 font-semibold">{student.department_name || 'N/A'}</span>
+                                </p>
+                                <p className="text-[10px] text-slate-500">
                                    Supervisor: <span className="text-slate-400">{student.supervisor_name || 'Unassigned'}</span>
                                 </p>
                             </td>

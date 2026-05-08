@@ -1,0 +1,5 @@
+# ojt-system/controllers
+controllers/coordinator_controller.go:47:37: a.Student.CompletedHours undefined (type models.User has no field or method CompletedHours)
+controllers/coordinator_controller.go:77:30: a.Student.CompletedHours undefined (type models.User has no field or method CompletedHours)
+controllers/coordinator_controller.go:78:30: a.Student.PendingHours undefined (type models.User has no field or method PendingHours)
+controllers/coordinator_controller.go:83:30: a.Student.PendingLogs undefined (type models.User has no field or method PendingLogs)
