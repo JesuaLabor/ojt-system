@@ -1,65 +1,429 @@
-2026/04/06 22:26:55 Database connected successfully
-2026/04/06 22:26:55 Database migrated successfully
+2026/05/08 22:36:24 ✅ Database connected successfully
+2026/05/08 22:36:24 Database migrated successfully
+2026/05/08 22:36:24 ⚠️  Cloudinary not configured: cloudinary credentials not set or still using placeholders
+2026/05/08 22:36:24    Avatar uploads will fail until CLOUDINARY_* env vars are set.
 [GIN-debug] [WARNING] Creating an Engine instance with the Logger and Recovery middleware already attached.
 
 [GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
  - using env:	export GIN_MODE=release
  - using code:	gin.SetMode(gin.ReleaseMode)
 
-[GIN-debug] GET    /uploads/*filepath        --> github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1 (4 handlers)
-[GIN-debug] HEAD   /uploads/*filepath        --> github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1 (4 handlers)
-[GIN-debug] GET    /api/health               --> ojt-system/routes.RegisterRoutes.func1 (4 handlers)
-[GIN-debug] POST   /api/auth/register        --> ojt-system/controllers.Register (4 handlers)
-[GIN-debug] POST   /api/auth/login           --> ojt-system/controllers.Login (4 handlers)
-[GIN-debug] POST   /api/auth/change-password --> ojt-system/controllers.ChangePassword (5 handlers)
-[GIN-debug] GET    /api/me                   --> ojt-system/controllers.GetMe (5 handlers)
-[GIN-debug] PUT    /api/me                   --> ojt-system/controllers.UpdateProfile (5 handlers)
-[GIN-debug] POST   /api/me/avatar            --> ojt-system/controllers.UploadAvatar (5 handlers)
-[GIN-debug] POST   /api/timelogs/            --> ojt-system/controllers.CreateTimeLog (5 handlers)
-[GIN-debug] POST   /api/timelogs/clockin     --> ojt-system/controllers.ClockIn (5 handlers)
-[GIN-debug] PATCH  /api/timelogs/clockout    --> ojt-system/controllers.ClockOut (5 handlers)
-[GIN-debug] GET    /api/timelogs/            --> ojt-system/controllers.GetMyTimeLogs (5 handlers)
-[GIN-debug] GET    /api/timelogs/:student_id --> ojt-system/controllers.GetStudentTimeLogs (6 handlers)
-[GIN-debug] GET    /api/timelogs/:student_id/summary --> ojt-system/controllers.GetStudentSummary (6 handlers)
-[GIN-debug] PATCH  /api/timelogs/:id/approve --> ojt-system/controllers.ApproveTimeLog (6 handlers)
-[GIN-debug] PATCH  /api/timelogs/:id/reject  --> ojt-system/controllers.RejectTimeLog (6 handlers)
-[GIN-debug] POST   /api/evaluations/         --> ojt-system/controllers.CreateEvaluation (6 handlers)
-[GIN-debug] GET    /api/evaluations/me       --> ojt-system/controllers.GetMyEvaluations (5 handlers)
-[GIN-debug] GET    /api/evaluations/:student_id --> ojt-system/controllers.GetStudentEvaluations (6 handlers)
-[GIN-debug] GET    /api/evaluations/:student_id/latest --> ojt-system/controllers.GetLatestEvaluation (6 handlers)
-[GIN-debug] GET    /api/reports/:student_id/pdf --> ojt-system/controllers.GenerateStudentReport (6 handlers)
-[GIN-debug] POST   /api/documents            --> ojt-system/controllers.UploadDocument (5 handlers)
-[GIN-debug] GET    /api/documents            --> ojt-system/controllers.GetMyDocuments (5 handlers)
-[GIN-debug] GET    /api/notifications/       --> ojt-system/controllers.GetMyNotifications (5 handlers)
-[GIN-debug] PATCH  /api/notifications/:id/read --> ojt-system/controllers.MarkNotificationRead (5 handlers)
-[GIN-debug] PATCH  /api/notifications/read-all --> ojt-system/controllers.MarkAllNotificationsReadGlobal (5 handlers)
-[GIN-debug] GET    /api/supervisor/students  --> ojt-system/controllers.GetSupervisorStudents (6 handlers)
-[GIN-debug] GET    /api/supervisor/notifications --> ojt-system/controllers.GetSupervisorNotifications (6 handlers)
-[GIN-debug] PATCH  /api/supervisor/notifications/read-all --> ojt-system/controllers.MarkAllNotificationsRead (6 handlers)
-[GIN-debug] GET    /api/supervisor/activity  --> ojt-system/controllers.GetSupervisorActivity (6 handlers)
-[GIN-debug] GET    /api/coordinator/students --> ojt-system/controllers.GetCoordinatorStudents (6 handlers)
-[GIN-debug] GET    /api/coordinator/stats    --> ojt-system/controllers.GetCoordinatorStats (6 handlers)
-[GIN-debug] GET    /api/coordinator/users/pending --> ojt-system/controllers.GetPendingUsers (6 handlers)
-[GIN-debug] PATCH  /api/coordinator/users/:id/approve --> ojt-system/controllers.ApproveUser (6 handlers)
-[GIN-debug] PATCH  /api/coordinator/users/:id/reject --> ojt-system/controllers.RejectUser (6 handlers)
-[GIN-debug] GET    /api/coordinator/documents --> ojt-system/controllers.GetAllDocuments (6 handlers)
-[GIN-debug] PATCH  /api/coordinator/documents/:id/approve --> ojt-system/controllers.ApproveDocument (6 handlers)
-[GIN-debug] PATCH  /api/coordinator/documents/:id/reject --> ojt-system/controllers.RejectDocument (6 handlers)
-[GIN-debug] GET    /api/faculty/students     --> ojt-system/controllers.GetCoordinatorStudents (6 handlers)
-[GIN-debug] GET    /api/faculty/stats        --> ojt-system/controllers.GetCoordinatorStats (6 handlers)
-[GIN-debug] GET    /api/assignments/         --> ojt-system/controllers.GetAssignments (6 handlers)
-[GIN-debug] GET    /api/assignments/options  --> ojt-system/controllers.GetAssignmentOptions (6 handlers)
-[GIN-debug] POST   /api/assignments/         --> ojt-system/controllers.CreateAssignment (6 handlers)
-[GIN-debug] PATCH  /api/assignments/:id      --> ojt-system/controllers.UpdateAssignment (6 handlers)
-[GIN-debug] DELETE /api/assignments/:id      --> ojt-system/controllers.DeleteAssignment (6 handlers)
-[GIN-debug] GET    /api/companies/           --> ojt-system/controllers.GetCompanies (6 handlers)
-[GIN-debug] POST   /api/companies/           --> ojt-system/controllers.CreateCompany (6 handlers)
-[GIN-debug] PATCH  /api/companies/:id        --> ojt-system/controllers.UpdateCompany (6 handlers)
-[GIN-debug] DELETE /api/companies/:id        --> ojt-system/controllers.DeleteCompany (6 handlers)
-2026/04/06 22:26:55 Server running on port 8080
+2026/05/08 22:36:24 ⚙️  Setting up CORS...
+[GIN-debug] GET    /                         --> main.main.func1 (5 handlers)
+[GIN-debug] GET    /uploads/*filepath        --> github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1 (5 handlers)
+[GIN-debug] HEAD   /uploads/*filepath        --> github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1 (5 handlers)
+2026/05/08 22:36:24 🛣️  Registering routes...
+[GIN-debug] GET    /api/health               --> ojt-system/routes.RegisterRoutes.func1 (5 handlers)
+[GIN-debug] POST   /api/auth/register        --> ojt-system/controllers.Register (5 handlers)
+[GIN-debug] POST   /api/auth/login           --> ojt-system/controllers.Login (5 handlers)
+[GIN-debug] POST   /api/auth/change-password --> ojt-system/controllers.ChangePassword (6 handlers)
+[GIN-debug] GET    /api/me                   --> ojt-system/controllers.GetMe (6 handlers)
+[GIN-debug] PUT    /api/me                   --> ojt-system/controllers.UpdateProfile (6 handlers)
+[GIN-debug] POST   /api/me/avatar            --> ojt-system/controllers.UploadAvatar (6 handlers)
+[GIN-debug] POST   /api/timelogs/            --> ojt-system/controllers.CreateTimeLog (6 handlers)
+[GIN-debug] POST   /api/timelogs/clockin     --> ojt-system/controllers.ClockIn (6 handlers)
+[GIN-debug] PATCH  /api/timelogs/clockout    --> ojt-system/controllers.ClockOut (6 handlers)
+[GIN-debug] GET    /api/timelogs/            --> ojt-system/controllers.GetMyTimeLogs (6 handlers)
+[GIN-debug] GET    /api/timelogs/:student_id --> ojt-system/controllers.GetStudentTimeLogs (7 handlers)
+[GIN-debug] GET    /api/timelogs/:student_id/summary --> ojt-system/controllers.GetStudentSummary (7 handlers)
+[GIN-debug] PATCH  /api/timelogs/:id/approve --> ojt-system/controllers.ApproveTimeLog (7 handlers)
+[GIN-debug] PATCH  /api/timelogs/:id/reject  --> ojt-system/controllers.RejectTimeLog (7 handlers)
+[GIN-debug] POST   /api/evaluations/         --> ojt-system/controllers.CreateEvaluation (7 handlers)
+[GIN-debug] GET    /api/evaluations/me       --> ojt-system/controllers.GetMyEvaluations (6 handlers)
+[GIN-debug] GET    /api/evaluations/:student_id --> ojt-system/controllers.GetStudentEvaluations (7 handlers)
+[GIN-debug] GET    /api/evaluations/:student_id/latest --> ojt-system/controllers.GetLatestEvaluation (7 handlers)
+[GIN-debug] GET    /api/reports/:student_id/pdf --> ojt-system/controllers.GenerateStudentReport (7 handlers)
+[GIN-debug] POST   /api/documents            --> ojt-system/controllers.UploadDocument (6 handlers)
+[GIN-debug] GET    /api/documents            --> ojt-system/controllers.GetMyDocuments (6 handlers)
+[GIN-debug] GET    /api/notifications/       --> ojt-system/controllers.GetMyNotifications (6 handlers)
+[GIN-debug] PATCH  /api/notifications/:id/read --> ojt-system/controllers.MarkNotificationRead (6 handlers)
+[GIN-debug] PATCH  /api/notifications/read-all --> ojt-system/controllers.MarkAllNotificationsReadGlobal (6 handlers)
+[GIN-debug] GET    /api/supervisor/students  --> ojt-system/controllers.GetSupervisorStudents (7 handlers)
+[GIN-debug] GET    /api/supervisor/notifications --> ojt-system/controllers.GetSupervisorNotifications (7 handlers)
+[GIN-debug] PATCH  /api/supervisor/notifications/read-all --> ojt-system/controllers.MarkAllNotificationsRead (7 handlers)
+[GIN-debug] GET    /api/supervisor/activity  --> ojt-system/controllers.GetSupervisorActivity (7 handlers)
+[GIN-debug] GET    /api/coordinator/students --> ojt-system/controllers.GetCoordinatorStudents (7 handlers)
+[GIN-debug] GET    /api/coordinator/stats    --> ojt-system/controllers.GetCoordinatorStats (7 handlers)
+[GIN-debug] GET    /api/coordinator/users/pending --> ojt-system/controllers.GetPendingUsers (7 handlers)
+[GIN-debug] PATCH  /api/coordinator/users/:id/approve --> ojt-system/controllers.ApproveUser (7 handlers)
+[GIN-debug] PATCH  /api/coordinator/users/:id/reject --> ojt-system/controllers.RejectUser (7 handlers)
+[GIN-debug] GET    /api/coordinator/documents --> ojt-system/controllers.GetAllDocuments (7 handlers)
+[GIN-debug] PATCH  /api/coordinator/documents/:id/approve --> ojt-system/controllers.ApproveDocument (7 handlers)
+[GIN-debug] PATCH  /api/coordinator/documents/:id/reject --> ojt-system/controllers.RejectDocument (7 handlers)
+[GIN-debug] GET    /api/faculty/students     --> ojt-system/controllers.GetCoordinatorStudents (7 handlers)
+[GIN-debug] GET    /api/faculty/stats        --> ojt-system/controllers.GetCoordinatorStats (7 handlers)
+[GIN-debug] GET    /api/assignments/         --> ojt-system/controllers.GetAssignments (7 handlers)
+[GIN-debug] GET    /api/assignments/options  --> ojt-system/controllers.GetAssignmentOptions (7 handlers)
+[GIN-debug] POST   /api/assignments/         --> ojt-system/controllers.CreateAssignment (7 handlers)
+[GIN-debug] PATCH  /api/assignments/:id      --> ojt-system/controllers.UpdateAssignment (7 handlers)
+[GIN-debug] DELETE /api/assignments/:id      --> ojt-system/controllers.DeleteAssignment (7 handlers)
+[GIN-debug] GET    /api/companies/           --> ojt-system/controllers.GetCompanies (7 handlers)
+[GIN-debug] POST   /api/companies/           --> ojt-system/controllers.CreateCompany (7 handlers)
+[GIN-debug] PATCH  /api/companies/:id        --> ojt-system/controllers.UpdateCompany (7 handlers)
+[GIN-debug] DELETE /api/companies/:id        --> ojt-system/controllers.DeleteCompany (7 handlers)
+[GIN-debug] GET    /api/departments/         --> ojt-system/controllers.GetDepartments (6 handlers)
+[GIN-debug] GET    /api/departments/:id/members --> ojt-system/controllers.GetDepartmentMembers (7 handlers)
+[GIN-debug] POST   /api/departments/         --> ojt-system/controllers.CreateDepartment (7 handlers)
+[GIN-debug] PATCH  /api/departments/:id      --> ojt-system/controllers.UpdateDepartment (7 handlers)
+[GIN-debug] POST   /api/departments/:id/image --> ojt-system/controllers.UploadDepartmentImage (7 handlers)
+[GIN-debug] DELETE /api/departments/:id      --> ojt-system/controllers.DeleteDepartment (7 handlers)
+2026/05/08 22:36:24 🚀 Server is attempting to start on port 8080...
 [GIN-debug] [WARNING] You trusted all proxies, this is NOT safe. We recommend you to set a value.
 Please check https://pkg.go.dev/github.com/gin-gonic/gin#readme-don-t-trust-all-proxies for details.
 [GIN-debug] Listening and serving HTTP on :8080
-[GIN] 2026/04/06 - 22:27:10 | 204 |      33.433µs |             ::1 | OPTIONS  "/api/notifications/"
-[GIN] 2026/04/06 - 22:27:10 | 200 |     866.427µs |             ::1 | GET      "/api/notifications/"
-signal: killed
+[GIN] 2026/05/08 - 22:36:36 | 204 |       58.67µs |             ::1 | OPTIONS  "/api/notifications/"
+[GIN] 2026/05/08 - 22:36:36 | 200 |     1.37226ms |             ::1 | GET      "/api/notifications/"
+[GIN] 2026/05/08 - 22:36:38 | 200 |     874.624µs |             ::1 | GET      "/api/notifications/"
+[GIN] 2026/05/08 - 22:36:57 | 204 |      31.048µs |             ::1 | OPTIONS  "/api/me"
+[GIN] 2026/05/08 - 22:36:57 | 204 |       15.94µs |             ::1 | OPTIONS  "/api/me"
+[GIN] 2026/05/08 - 22:36:57 | 200 |     892.798µs |             ::1 | GET      "/api/me"
+[GIN] 2026/05/08 - 22:36:57 | 200 |     490.001µs |             ::1 | GET      "/api/me"
+[GIN] 2026/05/08 - 22:36:57 | 204 |       8.687µs |             ::1 | OPTIONS  "/api/coordinator/users/pending"
+[GIN] 2026/05/08 - 22:36:57 | 204 |       4.889µs |             ::1 | OPTIONS  "/api/notifications/"
+[GIN] 2026/05/08 - 22:36:57 | 204 |        10.4µs |             ::1 | OPTIONS  "/api/assignments/"
+[GIN] 2026/05/08 - 22:36:57 | 204 |      52.369µs |             ::1 | OPTIONS  "/api/assignments/options"
+[GIN] 2026/05/08 - 22:36:57 | 200 |     822.947µs |             ::1 | GET      "/api/coordinator/users/pending"
+[GIN] 2026/05/08 - 22:36:57 | 204 |      24.265µs |             ::1 | OPTIONS  "/api/notifications/"
+[GIN] 2026/05/08 - 22:36:57 | 204 |      34.344µs |             ::1 | OPTIONS  "/api/assignments/"
+[GIN] 2026/05/08 - 22:36:57 | 204 |     137.749µs |             ::1 | OPTIONS  "/api/assignments/options"
+[GIN] 2026/05/08 - 22:36:57 | 200 |      765.93µs |             ::1 | GET      "/api/assignments/"
+[GIN] 2026/05/08 - 22:36:57 | 200 |     434.096µs |             ::1 | GET      "/api/coordinator/users/pending"
+[GIN] 2026/05/08 - 22:36:57 | 200 |     381.347µs |             ::1 | GET      "/api/assignments/"
+[GIN] 2026/05/08 - 22:36:57 | 200 |    6.878289ms |             ::1 | GET      "/api/notifications/"
+[GIN] 2026/05/08 - 22:36:57 | 200 |     508.837µs |             ::1 | GET      "/api/notifications/"
+[GIN] 2026/05/08 - 22:36:57 | 200 |    9.285876ms |             ::1 | GET      "/api/assignments/options"
+[GIN] 2026/05/08 - 22:36:57 | 200 |    2.160712ms |             ::1 | GET      "/api/assignments/options"
+[GIN] 2026/05/08 - 22:37:11 | 204 |       8.696µs |             ::1 | OPTIONS  "/api/assignments/"
+
+2026/05/08 22:37:11 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/assignment_controller.go:165 [35;1mrecord not found
+[0m[33m[0.564ms] [34;1m[rows:0][0m SELECT * FROM "ojt_assignments" WHERE student_id = 2 AND "ojt_assignments"."deleted_at" IS NULL ORDER BY "ojt_assignments"."id" LIMIT 1
+[GIN] 2026/05/08 - 22:37:11 | 201 |   14.634263ms |             ::1 | POST     "/api/assignments/"
+[GIN] 2026/05/08 - 22:37:11 | 204 |      13.044µs |             ::1 | OPTIONS  "/api/assignments/options"
+[GIN] 2026/05/08 - 22:37:11 | 200 |    2.323589ms |             ::1 | GET      "/api/assignments/"
+[GIN] 2026/05/08 - 22:37:11 | 200 |    1.254168ms |             ::1 | GET      "/api/assignments/options"
+[GIN] 2026/05/08 - 22:37:14 | 204 |       7.935µs |             ::1 | OPTIONS  "/api/coordinator/documents?status=pending"
+[GIN] 2026/05/08 - 22:37:14 | 204 |        4.98µs |             ::1 | OPTIONS  "/api/coordinator/documents?status=pending"
+[GIN] 2026/05/08 - 22:37:14 | 200 |     758.325µs |             ::1 | GET      "/api/coordinator/documents?status=pending"
+[GIN] 2026/05/08 - 22:37:14 | 200 |     482.407µs |             ::1 | GET      "/api/coordinator/documents?status=pending"
+[GIN] 2026/05/08 - 22:37:18 | 204 |       8.025µs |             ::1 | OPTIONS  "/api/coordinator/documents?status=approved"
+[GIN] 2026/05/08 - 22:37:18 | 200 |     538.743µs |             ::1 | GET      "/api/coordinator/documents?status=approved"
+[GIN] 2026/05/08 - 22:37:19 | 204 |       7.574µs |             ::1 | OPTIONS  "/api/coordinator/documents?status=rejected"
+[GIN] 2026/05/08 - 22:37:19 | 200 |     408.007µs |             ::1 | GET      "/api/coordinator/documents?status=rejected"
+[GIN] 2026/05/08 - 22:37:21 | 204 |       9.097µs |             ::1 | OPTIONS  "/api/coordinator/students"
+[GIN] 2026/05/08 - 22:37:21 | 204 |       6.261µs |             ::1 | OPTIONS  "/api/coordinator/students"
+
+2026/05/08 22:37:21 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/coordinator_controller.go:92 [35;1mrecord not found
+[0m[33m[0.260ms] [34;1m[rows:0][0m SELECT * FROM "evaluations" WHERE student_id = 2 AND "evaluations"."deleted_at" IS NULL ORDER BY created_at desc,"evaluations"."id" LIMIT 1
+[GIN] 2026/05/08 - 22:37:21 | 200 |    2.757815ms |             ::1 | GET      "/api/coordinator/students"
+
+2026/05/08 22:37:21 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/coordinator_controller.go:92 [35;1mrecord not found
+[0m[33m[0.161ms] [34;1m[rows:0][0m SELECT * FROM "evaluations" WHERE student_id = 2 AND "evaluations"."deleted_at" IS NULL ORDER BY created_at desc,"evaluations"."id" LIMIT 1
+[GIN] 2026/05/08 - 22:37:21 | 200 |     1.41458ms |             ::1 | GET      "/api/coordinator/students"
+[GIN] 2026/05/08 - 22:37:21 | 204 |       7.394µs |             ::1 | OPTIONS  "/api/timelogs/2"
+
+2026/05/08 22:37:21 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/coordinator_controller.go:92 [35;1mrecord not found
+[0m[33m[0.258ms] [34;1m[rows:0][0m SELECT * FROM "evaluations" WHERE student_id = 2 AND "evaluations"."deleted_at" IS NULL ORDER BY created_at desc,"evaluations"."id" LIMIT 1
+[GIN] 2026/05/08 - 22:37:21 | 200 |    1.884172ms |             ::1 | GET      "/api/coordinator/students"
+[GIN] 2026/05/08 - 22:37:21 | 200 |     929.648µs |             ::1 | GET      "/api/timelogs/2"
+[GIN] 2026/05/08 - 22:37:21 | 200 |     630.355µs |             ::1 | GET      "/api/timelogs/2"
+
+2026/05/08 22:37:26 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/coordinator_controller.go:92 [35;1mrecord not found
+[0m[33m[0.147ms] [34;1m[rows:0][0m SELECT * FROM "evaluations" WHERE student_id = 2 AND "evaluations"."deleted_at" IS NULL ORDER BY created_at desc,"evaluations"."id" LIMIT 1
+[GIN] 2026/05/08 - 22:37:26 | 200 |    1.496023ms |             ::1 | GET      "/api/coordinator/students"
+
+2026/05/08 22:37:26 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/coordinator_controller.go:92 [35;1mrecord not found
+[0m[33m[0.151ms] [34;1m[rows:0][0m SELECT * FROM "evaluations" WHERE student_id = 2 AND "evaluations"."deleted_at" IS NULL ORDER BY created_at desc,"evaluations"."id" LIMIT 1
+[GIN] 2026/05/08 - 22:37:26 | 200 |    1.237888ms |             ::1 | GET      "/api/coordinator/students"
+[GIN] 2026/05/08 - 22:37:27 | 204 |       7.574µs |             ::1 | OPTIONS  "/api/coordinator/students"
+[GIN] 2026/05/08 - 22:37:27 | 204 |       8.295µs |             ::1 | OPTIONS  "/api/coordinator/students"
+
+2026/05/08 22:37:27 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/coordinator_controller.go:92 [35;1mrecord not found
+[0m[33m[0.127ms] [34;1m[rows:0][0m SELECT * FROM "evaluations" WHERE student_id = 2 AND "evaluations"."deleted_at" IS NULL ORDER BY created_at desc,"evaluations"."id" LIMIT 1
+[GIN] 2026/05/08 - 22:37:27 | 200 |    1.506022ms |             ::1 | GET      "/api/coordinator/students"
+
+2026/05/08 22:37:27 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/coordinator_controller.go:92 [35;1mrecord not found
+[0m[33m[0.092ms] [34;1m[rows:0][0m SELECT * FROM "evaluations" WHERE student_id = 2 AND "evaluations"."deleted_at" IS NULL ORDER BY created_at desc,"evaluations"."id" LIMIT 1
+[GIN] 2026/05/08 - 22:37:27 | 200 |     920.661µs |             ::1 | GET      "/api/coordinator/students"
+[GIN] 2026/05/08 - 22:37:27 | 204 |       8.256µs |             ::1 | OPTIONS  "/api/timelogs/2"
+[GIN] 2026/05/08 - 22:37:27 | 204 |       7.113µs |             ::1 | OPTIONS  "/api/timelogs/2"
+
+2026/05/08 22:37:27 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/coordinator_controller.go:92 [35;1mrecord not found
+[0m[33m[0.194ms] [34;1m[rows:0][0m SELECT * FROM "evaluations" WHERE student_id = 2 AND "evaluations"."deleted_at" IS NULL ORDER BY created_at desc,"evaluations"."id" LIMIT 1
+[GIN] 2026/05/08 - 22:37:27 | 200 |    2.674409ms |             ::1 | GET      "/api/coordinator/students"
+[GIN] 2026/05/08 - 22:37:27 | 200 |      728.82µs |             ::1 | GET      "/api/timelogs/2"
+[GIN] 2026/05/08 - 22:37:27 | 200 |     988.238µs |             ::1 | GET      "/api/timelogs/2"
+[GIN] 2026/05/08 - 22:37:27 | 204 |         5.8µs |             ::1 | OPTIONS  "/api/notifications/"
+[GIN] 2026/05/08 - 22:37:27 | 200 |     493.929µs |             ::1 | GET      "/api/notifications/"
+[GIN] 2026/05/08 - 22:37:35 | 204 |       9.027µs |             ::1 | OPTIONS  "/api/coordinator/students"
+[GIN] 2026/05/08 - 22:37:35 | 204 |       9.548µs |             ::1 | OPTIONS  "/api/coordinator/students"
+
+2026/05/08 22:37:35 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/coordinator_controller.go:92 [35;1mrecord not found
+[0m[33m[0.099ms] [34;1m[rows:0][0m SELECT * FROM "evaluations" WHERE student_id = 2 AND "evaluations"."deleted_at" IS NULL ORDER BY created_at desc,"evaluations"."id" LIMIT 1
+[GIN] 2026/05/08 - 22:37:35 | 200 |    1.603395ms |             ::1 | GET      "/api/coordinator/students"
+
+2026/05/08 22:37:35 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/coordinator_controller.go:92 [35;1mrecord not found
+[0m[33m[0.104ms] [34;1m[rows:0][0m SELECT * FROM "evaluations" WHERE student_id = 2 AND "evaluations"."deleted_at" IS NULL ORDER BY created_at desc,"evaluations"."id" LIMIT 1
+[GIN] 2026/05/08 - 22:37:35 | 200 |    1.553602ms |             ::1 | GET      "/api/coordinator/students"
+[GIN] 2026/05/08 - 22:37:38 | 204 |       9.197µs |             ::1 | OPTIONS  "/api/notifications/"
+[GIN] 2026/05/08 - 22:37:38 | 200 |     955.377µs |             ::1 | GET      "/api/notifications/"
+
+2026/05/08 22:37:39 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/coordinator_controller.go:92 [35;1mrecord not found
+[0m[33m[0.104ms] [34;1m[rows:0][0m SELECT * FROM "evaluations" WHERE student_id = 2 AND "evaluations"."deleted_at" IS NULL ORDER BY created_at desc,"evaluations"."id" LIMIT 1
+[GIN] 2026/05/08 - 22:37:39 | 200 |    1.133461ms |             ::1 | GET      "/api/coordinator/students"
+
+2026/05/08 22:37:39 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/coordinator_controller.go:92 [35;1mrecord not found
+[0m[33m[0.131ms] [34;1m[rows:0][0m SELECT * FROM "evaluations" WHERE student_id = 2 AND "evaluations"."deleted_at" IS NULL ORDER BY created_at desc,"evaluations"."id" LIMIT 1
+[GIN] 2026/05/08 - 22:37:39 | 200 |    1.369766ms |             ::1 | GET      "/api/coordinator/students"
+[GIN] 2026/05/08 - 22:37:57 | 204 |       8.626µs |             ::1 | OPTIONS  "/api/notifications/"
+[GIN] 2026/05/08 - 22:37:57 | 200 |     651.315µs |             ::1 | GET      "/api/notifications/"
+[GIN] 2026/05/08 - 22:38:27 | 204 |     3.24834ms |             ::1 | OPTIONS  "/api/notifications/"
+[GIN] 2026/05/08 - 22:38:27 | 200 |    1.997488ms |             ::1 | GET      "/api/notifications/"
+[GIN] 2026/05/08 - 22:38:38 | 204 |      11.491µs |             ::1 | OPTIONS  "/api/notifications/"
+[GIN] 2026/05/08 - 22:38:38 | 200 |     772.864µs |             ::1 | GET      "/api/notifications/"
+[GIN] 2026/05/08 - 22:38:57 | 204 |       7.333µs |             ::1 | OPTIONS  "/api/notifications/"
+[GIN] 2026/05/08 - 22:38:57 | 200 |      595.76µs |             ::1 | GET      "/api/notifications/"
+[GIN] 2026/05/08 - 22:39:24 | 204 |       10.22µs |             ::1 | OPTIONS  "/api/coordinator/students"
+[GIN] 2026/05/08 - 22:39:24 | 204 |       5.731µs |             ::1 | OPTIONS  "/api/coordinator/students"
+
+2026/05/08 22:39:24 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/coordinator_controller.go:92 [35;1mrecord not found
+[0m[33m[0.116ms] [34;1m[rows:0][0m SELECT * FROM "evaluations" WHERE student_id = 2 AND "evaluations"."deleted_at" IS NULL ORDER BY created_at desc,"evaluations"."id" LIMIT 1
+[GIN] 2026/05/08 - 22:39:24 | 200 |    3.873239ms |             ::1 | GET      "/api/coordinator/students"
+
+2026/05/08 22:39:24 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/coordinator_controller.go:92 [35;1mrecord not found
+[0m[33m[0.098ms] [34;1m[rows:0][0m SELECT * FROM "evaluations" WHERE student_id = 2 AND "evaluations"."deleted_at" IS NULL ORDER BY created_at desc,"evaluations"."id" LIMIT 1
+[GIN] 2026/05/08 - 22:39:24 | 200 |    1.470437ms |             ::1 | GET      "/api/coordinator/students"
+[GIN] 2026/05/08 - 22:39:27 | 204 |      15.389µs |             ::1 | OPTIONS  "/api/notifications/"
+[GIN] 2026/05/08 - 22:39:27 | 200 |     502.837µs |             ::1 | GET      "/api/notifications/"
+
+2026/05/08 22:39:28 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/coordinator_controller.go:92 [35;1mrecord not found
+[0m[33m[0.119ms] [34;1m[rows:0][0m SELECT * FROM "evaluations" WHERE student_id = 2 AND "evaluations"."deleted_at" IS NULL ORDER BY created_at desc,"evaluations"."id" LIMIT 1
+[GIN] 2026/05/08 - 22:39:28 | 200 |    1.664322ms |             ::1 | GET      "/api/coordinator/students"
+
+2026/05/08 22:39:28 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/coordinator_controller.go:92 [35;1mrecord not found
+[0m[33m[0.087ms] [34;1m[rows:0][0m SELECT * FROM "evaluations" WHERE student_id = 2 AND "evaluations"."deleted_at" IS NULL ORDER BY created_at desc,"evaluations"."id" LIMIT 1
+[GIN] 2026/05/08 - 22:39:28 | 200 |    1.299846ms |             ::1 | GET      "/api/coordinator/students"
+[GIN] 2026/05/08 - 22:39:28 | 204 |      13.685µs |             ::1 | OPTIONS  "/api/timelogs/2"
+[GIN] 2026/05/08 - 22:39:28 | 200 |     629.475µs |             ::1 | GET      "/api/timelogs/2"
+
+2026/05/08 22:39:28 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/coordinator_controller.go:92 [35;1mrecord not found
+[0m[33m[0.127ms] [34;1m[rows:0][0m SELECT * FROM "evaluations" WHERE student_id = 2 AND "evaluations"."deleted_at" IS NULL ORDER BY created_at desc,"evaluations"."id" LIMIT 1
+[GIN] 2026/05/08 - 22:39:28 | 200 |    1.506085ms |             ::1 | GET      "/api/coordinator/students"
+[GIN] 2026/05/08 - 22:39:28 | 200 |     880.848µs |             ::1 | GET      "/api/timelogs/2"
+[GIN] 2026/05/08 - 22:39:38 | 204 |      11.041µs |             ::1 | OPTIONS  "/api/notifications/"
+[GIN] 2026/05/08 - 22:39:38 | 200 |     657.768µs |             ::1 | GET      "/api/notifications/"
+[GIN] 2026/05/08 - 22:39:53 | 204 |       8.977µs |             ::1 | OPTIONS  "/api/coordinator/students"
+[GIN] 2026/05/08 - 22:39:53 | 204 |       9.197µs |             ::1 | OPTIONS  "/api/coordinator/students"
+
+2026/05/08 22:39:53 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/coordinator_controller.go:92 [35;1mrecord not found
+[0m[33m[0.076ms] [34;1m[rows:0][0m SELECT * FROM "evaluations" WHERE student_id = 2 AND "evaluations"."deleted_at" IS NULL ORDER BY created_at desc,"evaluations"."id" LIMIT 1
+[GIN] 2026/05/08 - 22:39:53 | 200 |      972.35µs |             ::1 | GET      "/api/coordinator/students"
+
+2026/05/08 22:39:53 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/coordinator_controller.go:92 [35;1mrecord not found
+[0m[33m[0.098ms] [34;1m[rows:0][0m SELECT * FROM "evaluations" WHERE student_id = 2 AND "evaluations"."deleted_at" IS NULL ORDER BY created_at desc,"evaluations"."id" LIMIT 1
+[GIN] 2026/05/08 - 22:39:53 | 200 |    1.226739ms |             ::1 | GET      "/api/coordinator/students"
+[GIN] 2026/05/08 - 22:39:54 | 204 |      19.356µs |             ::1 | OPTIONS  "/api/assignments/"
+[GIN] 2026/05/08 - 22:39:54 | 204 |       6.983µs |             ::1 | OPTIONS  "/api/assignments/options"
+[GIN] 2026/05/08 - 22:39:54 | 204 |       6.372µs |             ::1 | OPTIONS  "/api/assignments/"
+[GIN] 2026/05/08 - 22:39:54 | 204 |       5.059µs |             ::1 | OPTIONS  "/api/assignments/options"
+[GIN] 2026/05/08 - 22:39:54 | 200 |     1.07846ms |             ::1 | GET      "/api/assignments/"
+[GIN] 2026/05/08 - 22:39:54 | 200 |    2.154345ms |             ::1 | GET      "/api/assignments/options"
+[GIN] 2026/05/08 - 22:39:54 | 200 |    1.012075ms |             ::1 | GET      "/api/assignments/options"
+[GIN] 2026/05/08 - 22:39:54 | 200 |    1.801591ms |             ::1 | GET      "/api/assignments/"
+[GIN] 2026/05/08 - 22:39:57 | 204 |       6.382µs |             ::1 | OPTIONS  "/api/notifications/"
+[GIN] 2026/05/08 - 22:39:57 | 200 |     861.151µs |             ::1 | GET      "/api/notifications/"
+[GIN] 2026/05/08 - 22:40:14 | 204 |       8.707µs |             ::1 | OPTIONS  "/api/me"
+[GIN] 2026/05/08 - 22:40:14 | 204 |       5.761µs |             ::1 | OPTIONS  "/api/me"
+[GIN] 2026/05/08 - 22:40:14 | 200 |    1.089211ms |             ::1 | GET      "/api/me"
+[GIN] 2026/05/08 - 22:40:14 | 200 |     723.181µs |             ::1 | GET      "/api/me"
+[GIN] 2026/05/08 - 22:40:14 | 204 |       9.178µs |             ::1 | OPTIONS  "/api/coordinator/users/pending"
+[GIN] 2026/05/08 - 22:40:14 | 204 |       4.599µs |             ::1 | OPTIONS  "/api/notifications/"
+[GIN] 2026/05/08 - 22:40:14 | 204 |       7.565µs |             ::1 | OPTIONS  "/api/assignments/"
+[GIN] 2026/05/08 - 22:40:14 | 204 |      10.099µs |             ::1 | OPTIONS  "/api/assignments/options"
+[GIN] 2026/05/08 - 22:40:14 | 204 |       6.763µs |             ::1 | OPTIONS  "/api/coordinator/users/pending"
+[GIN] 2026/05/08 - 22:40:14 | 204 |        5.52µs |             ::1 | OPTIONS  "/api/notifications/"
+[GIN] 2026/05/08 - 22:40:14 | 204 |       5.611µs |             ::1 | OPTIONS  "/api/assignments/"
+[GIN] 2026/05/08 - 22:40:14 | 200 |    1.491988ms |             ::1 | GET      "/api/coordinator/users/pending"
+[GIN] 2026/05/08 - 22:40:14 | 204 |       7.434µs |             ::1 | OPTIONS  "/api/assignments/options"
+[GIN] 2026/05/08 - 22:40:14 | 200 |    1.640899ms |             ::1 | GET      "/api/notifications/"
+[GIN] 2026/05/08 - 22:40:14 | 200 |    1.600964ms |             ::1 | GET      "/api/assignments/"
+[GIN] 2026/05/08 - 22:40:14 | 200 |     562.008µs |             ::1 | GET      "/api/coordinator/users/pending"
+[GIN] 2026/05/08 - 22:40:14 | 200 |     389.453µs |             ::1 | GET      "/api/notifications/"
+[GIN] 2026/05/08 - 22:40:14 | 200 |    1.247228ms |             ::1 | GET      "/api/assignments/"
+[GIN] 2026/05/08 - 22:40:14 | 200 |   10.401681ms |             ::1 | GET      "/api/assignments/options"
+[GIN] 2026/05/08 - 22:40:14 | 200 |    1.840845ms |             ::1 | GET      "/api/assignments/options"
+[GIN] 2026/05/08 - 22:40:15 | 204 |       9.368µs |             ::1 | OPTIONS  "/api/coordinator/users/pending?status=pending"
+[GIN] 2026/05/08 - 22:40:15 | 204 |       7.414µs |             ::1 | OPTIONS  "/api/departments/"
+[GIN] 2026/05/08 - 22:40:15 | 204 |      10.139µs |             ::1 | OPTIONS  "/api/coordinator/users/pending?status=pending"
+[GIN] 2026/05/08 - 22:40:15 | 204 |       8.797µs |             ::1 | OPTIONS  "/api/departments/"
+[GIN] 2026/05/08 - 22:40:15 | 200 |     442.393µs |             ::1 | GET      "/api/coordinator/users/pending?status=pending"
+[GIN] 2026/05/08 - 22:40:15 | 200 |      430.23µs |             ::1 | GET      "/api/departments/"
+[GIN] 2026/05/08 - 22:40:15 | 200 |     366.691µs |             ::1 | GET      "/api/departments/"
+[GIN] 2026/05/08 - 22:40:15 | 200 |     449.476µs |             ::1 | GET      "/api/coordinator/users/pending?status=pending"
+[GIN] 2026/05/08 - 22:40:16 | 204 |      13.917µs |             ::1 | OPTIONS  "/api/coordinator/students"
+[GIN] 2026/05/08 - 22:40:16 | 204 |      10.008µs |             ::1 | OPTIONS  "/api/coordinator/students"
+
+2026/05/08 22:40:16 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/coordinator_controller.go:92 [35;1mrecord not found
+[0m[33m[0.077ms] [34;1m[rows:0][0m SELECT * FROM "evaluations" WHERE student_id = 2 AND "evaluations"."deleted_at" IS NULL ORDER BY created_at desc,"evaluations"."id" LIMIT 1
+[GIN] 2026/05/08 - 22:40:16 | 200 |    1.186784ms |             ::1 | GET      "/api/coordinator/students"
+
+2026/05/08 22:40:16 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/coordinator_controller.go:92 [35;1mrecord not found
+[0m[33m[0.108ms] [34;1m[rows:0][0m SELECT * FROM "evaluations" WHERE student_id = 2 AND "evaluations"."deleted_at" IS NULL ORDER BY created_at desc,"evaluations"."id" LIMIT 1
+[GIN] 2026/05/08 - 22:40:16 | 200 |    1.053363ms |             ::1 | GET      "/api/coordinator/students"
+[GIN] 2026/05/08 - 22:40:17 | 200 |     555.456µs |             ::1 | GET      "/api/departments/"
+[GIN] 2026/05/08 - 22:40:17 | 200 |     855.651µs |             ::1 | GET      "/api/coordinator/users/pending?status=pending"
+[GIN] 2026/05/08 - 22:40:17 | 200 |      425.17µs |             ::1 | GET      "/api/coordinator/users/pending?status=pending"
+[GIN] 2026/05/08 - 22:40:17 | 200 |     386.868µs |             ::1 | GET      "/api/departments/"
+[GIN] 2026/05/08 - 22:40:18 | 204 |       7.635µs |             ::1 | OPTIONS  "/api/coordinator/users/pending?status=active"
+[GIN] 2026/05/08 - 22:40:18 | 200 |    1.058633ms |             ::1 | GET      "/api/departments/"
+[GIN] 2026/05/08 - 22:40:18 | 200 |    1.218614ms |             ::1 | GET      "/api/coordinator/users/pending?status=active"
+[GIN] 2026/05/08 - 22:40:22 | 204 |       9.378µs |             ::1 | OPTIONS  "/api/coordinator/users/pending?status=rejected"
+[GIN] 2026/05/08 - 22:40:22 | 204 |        5.46µs |             ::1 | OPTIONS  "/api/departments/"
+[GIN] 2026/05/08 - 22:40:22 | 200 |     721.558µs |             ::1 | GET      "/api/coordinator/users/pending?status=rejected"
+[GIN] 2026/05/08 - 22:40:22 | 200 |     375.717µs |             ::1 | GET      "/api/departments/"
+[GIN] 2026/05/08 - 22:40:23 | 204 |       8.847µs |             ::1 | OPTIONS  "/api/coordinator/users/pending?status=active"
+[GIN] 2026/05/08 - 22:40:23 | 200 |     648.461µs |             ::1 | GET      "/api/departments/"
+[GIN] 2026/05/08 - 22:40:23 | 200 |     775.429µs |             ::1 | GET      "/api/coordinator/users/pending?status=active"
+[GIN] 2026/05/08 - 22:40:32 | 204 |       9.298µs |             ::1 | OPTIONS  "/api/auth/login"
+[GIN] 2026/05/08 - 22:40:32 | 200 |    75.00462ms |             ::1 | POST     "/api/auth/login"
+[GIN] 2026/05/08 - 22:40:32 | 204 |       8.145µs |             ::1 | OPTIONS  "/api/notifications/"
+[GIN] 2026/05/08 - 22:40:32 | 204 |        5.58µs |             ::1 | OPTIONS  "/api/timelogs/"
+[GIN] 2026/05/08 - 22:40:32 | 204 |       4.688µs |             ::1 | OPTIONS  "/api/evaluations/me"
+[GIN] 2026/05/08 - 22:40:32 | 204 |         5.5µs |             ::1 | OPTIONS  "/api/notifications/"
+[GIN] 2026/05/08 - 22:40:32 | 204 |       8.536µs |             ::1 | OPTIONS  "/api/timelogs/"
+[GIN] 2026/05/08 - 22:40:32 | 204 |       3.337µs |             ::1 | OPTIONS  "/api/evaluations/me"
+[GIN] 2026/05/08 - 22:40:32 | 200 |      754.48µs |             ::1 | GET      "/api/timelogs/"
+[GIN] 2026/05/08 - 22:40:32 | 200 |     836.495µs |             ::1 | GET      "/api/evaluations/me"
+[GIN] 2026/05/08 - 22:40:32 | 200 |     726.929µs |             ::1 | GET      "/api/evaluations/me"
+[GIN] 2026/05/08 - 22:40:32 | 200 |    1.275781ms |             ::1 | GET      "/api/timelogs/"
+[GIN] 2026/05/08 - 22:40:32 | 200 |    8.092285ms |             ::1 | GET      "/api/notifications/"
+[GIN] 2026/05/08 - 22:40:32 | 200 |     500.492µs |             ::1 | GET      "/api/notifications/"
+[GIN] 2026/05/08 - 22:40:34 | 200 |     670.533µs |             ::1 | GET      "/api/timelogs/"
+[GIN] 2026/05/08 - 22:40:34 | 200 |     535.298µs |             ::1 | GET      "/api/timelogs/"
+[GIN] 2026/05/08 - 22:40:35 | 200 |    1.079041ms |             ::1 | GET      "/api/evaluations/me"
+[GIN] 2026/05/08 - 22:40:35 | 200 |      711.74µs |             ::1 | GET      "/api/evaluations/me"
+[GIN] 2026/05/08 - 22:40:36 | 204 |      17.112µs |             ::1 | OPTIONS  "/api/documents"
+[GIN] 2026/05/08 - 22:40:36 | 204 |        5.47µs |             ::1 | OPTIONS  "/api/documents"
+[GIN] 2026/05/08 - 22:40:36 | 200 |     601.743µs |             ::1 | GET      "/api/documents"
+[GIN] 2026/05/08 - 22:40:36 | 200 |     389.874µs |             ::1 | GET      "/api/documents"
+[GIN] 2026/05/08 - 22:40:38 | 200 |     606.502µs |             ::1 | GET      "/api/documents"
+[GIN] 2026/05/08 - 22:40:38 | 200 |     497.817µs |             ::1 | GET      "/api/documents"
+[GIN] 2026/05/08 - 22:40:38 | 204 |       15.87µs |             ::1 | OPTIONS  "/api/notifications/"
+[GIN] 2026/05/08 - 22:40:38 | 200 |     581.475µs |             ::1 | GET      "/api/notifications/"
+[GIN] 2026/05/08 - 22:40:39 | 204 |       7.504µs |             ::1 | OPTIONS  "/api/evaluations/me"
+[GIN] 2026/05/08 - 22:40:39 | 204 |       5.581µs |             ::1 | OPTIONS  "/api/evaluations/me"
+[GIN] 2026/05/08 - 22:40:39 | 200 |     608.075µs |             ::1 | GET      "/api/evaluations/me"
+[GIN] 2026/05/08 - 22:40:39 | 200 |     417.597µs |             ::1 | GET      "/api/evaluations/me"
+[GIN] 2026/05/08 - 22:40:40 | 204 |      11.031µs |             ::1 | OPTIONS  "/api/timelogs/"
+[GIN] 2026/05/08 - 22:40:40 | 204 |        5.22µs |             ::1 | OPTIONS  "/api/timelogs/"
+[GIN] 2026/05/08 - 22:40:40 | 200 |     782.143µs |             ::1 | GET      "/api/evaluations/me"
+[GIN] 2026/05/08 - 22:40:40 | 200 |     961.661µs |             ::1 | GET      "/api/timelogs/"
+[GIN] 2026/05/08 - 22:40:40 | 200 |      547.15µs |             ::1 | GET      "/api/evaluations/me"
+[GIN] 2026/05/08 - 22:40:40 | 200 |     559.023µs |             ::1 | GET      "/api/timelogs/"
+[GIN] 2026/05/08 - 22:40:41 | 200 |     2.18307ms |             ::1 | GET      "/api/timelogs/"
+[GIN] 2026/05/08 - 22:40:41 | 200 |     609.658µs |             ::1 | GET      "/api/timelogs/"
+[GIN] 2026/05/08 - 22:40:42 | 200 |     438.916µs |             ::1 | GET      "/api/evaluations/me"
+[GIN] 2026/05/08 - 22:40:42 | 200 |    2.564789ms |             ::1 | GET      "/api/timelogs/"
+[GIN] 2026/05/08 - 22:40:42 | 200 |     465.256µs |             ::1 | GET      "/api/evaluations/me"
+[GIN] 2026/05/08 - 22:40:42 | 200 |     697.212µs |             ::1 | GET      "/api/timelogs/"
+[GIN] 2026/05/08 - 22:40:53 | 204 |       8.336µs |             ::1 | OPTIONS  "/api/auth/login"
+[GIN] 2026/05/08 - 22:40:53 | 200 |   67.657902ms |             ::1 | POST     "/api/auth/login"
+[GIN] 2026/05/08 - 22:40:53 | 204 |      11.141µs |             ::1 | OPTIONS  "/api/coordinator/users/pending"
+[GIN] 2026/05/08 - 22:40:53 | 204 |       7.995µs |             ::1 | OPTIONS  "/api/notifications/"
+[GIN] 2026/05/08 - 22:40:53 | 204 |      10.871µs |             ::1 | OPTIONS  "/api/coordinator/students"
+[GIN] 2026/05/08 - 22:40:53 | 204 |       4.739µs |             ::1 | OPTIONS  "/api/coordinator/users/pending"
+[GIN] 2026/05/08 - 22:40:53 | 204 |       3.376µs |             ::1 | OPTIONS  "/api/notifications/"
+[GIN] 2026/05/08 - 22:40:53 | 204 |       5.039µs |             ::1 | OPTIONS  "/api/coordinator/students"
+[GIN] 2026/05/08 - 22:40:53 | 200 |     506.974µs |             ::1 | GET      "/api/coordinator/users/pending"
+[GIN] 2026/05/08 - 22:40:53 | 200 |     570.524µs |             ::1 | GET      "/api/notifications/"
+[GIN] 2026/05/08 - 22:40:53 | 200 |     360.939µs |             ::1 | GET      "/api/coordinator/users/pending"
+[GIN] 2026/05/08 - 22:40:53 | 200 |     732.859µs |             ::1 | GET      "/api/notifications/"
+
+2026/05/08 22:40:53 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/coordinator_controller.go:92 [35;1mrecord not found
+[0m[33m[0.347ms] [34;1m[rows:0][0m SELECT * FROM "evaluations" WHERE student_id = 2 AND "evaluations"."deleted_at" IS NULL ORDER BY created_at desc,"evaluations"."id" LIMIT 1
+[GIN] 2026/05/08 - 22:40:53 | 200 |    7.699738ms |             ::1 | GET      "/api/coordinator/students"
+
+2026/05/08 22:40:53 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/coordinator_controller.go:92 [35;1mrecord not found
+[0m[33m[0.158ms] [34;1m[rows:0][0m SELECT * FROM "evaluations" WHERE student_id = 2 AND "evaluations"."deleted_at" IS NULL ORDER BY created_at desc,"evaluations"."id" LIMIT 1
+[GIN] 2026/05/08 - 22:40:53 | 200 |    1.687017ms |             ::1 | GET      "/api/coordinator/students"
+[GIN] 2026/05/08 - 22:40:57 | 204 |       7.675µs |             ::1 | OPTIONS  "/api/coordinator/users/pending?status=pending"
+[GIN] 2026/05/08 - 22:40:57 | 204 |       5.911µs |             ::1 | OPTIONS  "/api/departments/"
+[GIN] 2026/05/08 - 22:40:57 | 204 |       4.769µs |             ::1 | OPTIONS  "/api/coordinator/users/pending?status=pending"
+[GIN] 2026/05/08 - 22:40:57 | 204 |       5.129µs |             ::1 | OPTIONS  "/api/departments/"
+[GIN] 2026/05/08 - 22:40:57 | 200 |     505.702µs |             ::1 | GET      "/api/coordinator/users/pending?status=pending"
+[GIN] 2026/05/08 - 22:40:57 | 200 |     491.676µs |             ::1 | GET      "/api/departments/"
+[GIN] 2026/05/08 - 22:40:57 | 200 |     411.946µs |             ::1 | GET      "/api/departments/"
+[GIN] 2026/05/08 - 22:40:57 | 200 |     625.939µs |             ::1 | GET      "/api/coordinator/users/pending?status=pending"
+[GIN] 2026/05/08 - 22:40:58 | 204 |      13.055µs |             ::1 | OPTIONS  "/api/coordinator/students"
+[GIN] 2026/05/08 - 22:40:58 | 204 |        5.42µs |             ::1 | OPTIONS  "/api/coordinator/students"
+
+2026/05/08 22:40:58 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/coordinator_controller.go:92 [35;1mrecord not found
+[0m[33m[0.130ms] [34;1m[rows:0][0m SELECT * FROM "evaluations" WHERE student_id = 2 AND "evaluations"."deleted_at" IS NULL ORDER BY created_at desc,"evaluations"."id" LIMIT 1
+[GIN] 2026/05/08 - 22:40:58 | 200 |    1.853921ms |             ::1 | GET      "/api/coordinator/students"
+
+2026/05/08 22:40:58 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/coordinator_controller.go:92 [35;1mrecord not found
+[0m[33m[0.136ms] [34;1m[rows:0][0m SELECT * FROM "evaluations" WHERE student_id = 2 AND "evaluations"."deleted_at" IS NULL ORDER BY created_at desc,"evaluations"."id" LIMIT 1
+[GIN] 2026/05/08 - 22:40:58 | 200 |    1.181915ms |             ::1 | GET      "/api/coordinator/students"
+[GIN] 2026/05/08 - 22:40:59 | 200 |     436.311µs |             ::1 | GET      "/api/departments/"
+[GIN] 2026/05/08 - 22:40:59 | 200 |     345.621µs |             ::1 | GET      "/api/departments/"
+[GIN] 2026/05/08 - 22:40:59 | 304 |      92.194µs |             ::1 | GET      "/uploads/ojt-system/departments/dept_1_1778250316.png"
+[GIN] 2026/05/08 - 22:40:59 | 304 |        58.3µs |             ::1 | GET      "/uploads/ojt-system/departments/dept_2_1778250272.png"
+[GIN] 2026/05/08 - 22:41:02 | 204 |       8.816µs |             ::1 | OPTIONS  "/api/companies/"
+[GIN] 2026/05/08 - 22:41:02 | 204 |       6.061µs |             ::1 | OPTIONS  "/api/companies/"
+[GIN] 2026/05/08 - 22:41:02 | 200 |     832.217µs |             ::1 | GET      "/api/companies/"
+[GIN] 2026/05/08 - 22:41:02 | 200 |     391.658µs |             ::1 | GET      "/api/companies/"
+[GIN] 2026/05/08 - 22:41:05 | 204 |       7.384µs |             ::1 | OPTIONS  "/api/assignments/"
+[GIN] 2026/05/08 - 22:41:05 | 204 |       6.883µs |             ::1 | OPTIONS  "/api/assignments/options"
+[GIN] 2026/05/08 - 22:41:05 | 204 |        5.06µs |             ::1 | OPTIONS  "/api/assignments/"
+[GIN] 2026/05/08 - 22:41:05 | 204 |      20.208µs |             ::1 | OPTIONS  "/api/assignments/options"
+[GIN] 2026/05/08 - 22:41:05 | 200 |     991.257µs |             ::1 | GET      "/api/assignments/"
+[GIN] 2026/05/08 - 22:41:05 | 200 |     885.207µs |             ::1 | GET      "/api/assignments/options"
+[GIN] 2026/05/08 - 22:41:05 | 200 |      844.41µs |             ::1 | GET      "/api/assignments/"
+[GIN] 2026/05/08 - 22:41:05 | 200 |     804.084µs |             ::1 | GET      "/api/assignments/options"
+[GIN] 2026/05/08 - 22:41:06 | 204 |       7.995µs |             ::1 | OPTIONS  "/api/coordinator/documents?status=pending"
+[GIN] 2026/05/08 - 22:41:06 | 204 |       5.962µs |             ::1 | OPTIONS  "/api/coordinator/documents?status=pending"
+[GIN] 2026/05/08 - 22:41:06 | 200 |     747.027µs |             ::1 | GET      "/api/coordinator/documents?status=pending"
+[GIN] 2026/05/08 - 22:41:06 | 200 |     484.433µs |             ::1 | GET      "/api/coordinator/documents?status=pending"
+[GIN] 2026/05/08 - 22:41:07 | 204 |      14.938µs |             ::1 | OPTIONS  "/api/coordinator/students"
+[GIN] 2026/05/08 - 22:41:07 | 204 |        5.26µs |             ::1 | OPTIONS  "/api/coordinator/students"
+
+2026/05/08 22:41:07 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/coordinator_controller.go:92 [35;1mrecord not found
+[0m[33m[0.093ms] [34;1m[rows:0][0m SELECT * FROM "evaluations" WHERE student_id = 2 AND "evaluations"."deleted_at" IS NULL ORDER BY created_at desc,"evaluations"."id" LIMIT 1
+[GIN] 2026/05/08 - 22:41:07 | 200 |     962.122µs |             ::1 | GET      "/api/coordinator/students"
+
+2026/05/08 22:41:07 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/coordinator_controller.go:92 [35;1mrecord not found
+[0m[33m[0.094ms] [34;1m[rows:0][0m SELECT * FROM "evaluations" WHERE student_id = 2 AND "evaluations"."deleted_at" IS NULL ORDER BY created_at desc,"evaluations"."id" LIMIT 1
+[GIN] 2026/05/08 - 22:41:07 | 200 |     840.493µs |             ::1 | GET      "/api/coordinator/students"
+[GIN] 2026/05/08 - 22:41:07 | 204 |       9.097µs |             ::1 | OPTIONS  "/api/timelogs/2"
+[GIN] 2026/05/08 - 22:41:07 | 204 |       8.766µs |             ::1 | OPTIONS  "/api/timelogs/2"
+
+2026/05/08 22:41:07 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/coordinator_controller.go:92 [35;1mrecord not found
+[0m[33m[0.132ms] [34;1m[rows:0][0m SELECT * FROM "evaluations" WHERE student_id = 2 AND "evaluations"."deleted_at" IS NULL ORDER BY created_at desc,"evaluations"."id" LIMIT 1
+[GIN] 2026/05/08 - 22:41:07 | 200 |    2.122567ms |             ::1 | GET      "/api/coordinator/students"
+[GIN] 2026/05/08 - 22:41:07 | 200 |    1.101283ms |             ::1 | GET      "/api/timelogs/2"
+[GIN] 2026/05/08 - 22:41:07 | 200 |      658.45µs |             ::1 | GET      "/api/timelogs/2"
+
+2026/05/08 22:41:07 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/coordinator_controller.go:92 [35;1mrecord not found
+[0m[33m[0.139ms] [34;1m[rows:0][0m SELECT * FROM "evaluations" WHERE student_id = 2 AND "evaluations"."deleted_at" IS NULL ORDER BY created_at desc,"evaluations"."id" LIMIT 1
+[GIN] 2026/05/08 - 22:41:07 | 200 |    1.339122ms |             ::1 | GET      "/api/coordinator/students"
+
+2026/05/08 22:41:07 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/coordinator_controller.go:92 [35;1mrecord not found
+[0m[33m[0.146ms] [34;1m[rows:0][0m SELECT * FROM "evaluations" WHERE student_id = 2 AND "evaluations"."deleted_at" IS NULL ORDER BY created_at desc,"evaluations"."id" LIMIT 1
+[GIN] 2026/05/08 - 22:41:07 | 200 |    1.567812ms |             ::1 | GET      "/api/coordinator/students"
+
+2026/05/08 22:41:08 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/coordinator_controller.go:92 [35;1mrecord not found
+[0m[33m[0.111ms] [34;1m[rows:0][0m SELECT * FROM "evaluations" WHERE student_id = 2 AND "evaluations"."deleted_at" IS NULL ORDER BY created_at desc,"evaluations"."id" LIMIT 1
+[GIN] 2026/05/08 - 22:41:08 | 200 |    1.270803ms |             ::1 | GET      "/api/coordinator/students"
+
+2026/05/08 22:41:08 [31;1m/home/jesua/Documents/My Personal Project/ojt-system/backend/controllers/coordinator_controller.go:92 [35;1mrecord not found
+[0m[33m[0.108ms] [34;1m[rows:0][0m SELECT * FROM "evaluations" WHERE student_id = 2 AND "evaluations"."deleted_at" IS NULL ORDER BY created_at desc,"evaluations"."id" LIMIT 1
+[GIN] 2026/05/08 - 22:41:08 | 200 |    1.573663ms |             ::1 | GET      "/api/coordinator/students"
+[GIN] 2026/05/08 - 22:41:16 | 204 |       8.736µs |             ::1 | OPTIONS  "/api/timelogs/2?status=approved"
+[GIN] 2026/05/08 - 22:41:16 | 204 |       7.173µs |             ::1 | OPTIONS  "/api/evaluations/2"
+[GIN] 2026/05/08 - 22:41:16 | 200 |    1.048324ms |             ::1 | GET      "/api/evaluations/2"
+[GIN] 2026/05/08 - 22:41:16 | 200 |    1.362937ms |             ::1 | GET      "/api/timelogs/2?status=approved"
+[GIN] 2026/05/08 - 22:41:23 | 204 |       9.488µs |             ::1 | OPTIONS  "/api/notifications/"
+[GIN] 2026/05/08 - 22:41:23 | 200 |     701.832µs |             ::1 | GET      "/api/notifications/"
+[GIN] 2026/05/08 - 22:41:38 | 204 |        10.5µs |             ::1 | OPTIONS  "/api/notifications/"
+[GIN] 2026/05/08 - 22:41:38 | 200 |     717.181µs |             ::1 | GET      "/api/notifications/"
+[GIN] 2026/05/08 - 22:41:53 | 204 |       7.694µs |             ::1 | OPTIONS  "/api/notifications/"
+[GIN] 2026/05/08 - 22:41:53 | 200 |     574.522µs |             ::1 | GET      "/api/notifications/"

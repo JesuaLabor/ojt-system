@@ -13,6 +13,7 @@ import (
 
 type AssignmentInput struct {
 	StudentID     uint   `json:"student_id" binding:"required"`
+	DepartmentID  uint   `json:"department_id" binding:"required"`
 	SupervisorID  uint   `json:"supervisor_id" binding:"required"`
 	CompanyName   string `json:"company_name" binding:"required"`
 	RequiredHours float64 `json:"required_hours" binding:"required,min=1"`
@@ -21,6 +22,7 @@ type AssignmentInput struct {
 }
 
 type AssignmentUpdateInput struct {
+	DepartmentID  *uint   `json:"department_id"`
 	SupervisorID  *uint   `json:"supervisor_id"`
 	CompanyName   *string `json:"company_name"`
 	RequiredHours *float64 `json:"required_hours"`
@@ -34,12 +36,14 @@ type AssignmentUpdateInput struct {
 
 func GetAssignments(c *gin.Context) {
 	var assignments []models.OJTAssignment
-	config.DB.Preload("Student").Preload("Supervisor").Find(&assignments)
+	config.DB.Preload("Student").Preload("Department").Preload("Supervisor").Find(&assignments)
 
 	type AssignmentDetail struct {
 		ID             uint   `json:"id"`
 		StudentID      uint   `json:"student_id"`
 		StudentName    string `json:"student_name"`
+		DepartmentID   uint   `json:"department_id"`
+		DepartmentName string `json:"department_name"`
 		CompanyName    string `json:"company_name"`
 		SupervisorID   uint   `json:"supervisor_id"`
 		SupervisorName string `json:"supervisor_name"`
@@ -64,6 +68,8 @@ func GetAssignments(c *gin.Context) {
 			ID:             a.ID,
 			StudentID:      a.StudentID,
 			StudentName:    a.Student.Name,
+			DepartmentID:   a.DepartmentID,
+			DepartmentName: a.Department.Name,
 			CompanyName:    a.CompanyName,
 			SupervisorID:   a.SupervisorID,
 			SupervisorName: a.Supervisor.Name,
@@ -123,14 +129,23 @@ func GetAssignmentOptions(c *gin.Context) {
 		companyOptions = append(companyOptions, Option{ID: comp.ID, Name: comp.Name})
 	}
 
+	var departments []models.Department
+	config.DB.Where("status = 'active'").Order("name asc").Find(&departments)
+	var departmentOptions []Option
+	for _, d := range departments {
+		departmentOptions = append(departmentOptions, Option{ID: d.ID, Name: d.Name})
+	}
+
 	if availableStudents == nil { availableStudents = []Option{} }
 	if supervisorOptions == nil { supervisorOptions = []Option{} }
 	if companyOptions == nil { companyOptions = []Option{} }
+	if departmentOptions == nil { departmentOptions = []Option{} }
 
 	c.JSON(http.StatusOK, gin.H{
 		"students":    availableStudents,
 		"supervisors": supervisorOptions,
 		"companies":   companyOptions,
+		"departments": departmentOptions,
 	})
 }
 
@@ -157,6 +172,7 @@ func CreateAssignment(c *gin.Context) {
 
 	assignment := models.OJTAssignment{
 		StudentID:     input.StudentID,
+		DepartmentID:  input.DepartmentID,
 		SupervisorID:  input.SupervisorID,
 		CoordinatorID: coordinatorID.(uint),
 		CompanyName:   input.CompanyName,
@@ -191,6 +207,9 @@ func UpdateAssignment(c *gin.Context) {
 		return
 	}
 
+	if input.DepartmentID != nil {
+		assignment.DepartmentID = *input.DepartmentID
+	}
 	if input.CompanyName != nil {
 		assignment.CompanyName = *input.CompanyName
 	}

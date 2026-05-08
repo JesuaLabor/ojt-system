@@ -11,7 +11,7 @@ const IconX = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" v
 
 export default function CoordinatorAssignments() {
     const [assignments, setAssignments] = useState([])
-    const [options, setOptions] = useState({ students: [], supervisors: [], companies: [] })
+    const [options, setOptions] = useState({ students: [], supervisors: [], companies: [], departments: [] })
     const [loading, setLoading] = useState(true)
     const [submitting, setSubmitting] = useState(false)
 
@@ -22,6 +22,7 @@ export default function CoordinatorAssignments() {
 
     const initialForm = {
         student_id: '',
+        department_id: '',
         supervisor_id: '',
         company_name: '',
         required_hours: 600,
@@ -39,7 +40,7 @@ export default function CoordinatorAssignments() {
                 api.get('/assignments/options')
             ])
             setAssignments(assRes.data?.assignments || [])
-            setOptions(optRes.data || { students: [], supervisors: [], companies: [] })
+            setOptions(optRes.data || { students: [], supervisors: [], companies: [], departments: [] })
         } catch (err) {
             console.error(err)
             toast.error('Failed to load assignments data')
@@ -56,7 +57,7 @@ export default function CoordinatorAssignments() {
         const { name, value } = e.target
         setFormData(prev => ({
             ...prev,
-            [name]: name === 'student_id' || name === 'supervisor_id' || name === 'required_hours' ? Number(value) : value
+            [name]: name === 'student_id' || name === 'supervisor_id' || name === 'department_id' || name === 'required_hours' ? Number(value) : value
         }))
     }
 
@@ -69,6 +70,7 @@ export default function CoordinatorAssignments() {
     const openEdit = (assignment) => {
         setFormData({
             student_id: assignment.student_id,
+            department_id: assignment.department_id,
             supervisor_id: assignment.supervisor_id,
             company_name: assignment.company_name,
             required_hours: assignment.required_hours,
@@ -135,6 +137,7 @@ export default function CoordinatorAssignments() {
                         <thead>
                             <tr>
                                 <th>Student</th>
+                                <th>Department</th>
                                 <th>Company</th>
                                 <th>Supervisor</th>
                                 <th>Duration / Hours</th>
@@ -145,13 +148,13 @@ export default function CoordinatorAssignments() {
                         <tbody className="divide-y divide-slate-800/50">
                             {loading ? (
                                 <tr>
-                                    <td colSpan="6" className="text-center py-10">
+                                    <td colSpan="7" className="text-center py-10">
                                         <div className="spinner w-8 h-8 mx-auto" />
                                     </td>
                                 </tr>
                             ) : assignments.length === 0 ? (
                                 <tr>
-                                    <td colSpan="6" className="text-center py-12 text-slate-500">
+                                    <td colSpan="7" className="text-center py-12 text-slate-500">
                                         <p className="text-4xl mb-3">🏢</p>
                                         <p className="text-sm font-medium">No active assignments found.</p>
                                     </td>
@@ -161,6 +164,9 @@ export default function CoordinatorAssignments() {
                                     <tr key={a.id} className="hover:bg-slate-800/40 transition">
                                         <td>
                                             <p className="text-sm font-semibold text-white">{a.student_name}</p>
+                                        </td>
+                                        <td>
+                                            <p className="text-sm text-slate-300">{a.department_name}</p>
                                         </td>
                                         <td>
                                             <p className="text-sm text-slate-300">{a.company_name}</p>
@@ -217,6 +223,22 @@ export default function CoordinatorAssignments() {
                             </div>
 
                             <div className="p-6 space-y-4">
+                                <div className="input-group">
+                                    <label className="input-label">Department</label>
+                                    <select
+                                        name="department_id"
+                                        value={formData.department_id}
+                                        onChange={handleInputChange}
+                                        required
+                                        className="input"
+                                    >
+                                        <option value="" disabled>Select Department</option>
+                                        {options.departments?.map(d => (
+                                            <option key={d.id} value={d.id}>{d.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
                                 <div className="input-group">
                                     <label className="input-label">Student</label>
                                     <select

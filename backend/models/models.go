@@ -44,6 +44,7 @@ type Company struct {
 type OJTAssignment struct {
 	gorm.Model
 	StudentID     uint      `gorm:"not null" json:"student_id"`
+	DepartmentID  uint      `json:"department_id"` // Added department reference
 	CompanyName   string    `gorm:"not null" json:"company_name"`
 	SupervisorID  uint      `json:"supervisor_id"`
 	CoordinatorID uint      `json:"coordinator_id"`
@@ -52,9 +53,10 @@ type OJTAssignment struct {
 	EndDate       time.Time `json:"end_date"`
 	Status        string    `gorm:"type:varchar(20);default:'active'" json:"status"`
 
-	Student     User `gorm:"foreignKey:StudentID" json:"student,omitempty"`
-	Supervisor  User `gorm:"foreignKey:SupervisorID" json:"supervisor,omitempty"`
-	Coordinator User `gorm:"foreignKey:CoordinatorID" json:"coordinator,omitempty"`
+	Student     User       `gorm:"foreignKey:StudentID" json:"student,omitempty"`
+	Department  Department `gorm:"foreignKey:DepartmentID" json:"department,omitempty"`
+	Supervisor  User       `gorm:"foreignKey:SupervisorID" json:"supervisor,omitempty"`
+	Coordinator User       `gorm:"foreignKey:CoordinatorID" json:"coordinator,omitempty"`
 }
 
 // ─── Time Log ────────────────────────────────────────────
