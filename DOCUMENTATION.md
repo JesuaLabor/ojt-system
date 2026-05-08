@@ -18,6 +18,7 @@
 12. [Docker Deployment](#12-docker-deployment)
 13. [Cloud Integrations](#13-cloud-integrations)
 14. [Business Logic](#14-business-logic)
+15. [Changelog](#15-changelog)
 
 ---
 
@@ -142,8 +143,12 @@ ojt-system/
 | **Supervisor** | `pending` | View/approve assigned student logs, submit evaluations, generate reports |
 | **Coordinator** | `active` | Full admin: manage assignments, companies, users, documents; view everything; generate reports |
 | **Faculty** | `active` | Read-only: view all students, evaluations, reports |
+| **Admin** | `active` | Super admin: all coordinator capabilities + system-wide oversight. Auto-seeded on first run. |
 
 **Account lifecycle:** `pending` → coordinator approves → `active` | coordinator rejects → `rejected`
+
+> **Admin account** is seeded automatically at startup if no admin exists.
+> Default credentials: `superadmin@gmail.com` / `password@123` — **change immediately in production.**
 
 ---
 
@@ -221,23 +226,23 @@ id | user_id → User | message | is_read (default false) | link
 | POST | `/timelogs/clockin` | All | Instant clock-in (server time) |
 | PATCH | `/timelogs/clockout` | All | Clock out current active session |
 | GET | `/timelogs` | Student | Own logs; `?status=` filter |
-| GET | `/timelogs/:student_id` | Sup/Coord/Fac | Student's logs; `?status=&date_from=&date_to=` |
-| GET | `/timelogs/:student_id/summary` | Sup/Coord/Fac | Hours progress object |
-| PATCH | `/timelogs/:id/approve` | Supervisor/Coordinator | Approve log (must have clock_out) |
-| PATCH | `/timelogs/:id/reject` | Supervisor/Coordinator | Reject log (requires `remarks`) |
+| GET | `/timelogs/:student_id` | Sup/Coord/Fac/Admin | Student's logs; `?status=&date_from=&date_to=` |
+| GET | `/timelogs/:student_id/summary` | Sup/Coord/Fac/Admin | Hours progress object |
+| PATCH | `/timelogs/:id/approve` | Supervisor/Coordinator/Admin | Approve log (must have clock_out) |
+| PATCH | `/timelogs/:id/reject` | Supervisor/Coordinator/Admin | Reject log (requires `remarks`) |
 
 ### Evaluations (`/api/evaluations`)
 | Method | Endpoint | Role | Notes |
 |--------|---------|------|-------|
 | POST | `/evaluations` | Supervisor | Create eval; overall auto-calculated |
 | GET | `/evaluations/me` | Student | Own evaluations |
-| GET | `/evaluations/:student_id` | Sup/Coord/Fac | All evals for student; `?period=` |
-| GET | `/evaluations/:student_id/latest` | Sup/Coord/Fac | Most recent evaluation |
+| GET | `/evaluations/:student_id` | Sup/Coord/Fac/Admin | All evals for student; `?period=` |
+| GET | `/evaluations/:student_id/latest` | Sup/Coord/Fac/Admin | Most recent evaluation |
 
 ### Reports (`/api/reports`)
 | Method | Endpoint | Role | Notes |
 |--------|---------|------|-------|
-| GET | `/reports/:student_id/pdf` | Sup/Coord/Fac | Streams PDF download |
+| GET | `/reports/:student_id/pdf` | Sup/Coord/Fac/Admin | Streams PDF download |
 
 ### Documents (`/api/documents`)
 | Method | Endpoint | Role | Notes |
@@ -260,7 +265,7 @@ id | user_id → User | message | is_read (default false) | link
 | PATCH | `/supervisor/notifications/read-all` | Mark all read |
 | GET | `/supervisor/activity` | Recent student time log activity feed |
 
-### Coordinator (`/api/coordinator`) — Coordinator only
+### Coordinator (`/api/coordinator`) — Coordinator + Admin
 | Method | Endpoint | Notes |
 |--------|---------|-------|
 | GET | `/coordinator/students` | All students with full stats |
@@ -278,7 +283,7 @@ id | user_id → User | message | is_read (default false) | link
 | GET | `/faculty/students` | All students (same as coordinator view) |
 | GET | `/faculty/stats` | System-wide stats |
 
-### Assignments (`/api/assignments`) — Coordinator only
+### Assignments (`/api/assignments`) — Coordinator + Admin
 | Method | Endpoint | Notes |
 |--------|---------|-------|
 | GET | `/assignments` | All assignments |
@@ -287,7 +292,7 @@ id | user_id → User | message | is_read (default false) | link
 | PATCH | `/assignments/:id` | Update assignment |
 | DELETE | `/assignments/:id` | Soft delete |
 
-### Companies (`/api/companies`) — Coordinator only
+### Companies (`/api/companies`) — Coordinator + Admin
 | Method | Endpoint | Notes |
 |--------|---------|-------|
 | GET | `/companies` | List companies |
@@ -310,9 +315,13 @@ Request → AuthMiddleware → [RoleMiddleware] → Controller
 ```
 
 **Registration Logic:**
-- `coordinator` and `faculty` → auto `active`
-- `student` and `supervisor` → `pending` until coordinator approves
+- `coordinator`, `faculty`, and `admin` → auto `active`
+- `student` and `supervisor` → `pending` until coordinator/admin approves
 - Rejected accounts (`rejected`) are blocked at login with a friendly message
+
+**Admin Bootstrap:**
+- The `admin` account is never registered manually; it is seeded by `seedAdmin()` in `config/database.go` on first startup.
+- Default: `superadmin@gmail.com` / `password@123`
 
 ---
 
@@ -366,6 +375,21 @@ Request → AuthMiddleware → [RoleMiddleware] → Controller
 | Evaluations | View all evaluations |
 | Reports | Download student reports |
 | Dashboard | Summary stats |
+
+### Admin (`/admin/*`) — Super Admin
+| Page | Description |
+|------|-------------|
+| Dashboard | System-wide stats (shares Coordinator Dashboard) |
+| Approvals | Approve/reject pending user registrations |
+| Students | Full student roster with stats |
+| Companies | Manage partner companies |
+| Assignments | CRUD OJT assignments |
+| Documents | Review and approve/reject all documents |
+| Time Logs | Monitor all student time logs |
+| Evaluations | View evaluations across all students |
+| Reports | Download per-student PDF reports |
+
+> The Admin role uses the **Coordinator Dashboard** component at `/admin/*`. The sidebar and navigation adapt automatically based on the `admin` role.
 
 ### Route Protection (`PrivateRoute`)
 1. No token → `/login`
@@ -525,4 +549,13 @@ Data persists in the `postgres_data` named volume.
 
 ---
 
-*Documentation generated: May 2026*
+## 15. Changelog
+
+| Date | Version | Change |
+|------|---------|--------|
+| May 8, 2026 | v1.2 | Added `admin` (Super Admin) role. Auto-seeded default account. Admin shares Coordinator Dashboard at `/admin/*`. All coordinator/assignment/company/report routes now also accept `admin` role. |
+| May 2026 | v1.1 | Initial documentation generated. |
+
+---
+
+*Documentation last updated: May 8, 2026*

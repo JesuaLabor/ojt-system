@@ -71,7 +71,7 @@ func seedAdmin() {
 			Status:   "active",
 		}
 		DB.Create(&admin)
-		log.Println("Default super admin account created: superadmin@example.com / password123")
+		log.Println("✅ Default super admin account created: superadmin@gmail.com / password@123")
 	}
 }
 
