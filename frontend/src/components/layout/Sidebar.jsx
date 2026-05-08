@@ -41,6 +41,17 @@ const NAV = {
         { to: '/faculty/reports', label: 'Reports', icon: IconChart },
         { to: '/faculty/profile', label: 'My Profile', icon: IconUser },
     ],
+    admin: [
+        { to: '/admin', label: 'Dashboard', icon: IconGrid },
+        { to: '/admin/approvals', label: 'Approvals', icon: IconShieldCheck, badgeKey: 'pendingUsers' },
+        { to: '/admin/students', label: 'Students', icon: IconUsers },
+        { to: '/admin/companies', label: 'Companies', icon: IconOfficeBuilding },
+        { to: '/admin/assignments', label: 'Assignments', icon: IconBriefcase },
+        { to: '/admin/documents', label: 'Documents', icon: IconDoc },
+        { to: '/admin/timelogs', label: 'Time Logs', icon: IconClock },
+        { to: '/admin/evaluations', label: 'Evaluations', icon: IconStar },
+        { to: '/admin/reports', label: 'Reports', icon: IconChart },
+    ],
 }
 
 // ── Role display config ───────────────────────────────────────────────────────
@@ -49,6 +60,7 @@ const ROLE_META = {
     supervisor: { label: 'Supervisor', color: 'text-teal-400', dot: 'bg-teal-400' },
     coordinator: { label: 'Coordinator', color: 'text-orange-400', dot: 'bg-orange-400' },
     faculty: { label: 'Faculty Adviser', color: 'text-emerald-400', dot: 'bg-emerald-400' },
+    admin: { label: 'System Admin', color: 'text-rose-400', dot: 'bg-rose-400' },
 }
 
 export default function Sidebar({ open, onClose }) {
@@ -68,7 +80,7 @@ export default function Sidebar({ open, onClose }) {
                 })
                 .catch(() => { })
         }
-        if (user?.role === 'coordinator') {
+        if (user?.role === 'coordinator' || user?.role === 'admin') {
             api.get('/coordinator/users/pending')
                 .then(res => {
                     setBadges(prev => ({ ...prev, pendingUsers: res.data?.users?.length || 0 }))

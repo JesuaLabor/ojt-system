@@ -45,19 +45,19 @@ func RegisterRoutes(r *gin.Engine) {
 
 			// Supervisor / Coordinator / Faculty endpoints
 			timelogs.GET("/:student_id",
-				middleware.RoleMiddleware("supervisor", "coordinator", "faculty"),
+				middleware.RoleMiddleware("supervisor", "coordinator", "faculty", "admin"),
 				controllers.GetStudentTimeLogs, // GET  /api/timelogs/:student_id?status=&date_from=&date_to=
 			)
 			timelogs.GET("/:student_id/summary",
-				middleware.RoleMiddleware("supervisor", "coordinator", "faculty"),
+				middleware.RoleMiddleware("supervisor", "coordinator", "faculty", "admin"),
 				controllers.GetStudentSummary, // GET  /api/timelogs/:student_id/summary
 			)
 			timelogs.PATCH("/:id/approve",
-				middleware.RoleMiddleware("supervisor", "coordinator"),
+				middleware.RoleMiddleware("supervisor", "coordinator", "admin"),
 				controllers.ApproveTimeLog, // PATCH /api/timelogs/:id/approve
 			)
 			timelogs.PATCH("/:id/reject",
-				middleware.RoleMiddleware("supervisor", "coordinator"),
+				middleware.RoleMiddleware("supervisor", "coordinator", "admin"),
 				controllers.RejectTimeLog, // PATCH /api/timelogs/:id/reject
 			)
 		}
@@ -71,11 +71,11 @@ func RegisterRoutes(r *gin.Engine) {
 			)
 			evaluations.GET("/me", controllers.GetMyEvaluations) // GET /api/evaluations/me
 			evaluations.GET("/:student_id",
-				middleware.RoleMiddleware("supervisor", "coordinator", "faculty"),
+				middleware.RoleMiddleware("supervisor", "coordinator", "faculty", "admin"),
 				controllers.GetStudentEvaluations, // GET /api/evaluations/:student_id?period=Midterm
 			)
 			evaluations.GET("/:student_id/latest",
-				middleware.RoleMiddleware("supervisor", "coordinator", "faculty"),
+				middleware.RoleMiddleware("supervisor", "coordinator", "faculty", "admin"),
 				controllers.GetLatestEvaluation, // GET /api/evaluations/:student_id/latest
 			)
 		}
@@ -84,7 +84,7 @@ func RegisterRoutes(r *gin.Engine) {
 		reports := protected.Group("/reports")
 		{
 			reports.GET("/:student_id/pdf",
-				middleware.RoleMiddleware("supervisor", "coordinator", "faculty"),
+				middleware.RoleMiddleware("supervisor", "coordinator", "faculty", "admin"),
 				controllers.GenerateStudentReport, // GET /api/reports/:student_id/pdf
 			)
 		}
@@ -113,7 +113,7 @@ func RegisterRoutes(r *gin.Engine) {
 
 		// ── Coordinator ───────────────────────────────────────────────────────
 		coordinator := protected.Group("/coordinator")
-		coordinator.Use(middleware.RoleMiddleware("coordinator"))
+		coordinator.Use(middleware.RoleMiddleware("coordinator", "admin"))
 		{
 			coordinator.GET("/students", controllers.GetCoordinatorStudents) // GET /api/coordinator/students
 			coordinator.GET("/stats", controllers.GetCoordinatorStats)       // GET /api/coordinator/stats
@@ -139,7 +139,7 @@ func RegisterRoutes(r *gin.Engine) {
 
 		// ── Assignments ───────────────────────────────────────────────────────
 		assignments := protected.Group("/assignments")
-		assignments.Use(middleware.RoleMiddleware("coordinator")) // Only coordinators manage assignments
+		assignments.Use(middleware.RoleMiddleware("coordinator", "admin")) // Only coordinators manage assignments
 		{
 			assignments.GET("/", controllers.GetAssignments)           // GET    /api/assignments
 			assignments.GET("/options", controllers.GetAssignmentOptions) // GET    /api/assignments/options
@@ -150,7 +150,7 @@ func RegisterRoutes(r *gin.Engine) {
 
 		// ── Companies ─────────────────────────────────────────────────────────
 		companies := protected.Group("/companies")
-		companies.Use(middleware.RoleMiddleware("coordinator")) // Only coordinators manage companies
+		companies.Use(middleware.RoleMiddleware("coordinator", "admin")) // Only coordinators manage companies
 		{
 			companies.GET("/", controllers.GetCompanies)       // GET    /api/companies
 			companies.POST("/", controllers.CreateCompany)      // POST   /api/companies
