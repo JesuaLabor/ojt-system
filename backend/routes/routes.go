@@ -133,8 +133,8 @@ func RegisterRoutes(r *gin.Engine) {
 		faculty := protected.Group("/faculty")
 		faculty.Use(middleware.RoleMiddleware("faculty"))
 		{
-			faculty.GET("/students", controllers.GetCoordinatorStudents) // GET /api/faculty/students
-			faculty.GET("/stats", controllers.GetCoordinatorStats)       // GET /api/faculty/stats
+			faculty.GET("/students", controllers.GetFacultyStudents) // GET /api/faculty/students — scoped to faculty's department
+			faculty.GET("/stats", controllers.GetCoordinatorStats)   // GET /api/faculty/stats
 		}
 
 		// ── Assignments ───────────────────────────────────────────────────────
