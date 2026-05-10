@@ -170,12 +170,19 @@ export default function SupervisorTimeLogs() {
                           {log.total_hours ? `${log.total_hours}h` : '—'}
                         </td>
                         <td className="table-cell">
-                          <span className={`badge ${
-                              log.status === 'approved' ? 'badge-approved' : 
-                              log.status === 'rejected' ? 'badge-rejected' : 'badge-pending'
-                            }`}>
-                            {log.status}
-                          </span>
+                          <div className="flex flex-col items-center gap-1">
+                            <span className={`badge ${
+                                log.status === 'approved' ? 'badge-approved' : 
+                                log.status === 'rejected' ? 'badge-rejected' : 'badge-pending'
+                              }`}>
+                              {log.status}
+                            </span>
+                            {!log.clock_in_photo && !log.clock_out_photo && (
+                              <span className="text-[9px] font-black text-slate-500 bg-slate-800/50 px-1.5 py-0.5 rounded border border-slate-700/50 uppercase tracking-tighter">
+                                Manual
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="table-cell text-xs text-slate-400 max-w-[150px] truncate" title={log.remarks}>
                           {log.status === 'rejected' ? <span className="text-red-400">Rejected: {log.remarks}</span> : (log.remarks || '—')}
