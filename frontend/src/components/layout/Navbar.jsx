@@ -1,4 +1,4 @@
-import { useLocation } from 'react-router-dom'
+import { useLocation, Link } from 'react-router-dom'
 import useAuthStore from '../../store/authStore'
 import NotificationsDropdown from './NotificationsDropdown'
 
@@ -73,8 +73,10 @@ export default function Navbar({ onMenuClick }) {
                 <NotificationsDropdown />
 
                 {/* User avatar pill */}
-                <div className="flex items-center gap-2.5 bg-slate-800/60 border border-slate-700/60
-                        rounded-full pl-1 pr-3 py-1 cursor-default">
+                <Link to={`/${user?.role}/profile`} 
+                      className="flex items-center gap-2.5 bg-slate-800/60 border border-slate-700/60
+                        rounded-full pl-1 pr-3 py-1 cursor-pointer hover:bg-slate-700/80 
+                        hover:border-indigo-500/50 transition-all group">
                     {user?.profile_photo ? (
                         <img
                             src={user.profile_photo}
@@ -90,12 +92,12 @@ export default function Navbar({ onMenuClick }) {
                         </div>
                     )}
                     <div className="hidden sm:block">
-                        <p className="text-xs font-semibold text-white leading-none">
+                        <p className="text-xs font-semibold text-white leading-none group-hover:text-indigo-400 transition-colors">
                             {user?.name?.split(' ')[0]}
                         </p>
                         <p className="text-[10px] text-slate-500 mt-0.5 capitalize">{user?.role}</p>
                     </div>
-                </div>
+                </Link>
             </div>
         </header>
     )
