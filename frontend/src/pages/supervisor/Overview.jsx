@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import api from '../../services/api'
 import useAuthStore from '../../store/authStore'
 import Avatar from '../../components/ui/Avatar'
+import AssignmentPending from '../../components/ui/AssignmentPending'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const round2 = (n) => Math.round(n * 100) / 100
@@ -224,6 +225,10 @@ export default function Overview() {
         fetchAll()
     }, [])
 
+    if (!loading && stats.total === 0) {
+        return <AssignmentPending role="supervisor" name={user?.name} />
+    }
+
     // Derived stats
     const completedStudents = students.filter(s => s.status === 'Completed').length
     const avgProgress = students.length > 0
@@ -288,7 +293,7 @@ export default function Overview() {
             {/* ── Stat Cards ──────────────────────────────────────────────────── */}
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
                 {loading ? (
-                    <>{[1,2,3,4].map(i => <SkeletonStat key={i} />)}</>
+                    <>{[1, 2, 3, 4].map(i => <SkeletonStat key={i} />)}</>
                 ) : (
                     statCards.map(s => (
                         <div key={s.label} className="stat-card group">
@@ -321,7 +326,7 @@ export default function Overview() {
 
                 {loading ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                        {[1,2,3].map(i => <SkeletonCard key={i} />)}
+                        {[1, 2, 3].map(i => <SkeletonCard key={i} />)}
                     </div>
                 ) : students.length === 0 ? (
                     <div className="card text-center py-12">
@@ -361,7 +366,7 @@ export default function Overview() {
 
                     {loading ? (
                         <div className="space-y-3">
-                            {[1,2,3].map(i => (
+                            {[1, 2, 3].map(i => (
                                 <div key={i} className="flex items-start gap-3 animate-pulse">
                                     <div className="skeleton w-2 h-2 rounded-full mt-1.5 flex-shrink-0" />
                                     <div className="flex-1 space-y-1.5">
@@ -415,7 +420,7 @@ export default function Overview() {
 
                     {loading ? (
                         <div className="space-y-3">
-                            {[1,2,3].map(i => (
+                            {[1, 2, 3].map(i => (
                                 <div key={i} className="flex items-start gap-3 animate-pulse">
                                     <div className="skeleton w-2 h-2 rounded-full mt-1.5 flex-shrink-0" />
                                     <div className="flex-1 space-y-1.5">

@@ -45,13 +45,6 @@ func CreateTimeLog(c *gin.Context) {
 		return
 	}
 
-	// Guard: Must have an assignment to log time
-	var assignment models.OJTAssignment
-	if result := config.DB.Where("student_id = ?", userID).First(&assignment); result.Error != nil {
-		c.JSON(http.StatusForbidden, gin.H{"error": "You cannot log time until you have been assigned to a company by your coordinator."})
-		return
-	}
-
 	// Parse clock_in
 	clockIn, err := time.Parse(time.RFC3339, input.ClockIn)
 	if err != nil {
@@ -115,13 +108,6 @@ func CreateTimeLog(c *gin.Context) {
 
 func ClockIn(c *gin.Context) {
 	userID, _ := c.Get("userID")
-
-	// Guard: Must have an assignment to log time
-	var assignment models.OJTAssignment
-	if result := config.DB.Where("student_id = ?", userID).First(&assignment); result.Error != nil {
-		c.JSON(http.StatusForbidden, gin.H{"error": "You cannot clock in until you have been assigned to a company by your coordinator."})
-		return
-	}
 
 	// Guard: no duplicate open session
 	var existing models.TimeLog

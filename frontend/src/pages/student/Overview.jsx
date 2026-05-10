@@ -6,6 +6,7 @@ import {
 import { format, parseISO, startOfWeek, addDays } from 'date-fns'
 import api from '../../services/api'
 import useAuthStore from '../../store/authStore'
+import AssignmentPending from '../../components/ui/AssignmentPending'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
@@ -110,6 +111,7 @@ export default function Overview() {
     const [logs, setLogs] = useState([])
     const [evals, setEvals] = useState([])
     const [requiredHours, setRequiredHours] = useState(600)
+    const [hasAssignment, setHasAssignment] = useState(true)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
 
@@ -122,6 +124,7 @@ export default function Overview() {
                 ])
                 setLogs(logsRes.data?.logs || [])
                 setRequiredHours(logsRes.data?.required_hours || 600)
+                setHasAssignment(logsRes.data?.has_assignment ?? true)
                 setEvals(evalsRes.data?.evaluations || [])
             } catch (err) {
                 setError('Failed to load dashboard data.')
@@ -155,6 +158,10 @@ export default function Overview() {
         if (h < 12) return '🌅 Good morning'
         if (h < 17) return '☀️ Good afternoon'
         return '🌙 Good evening'
+    }
+
+    if (!loading && !hasAssignment) {
+        return <AssignmentPending role="student" name={user?.name} />
     }
 
     return (
@@ -362,7 +369,7 @@ export default function Overview() {
                                border border-slate-700/50 hover:border-slate-600 transition-colors">
                                         {/* Timeline dot */}
                                         <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${log.status === 'approved' ? 'bg-emerald-400' :
-                                                log.status === 'rejected' ? 'bg-red-400' : 'bg-amber-400'
+                                            log.status === 'rejected' ? 'bg-red-400' : 'bg-amber-400'
                                             }`} />
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center justify-between gap-2">
@@ -414,7 +421,7 @@ export default function Overview() {
                             <p className="text-xs text-slate-500 mt-0.5">{evals.length} evaluation{evals.length > 1 ? 's' : ''} received</p>
                         </div>
                         <span className={`badge ${avgScore >= 90 ? 'badge-approved' :
-                                avgScore >= 70 ? 'badge-active' : 'badge-warning'
+                            avgScore >= 70 ? 'badge-active' : 'badge-warning'
                             }`}>
                             {avgScore?.toFixed(1)} avg
                         </span>

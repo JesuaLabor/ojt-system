@@ -76,9 +76,9 @@ export default function Navbar({ onMenuClick }) {
                 <div className="flex items-center gap-2.5 bg-slate-800/60 border border-slate-700/60
                         rounded-full pl-1 pr-3 py-1 cursor-default">
                     {user?.profile_photo ? (
-                        <img 
-                            src={user.profile_photo} 
-                            alt="Avatar" 
+                        <img
+                            src={user.profile_photo}
+                            alt="Avatar"
                             className="w-7 h-7 rounded-full object-cover flex-shrink-0 border border-slate-600/50"
                         />
                     ) : (

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import api from '../../services/api'
 import useAuthStore from '../../store/authStore'
+import AssignmentPending from '../../components/ui/AssignmentPending'
 
 export default function FacultyOverview() {
     const { user } = useAuthStore()
@@ -12,6 +13,10 @@ export default function FacultyOverview() {
             setSummary(res.data?.summary || null)
         }).finally(() => setLoading(false))
     }, [])
+
+    if (!loading && summary && !summary.has_department) {
+        return <AssignmentPending role="faculty" name={user?.name} />
+    }
 
     const stats = [
         { label: 'Total Students', value: summary?.total_students || 0, sub: 'In the program', icon: '🎓', color: 'bg-cyan-500/15 text-cyan-400' },
