@@ -51,6 +51,7 @@ export default function TimeLogs() {
     const [showManual, setShowManual] = useState(false)
     const [manualBusy, setManualBusy] = useState(false)
     const [statusFilter, setStatusFilter] = useState('all')
+    const [breakBusy, setBreakBusy] = useState(false)
     const timerRef = useRef(null)
 
     const [manualForm, setManualForm] = useState({
@@ -81,8 +82,23 @@ export default function TimeLogs() {
     useEffect(() => {
         if (timerRef.current) clearInterval(timerRef.current)
         if (!activeLog?.clock_in) { setElapsed(0); return }
+        
         const start = new Date(activeLog.clock_in).getTime()
-        const tick = () => setElapsed(Math.floor((Date.now() - start) / 1000))
+        const breakMins = activeLog.total_break_minutes || 0
+        
+        const tick = () => {
+            if (activeLog.break_started_at) {
+                // If on break, freeze the work timer at the moment break started
+                const breakStart = new Date(activeLog.break_started_at).getTime()
+                const secondsWork = Math.floor((breakStart - start) / 1000) - (breakMins * 60)
+                setElapsed(Math.max(0, secondsWork))
+            } else {
+                // Active work: now - start - breakTime
+                const secondsWork = Math.floor((Date.now() - start) / 1000) - (breakMins * 60)
+                setElapsed(Math.max(0, secondsWork))
+            }
+        }
+        
         tick()
         timerRef.current = setInterval(tick, 1000)
         return () => { if (timerRef.current) clearInterval(timerRef.current) }
@@ -140,6 +156,32 @@ export default function TimeLogs() {
         if (cameraMode === 'in') handleClockIn(imageSrc)
         else handleClockOut(imageSrc)
     }, [cameraMode, webcamRef])
+
+    const handleStartBreak = async () => {
+        setBreakBusy(true)
+        try {
+            await api.patch('/timelogs/break/start')
+            toast.success('Break started! Time to rest ☕')
+            await fetchLogs()
+        } catch (err) {
+            toast.error(err.response?.data?.error || 'Failed to start break.')
+        } finally {
+            setBreakBusy(false)
+        }
+    }
+
+    const handleEndBreak = async () => {
+        setBreakBusy(true)
+        try {
+            await api.patch('/timelogs/break/end')
+            toast.success('Welcome back! Let\'s get to work 🚀')
+            await fetchLogs()
+        } catch (err) {
+            toast.error(err.response?.data?.error || 'Failed to end break.')
+        } finally {
+            setBreakBusy(false)
+        }
+    }
 
     const handleManualSubmit = async (e) => {
         e.preventDefault()
@@ -233,30 +275,52 @@ export default function TimeLogs() {
                 {/* Clock Widget */}
                 <div className="lg:col-span-7 card relative overflow-hidden flex flex-col items-center justify-center py-12">
                     {/* Pulsing Aura */}
-                    <div className={`pointer-events-none absolute inset-0 transition-opacity duration-1000 ${activeLog ? 'opacity-100' : 'opacity-0'}`}>
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-emerald-500/10 rounded-full blur-[80px] animate-pulse" />
+                    <div className={`flex items-center gap-2 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-6 border transition-all 
+                        ${activeLog?.break_started_at ? 'bg-amber-500/10 text-amber-400 border-amber-500/30' : 
+                          activeLog ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 
+                          'bg-slate-800 text-slate-500 border-slate-700'}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full 
+                            ${activeLog?.break_started_at ? 'bg-amber-400 animate-pulse' : 
+                              activeLog ? 'bg-emerald-400 animate-pulse' : 
+                              'bg-slate-600'}`} />
+                        {activeLog?.break_started_at ? 'On Break' : activeLog ? 'Recording Live' : 'System Idle'}
                     </div>
 
-                    <div className={`flex items-center gap-2 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-6 border transition-all ${activeLog ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-slate-800 text-slate-500 border-slate-700'}`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${activeLog ? 'bg-emerald-400 animate-pulse' : 'bg-slate-600'}`} />
-                        {activeLog ? 'Recording Live' : 'System Idle'}
-                    </div>
-
-                    <h2 className="text-[80px] sm:text-[100px] font-black text-white leading-none tracking-tighter tabular-nums drop-shadow-2xl">
+                    <h2 className={`text-[80px] sm:text-[100px] font-black leading-none tracking-tighter tabular-nums drop-shadow-2xl transition-colors
+                        ${activeLog?.break_started_at ? 'text-amber-200/50' : 'text-white'}`}>
                         {formatElapsed(elapsed)}
                     </h2>
 
                     {activeLog && (
-                        <p className="text-xs text-slate-500 mt-4 font-medium italic">
-                            Started at {fmtTime(activeLog.clock_in)}
-                        </p>
+                        <div className="flex flex-col items-center mt-4 gap-1">
+                            <p className="text-xs text-slate-500 font-medium italic">
+                                Started at {fmtTime(activeLog.clock_in)}
+                            </p>
+                            {activeLog.total_break_minutes > 0 && (
+                                <p className="text-[10px] font-bold text-amber-500/80 uppercase tracking-tight">
+                                    Total Break: {activeLog.total_break_minutes} mins
+                                </p>
+                            )}
+                        </div>
                     )}
 
-                    <div className="mt-10 flex gap-4 w-full max-w-xs">
+                    <div className="mt-10 flex flex-col sm:flex-row gap-4 w-full max-w-sm px-6">
                         {activeLog ? (
-                            <button onClick={() => { setCameraMode('out'); setShowCamera(true); }} disabled={clockBusy} className="w-full py-4 rounded-2xl bg-gradient-to-br from-rose-500 to-red-600 text-white font-black shadow-xl shadow-red-900/30 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50">
-                                {clockBusy ? 'Saving...' : 'CLOCK OUT'}
-                            </button>
+                            <>
+                                {activeLog.break_started_at ? (
+                                    <button onClick={handleEndBreak} disabled={breakBusy} className="flex-1 py-4 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white font-black shadow-xl shadow-amber-900/30 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+                                        {breakBusy ? '...' : <><span>▶️</span> RESUME WORK</>}
+                                    </button>
+                                ) : (
+                                    <button onClick={handleStartBreak} disabled={breakBusy} className="flex-1 py-4 rounded-2xl bg-slate-800 text-slate-300 border border-slate-700 font-black hover:bg-slate-700 hover:text-white transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+                                        {breakBusy ? '...' : <><span>☕</span> TAKE A BREAK</>}
+                                    </button>
+                                )}
+                                
+                                <button onClick={() => { setCameraMode('out'); setShowCamera(true); }} disabled={clockBusy} className="flex-1 py-4 rounded-2xl bg-gradient-to-br from-rose-500 to-red-600 text-white font-black shadow-xl shadow-red-900/30 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50">
+                                    {clockBusy ? 'Saving...' : 'CLOCK OUT'}
+                                </button>
+                            </>
                         ) : (
                             <button onClick={() => { setCameraMode('in'); setShowCamera(true); }} disabled={clockBusy} className="w-full py-4 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white font-black shadow-xl shadow-emerald-900/30 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50">
                                 {clockBusy ? 'Connecting...' : 'CLOCK IN'}

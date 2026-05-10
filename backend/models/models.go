@@ -71,6 +71,8 @@ type TimeLog struct {
 	ApprovedBy    *uint      `json:"approved_by"`
 	ClockInPhoto  string     `json:"clock_in_photo"`
 	ClockOutPhoto string     `json:"clock_out_photo"`
+	BreakStartedAt    *time.Time `json:"break_started_at"`
+	TotalBreakMinutes int        `gorm:"default:0" json:"total_break_minutes"`
 
 	Student User `gorm:"foreignKey:StudentID" json:"student,omitempty"`
 }

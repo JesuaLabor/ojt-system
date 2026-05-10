@@ -27,9 +27,14 @@ type RejectTimeLogInput struct {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-// calcHours computes total hours between two times, rounded to 2 decimal places.
-func calcHours(clockIn time.Time, clockOut time.Time) float64 {
-	return math.Round(clockOut.Sub(clockIn).Hours()*100) / 100
+// calcHours computes total hours between two times, minus break minutes, rounded to 2 decimal places.
+func calcHours(clockIn time.Time, clockOut time.Time, breakMinutes int) float64 {
+	duration := clockOut.Sub(clockIn)
+	netDuration := duration - (time.Duration(breakMinutes) * time.Minute)
+	if netDuration < 0 {
+		netDuration = 0
+	}
+	return math.Round(netDuration.Hours()*100) / 100
 }
 
 // ─── POST /api/timelogs ───────────────────────────────────────────────────────
@@ -89,7 +94,7 @@ func CreateTimeLog(c *gin.Context) {
 			return
 		}
 		entry.ClockOut = &clockOut
-		entry.TotalHours = calcHours(clockIn, clockOut)
+		entry.TotalHours = calcHours(clockIn, clockOut, 0) // Manual entry assumes 0 breaks unless added later
 	}
 
 	if result := config.DB.Create(&entry); result.Error != nil {
@@ -191,9 +196,17 @@ func ClockOut(c *gin.Context) {
 	}
 
 	now := time.Now()
+	
+	// If they are on break while clocking out, end the break first
+	if entry.BreakStartedAt != nil {
+		breakDur := int(now.Sub(*entry.BreakStartedAt).Minutes())
+		entry.TotalBreakMinutes += breakDur
+		entry.BreakStartedAt = nil
+	}
+
 	entry.ClockOut = &now
 	entry.ClockOutPhoto = photoURL
-	entry.TotalHours = calcHours(entry.ClockIn, now)
+	entry.TotalHours = calcHours(entry.ClockIn, now, entry.TotalBreakMinutes)
 	config.DB.Save(&entry)
 
 	c.JSON(http.StatusOK, gin.H{
@@ -410,4 +423,51 @@ func RejectTimeLog(c *gin.Context) {
 		"message": "Time log rejected",
 		"log":     entry,
 	})
+}
+// ─── PATCH /api/timelogs/break/start ──────────────────────────────────────────
+// Student starts a break.
+func StartBreak(c *gin.Context) {
+	userID, _ := c.Get("userID")
+
+	var entry models.TimeLog
+	if result := config.DB.Where("student_id = ? AND clock_out IS NULL", userID).First(&entry); result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No active clock-in session found"})
+		return
+	}
+
+	if entry.BreakStartedAt != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "You are already on a break"})
+		return
+	}
+
+	now := time.Now()
+	entry.BreakStartedAt = &now
+	config.DB.Save(&entry)
+
+	c.JSON(http.StatusOK, gin.H{"message": "Break started", "log": entry})
+}
+
+// ─── PATCH /api/timelogs/break/end ────────────────────────────────────────────
+// Student ends a break.
+func EndBreak(c *gin.Context) {
+	userID, _ := c.Get("userID")
+
+	var entry models.TimeLog
+	if result := config.DB.Where("student_id = ? AND clock_out IS NULL", userID).First(&entry); result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No active clock-in session found"})
+		return
+	}
+
+	if entry.BreakStartedAt == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "You are not currently on a break"})
+		return
+	}
+
+	now := time.Now()
+	duration := int(now.Sub(*entry.BreakStartedAt).Minutes())
+	entry.TotalBreakMinutes += duration
+	entry.BreakStartedAt = nil
+	config.DB.Save(&entry)
+
+	c.JSON(http.StatusOK, gin.H{"message": "Break ended", "total_break_minutes": entry.TotalBreakMinutes, "log": entry})
 }

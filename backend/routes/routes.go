@@ -41,6 +41,8 @@ func RegisterRoutes(r *gin.Engine) {
 			timelogs.POST("/", controllers.CreateTimeLog)     // POST   /api/timelogs        — manual entry (clock_in + optional clock_out)
 			timelogs.POST("/clockin", controllers.ClockIn)    // POST   /api/timelogs/clockin — instant clock-in (now)
 			timelogs.PATCH("/clockout", controllers.ClockOut) // PATCH  /api/timelogs/clockout — instant clock-out (now)
+			timelogs.PATCH("/break/start", controllers.StartBreak) // PATCH /api/timelogs/break/start
+			timelogs.PATCH("/break/end", controllers.EndBreak)     // PATCH /api/timelogs/break/end
 			timelogs.GET("/", controllers.GetMyTimeLogs)      // GET    /api/timelogs/?status=pending
 
 			// Supervisor / Coordinator / Faculty endpoints
