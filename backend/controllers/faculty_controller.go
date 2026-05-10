@@ -128,8 +128,9 @@ func GetFacultyStudents(c *gin.Context) {
 			"total_students":  len(students),
 			"completed_ojt":   completedOJT,
 			"behind_schedule": behindSchedule,
-			"department_id":   *faculty.DepartmentID,
+			"department_id":   faculty.DepartmentID,
 			"department_name": deptName,
+			"has_department":  faculty.DepartmentID != nil,
 		},
 		"students": students,
 	})

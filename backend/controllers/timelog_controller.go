@@ -219,10 +219,11 @@ func GetMyTimeLogs(c *gin.Context) {
 	query.Find(&logs)
 
 	var assignment models.OJTAssignment
-	config.DB.Where("student_id = ?", userID).First(&assignment)
+	result := config.DB.Where("student_id = ?", userID).First(&assignment)
+	hasAssignment := result.Error == nil && assignment.ID != 0
 
 	requiredHours := 600.0
-	if assignment.RequiredHours > 0 {
+	if hasAssignment && assignment.RequiredHours > 0 {
 		requiredHours = assignment.RequiredHours
 	}
 
@@ -230,6 +231,7 @@ func GetMyTimeLogs(c *gin.Context) {
 		"total":          len(logs),
 		"logs":           logs,
 		"required_hours": requiredHours,
+		"has_assignment": hasAssignment,
 	})
 }
 
