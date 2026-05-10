@@ -89,9 +89,10 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	// Coordinators and Faculty default to "active" so they can approve others. Students/Supervisors are "pending".
+	// Only Coordinators default to "active" so they can set up the system. 
+	// Faculty, Students, and Supervisors start as "pending" and require approval.
 	status := "pending"
-	if input.Role == "coordinator" || input.Role == "faculty" {
+	if input.Role == "coordinator" {
 		status = "active"
 	}
 
