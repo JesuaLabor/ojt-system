@@ -36,7 +36,7 @@ export default function FacultyOverview() {
     const stats = [
         { label: 'Total Students', value: summary?.total_students || 0, sub: 'In the program', icon: '🎓', color: 'bg-cyan-500/15 text-cyan-400' },
         { label: 'Completed OJT', value: summary?.completed_ojt || 0, sub: 'Finished requirements', icon: '✅', color: 'bg-emerald-500/15 text-emerald-400' },
-        { label: 'Behind Schedule', value: summary?.behind_schedule || 0, sub: 'Need immediate attention', icon: '⚠️', color: 'bg-amber-500/15 text-amber-400' },
+        { label: 'Attendance Risk', value: summary?.at_risk_students || 0, sub: 'Need immediate attention', icon: '🚨', color: 'bg-red-500/15 text-red-400' },
         { label: 'Pending Evals', value: summary?.pending_evaluations || 0, sub: 'Awaiting grading', icon: '📝', color: 'bg-indigo-500/15 text-indigo-400' },
     ]
 

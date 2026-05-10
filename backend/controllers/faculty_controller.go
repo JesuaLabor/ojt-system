@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"ojt-system/config"
 	"ojt-system/models"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -59,11 +60,14 @@ func GetFacultyStudents(c *gin.Context) {
 		Status         string  `json:"status"`
 		LatestScore    float64 `json:"latest_score"`
 		LatestGrade    string  `json:"latest_grade"`
+		LastActive     string  `json:"last_active"`
+		DaysInactive   int     `json:"days_inactive"`
 	}
 
 	var students []FacultyStudentView
 	completedOJT := 0
 	behindSchedule := 0
+	atRiskStudents := 0
 
 	for _, a := range assignments {
 		// Sum approved hours
@@ -80,6 +84,25 @@ func GetFacultyStudents(c *gin.Context) {
 		}
 		if progress > 100 {
 			progress = 100
+		}
+
+		// Find Last Activity
+		var lastLog models.TimeLog
+		var daysInactive int
+		lastActiveStr := "Never"
+		
+		if result := config.DB.Where("student_id = ?", a.StudentID).Order("clock_in desc").First(&lastLog); result.Error == nil {
+			lastActiveStr = lastLog.ClockIn.Format("2006-01-02")
+			daysInactive = int(time.Since(lastLog.ClockIn).Hours() / 24)
+		} else {
+			if !a.StartDate.IsZero() {
+				daysInactive = int(time.Since(a.StartDate).Hours() / 24)
+				if daysInactive < 0 { daysInactive = 0 }
+			}
+		}
+
+		if daysInactive >= 3 {
+			atRiskStudents++
 		}
 
 		// Latest evaluation score
@@ -112,6 +135,8 @@ func GetFacultyStudents(c *gin.Context) {
 			Status:         status,
 			LatestScore:    latestScore,
 			LatestGrade:    latestGrade,
+			LastActive:     lastActiveStr,
+			DaysInactive:   daysInactive,
 		})
 	}
 
@@ -134,6 +159,7 @@ func GetFacultyStudents(c *gin.Context) {
 			"total_students":  len(students),
 			"completed_ojt":   completedOJT,
 			"behind_schedule": behindSchedule,
+			"at_risk_students": atRiskStudents,
 			"department_id":   faculty.DepartmentID,
 			"department_name": deptName,
 			"has_department":  faculty.DepartmentID != nil,

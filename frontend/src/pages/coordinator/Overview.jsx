@@ -9,7 +9,36 @@ const IconSearch = () => <svg className="w-4 h-4" fill="none" stroke="currentCol
 const IconX = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
 const IconExternal = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
 
-// ── Badges ────────────────────────────────────────────────────────────────────
+function AttendanceBadge({ days }) {
+    if (days === 0) return (
+        <div className="flex flex-col">
+            <span className="text-[10px] font-bold text-teal-400 uppercase tracking-tight">Active</span>
+            <span className="text-[9px] text-slate-500 italic">Today</span>
+        </div>
+    )
+    
+    let color = 'text-teal-400 bg-teal-500/10'
+    let label = 'Normal'
+    
+    if (days >= 5) {
+        color = 'text-red-400 bg-red-500/10'
+        label = 'Danger'
+    } else if (days >= 3) {
+        color = 'text-amber-400 bg-amber-500/10'
+        label = 'Warning'
+    }
+
+    return (
+        <div className="flex flex-col items-start">
+            <span className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-widest ${color}`}>
+                {label}
+            </span>
+            <span className="text-[10px] text-slate-400 mt-0.5 font-medium">
+                {days} {days === 1 ? 'day' : 'days'} inactive
+            </span>
+        </div>
+    )
+}
 function StatusBadge({ status }) {
     const map = {
         'On Track': 'bg-teal-500/15 text-teal-400 ring-1 ring-teal-500/30',
@@ -111,6 +140,12 @@ function StudentDetailsModal({ student, onClose }) {
                                         <GradeBadge grade={student.latest_grade} score={student.latest_score} />
                                     </div>
                                 </div>
+                                <div>
+                                    <p className="text-[10px] text-slate-500 uppercase">Activity Status</p>
+                                    <div className="mt-1">
+                                        <AttendanceBadge days={student.days_inactive} />
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -166,7 +201,8 @@ export default function CoordinatorOverview() {
         total_students: 0,
         completed_ojt: 0,
         behind_schedule: 0,
-        pending_evaluations: 0
+        pending_evaluations: 0,
+        at_risk_students: 0
     })
     const [loading, setLoading] = useState(true)
 
@@ -192,7 +228,8 @@ export default function CoordinatorOverview() {
                 total_students: 0,
                 completed_ojt: 0,
                 behind_schedule: 0,
-                pending_evaluations: 0
+                pending_evaluations: 0,
+                at_risk_students: 0
             })
         } catch (err) {
             console.error(err)
@@ -223,7 +260,7 @@ export default function CoordinatorOverview() {
     const statCards = [
         { label: 'Total Students', value: summary.total_students, color: 'text-orange-400', bg: 'bg-orange-500/15', icon: '👥' },
         { label: 'Completed OJT', value: summary.completed_ojt, color: 'text-emerald-400', bg: 'bg-emerald-500/15', icon: '✅' },
-        { label: 'Behind Schedule', value: summary.behind_schedule, color: 'text-red-400', bg: 'bg-red-500/15', icon: '⚠️' },
+        { label: 'Attendance Risk', value: summary.at_risk_students, color: 'text-red-400', bg: 'bg-red-500/15', icon: '🚨' },
         { label: 'Pending Evaluations', value: summary.pending_evaluations, color: 'text-purple-400', bg: 'bg-purple-500/15', icon: '📝' },
     ]
 
@@ -316,8 +353,9 @@ export default function CoordinatorOverview() {
                             <tr>
                                 <th>Student Name</th>
                                 <th>Company Deployment</th>
+                                <th>Attendance</th>
                                 <th>Progress Tracker</th>
-                                <th>Performance (Evaluation)</th>
+                                <th>Performance</th>
                                 <th>Status</th>
                                 <th className="text-right">Action</th>
                             </tr>
@@ -370,6 +408,9 @@ export default function CoordinatorOverview() {
                                             <p className="text-[10px] text-slate-500 uppercase tracking-wider mt-0.5" title={student.supervisor_name}>
                                                 Sup: {student.supervisor_name || 'N/A'}
                                             </p>
+                                        </td>
+                                        <td>
+                                            <AttendanceBadge days={student.days_inactive} />
                                         </td>
                                         <td>
                                             <div className="w-32 sm:w-40">

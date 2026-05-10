@@ -45,10 +45,12 @@ func GetCoordinatorStudents(c *gin.Context) {
 		LatestScore    float64 `json:"latest_score"`
 		LatestGrade    string  `json:"latest_grade"`
 		PendingLogs    int64   `json:"pending_logs"`
+		LastActive     string  `json:"last_active"`
+		DaysInactive   int     `json:"days_inactive"`
 	}
 
 	var students []StudentDetail
-	var totalStudents, completedOJT, behindSchedule, pendingEvaluations int
+	var totalStudents, completedOJT, behindSchedule, pendingEvaluations, atRiskStudents int
 
 	for _, a := range assignments {
 		totalStudents++
@@ -70,6 +72,26 @@ func GetCoordinatorStudents(c *gin.Context) {
 		config.DB.Model(&models.TimeLog{}).
 			Where("student_id = ? AND status = 'pending'", a.StudentID).
 			Count(&pendingCount)
+
+		// Find Last Activity
+		var lastLog models.TimeLog
+		var daysInactive int
+		lastActiveStr := "Never"
+		
+		if result := config.DB.Where("student_id = ?", a.StudentID).Order("clock_in desc").First(&lastLog); result.Error == nil {
+			lastActiveStr = lastLog.ClockIn.Format("2006-01-02")
+			daysInactive = int(time.Since(lastLog.ClockIn).Hours() / 24)
+		} else {
+			// If no logs, calculate since assignment start date
+			if !a.StartDate.IsZero() {
+				daysInactive = int(time.Since(a.StartDate).Hours() / 24)
+				if daysInactive < 0 { daysInactive = 0 }
+			}
+		}
+
+		if daysInactive >= 3 {
+			atRiskStudents++
+		}
 
 		// Calculate progress
 		progress := 0.0
@@ -111,6 +133,8 @@ func GetCoordinatorStudents(c *gin.Context) {
 			LatestScore:    latestScore,
 			LatestGrade:    latestGrade,
 			PendingLogs:    pendingCount,
+			LastActive:     lastActiveStr,
+			DaysInactive:   daysInactive,
 		})
 
 		if a.Status == "completed" || progress >= 100 {
@@ -127,6 +151,7 @@ func GetCoordinatorStudents(c *gin.Context) {
 			"completed_ojt":       completedOJT,
 			"behind_schedule":     behindSchedule,
 			"pending_evaluations": pendingEvaluations,
+			"at_risk_students":    atRiskStudents,
 		},
 		"students": students,
 	})

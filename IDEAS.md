@@ -1,21 +1,15 @@
 # OJT System Roadmap & Enhancements
 
-Based on the current state of the system, which already features a premium UI and robust biometric verification, here are several high-impact features and improvements to take the platform to the next level.
+Based on the current state of the system, which already features a premium UI, robust biometric verification, and advanced filtering, here are several high-impact features and improvements to take the platform to the next level.
 
-## 1. Communication & Engagement
-### 📢 Announcement System
-*   **Feature:** A dedicated space for Coordinators and Supervisors to post announcements (e.g., deadlines, holiday schedules, seminar invites).
+## 1. Attendance & Accountability
+### 🚨 Absence & Inactivity Monitoring (New!)
+*   **Feature:** Automatically flag students who haven't logged time in a specified period (e.g., 3+ days).
 *   **Implementation:** 
-    *   Backend: New `Announcement` model and API endpoints.
-    *   Frontend: A "Notice Board" widget on dashboards and a full announcements page.
-*   **Value:** Keeps students informed without relying on external messaging apps.
+    *   Backend: Calculate `days_since_last_log` in the student list API.
+    *   Frontend: Add "Risk Levels" (Normal, Warning, Danger) with color-coded badges and a "Students at Risk" dashboard card.
+*   **Value:** Proactively identifies potential dropouts or issues at the workplace before they become major problems.
 
-### 💬 Direct Messaging (Lightweight)
-*   **Feature:** Simple chat or inquiry system between Students and their assigned Supervisor/Coordinator.
-*   **Implementation:** Real-time chat using WebSockets or a simple polling-based message board.
-*   **Value:** Streamlines communication for quick questions regarding logs or tasks.
-
-## 2. Compliance & Security
 ### 📍 Geofencing for Time Logs
 *   **Feature:** Verify that students are physically at the company location when they clock in/out.
 *   **Implementation:** 
@@ -23,14 +17,13 @@ Based on the current state of the system, which already features a premium UI an
     *   Compare coordinates with the Company's stored location (with a configurable radius, e.g., 200m).
 *   **Value:** Prevents "remote" clock-ins from unauthorized locations.
 
-### 📂 Weekly/Monthly Accomplishment Reports (Journaling)
-*   **Feature:** A structured "Journal" where students summarize their tasks and learnings for the week.
+## 2. Automation & Reporting
+### 📜 Automated Daily Time Record (DTR) PDF (New!)
+*   **Feature:** One-click generation of a professional DTR/Timesheet ready for printing.
 *   **Implementation:** 
-    *   A new `Journals` section where students submit weekly entries.
-    *   Supervisors must "Acknowledge" or "Approve" these journals alongside time logs.
-*   **Value:** Provides qualitative data on student progress beyond just hours rendered.
+    *   A "Download DTR" button that compiles all approved time logs into a standard school-ready PDF template.
+*   **Value:** Saves students hours of manual formatting and ensures data accuracy for school requirements.
 
-## 3. Automation & Reporting
 ### 📜 Automated Certificate Generation
 *   **Feature:** Auto-generate a professional PDF "Certificate of Completion" once the student hits 100% progress.
 *   **Implementation:** 
@@ -38,25 +31,28 @@ Based on the current state of the system, which already features a premium UI an
     *   PDF generation using a library like `gofpdf` (Go) or a frontend library like `jsPDF`.
 *   **Value:** Instant gratification for students and less manual work for coordinators.
 
-### 📊 Advanced Analytics for Coordinators
-*   **Feature:** Heatmaps of attendance, department performance comparisons, and "at-risk" student identification (students lagging behind on hours).
-*   **Value:** Helps coordinators proactively manage hundreds of students.
+## 3. Communication & Engagement
+### 📢 Announcement System
+*   **Feature:** A dedicated space for Coordinators and Supervisors to post announcements (e.g., deadlines, holiday schedules, seminar invites).
+*   **Value:** Keeps students informed without relying on external messaging apps.
 
-## 4. UI/UX Refinements
-### 🌓 Theme Customization
-*   **Feature:** While the dark mode is premium and stunning, adding a "Light/Solarized" mode toggle provides accessibility for different lighting environments.
-*   **Implementation:** Use CSS variables for the color palette and a `ThemeProvider`.
+### 💬 Direct Messaging (Lightweight)
+*   **Feature:** Simple chat or inquiry system between Students and their assigned Supervisor/Coordinator.
+*   **Value:** Streamlines communication for quick questions regarding logs or tasks.
 
+## 4. Compliance & Qualitative Data
+### 📂 Weekly Accomplishment Journals
+*   **Feature:** A structured journal where students summarize their tasks and learnings for the week.
+*   **Implementation:** 
+    *   A new `Journals` section where students submit weekly entries for supervisor acknowledgement.
+*   **Value:** Provides qualitative data on student progress beyond just hours rendered.
+
+## 5. UI/UX & Platform
 ### 📱 Progressive Web App (PWA) Support
 *   **Feature:** Allow students to "Install" the app on their phone for easier access to the camera for clocking in.
-*   **Implementation:** Add a `manifest.json` and service worker for offline caching of basic assets.
-
-## 5. Internship Discovery
-### 🏢 Company Directory & Reviews
-*   **Feature:** A "Glassdoor-like" section where students can see available OJT slots and read anonymous reviews from previous interns.
-*   **Value:** Helps future students make informed choices about where to apply.
+*   **Value:** Provides a native-app feel and easier access for daily clock-ins.
 
 ---
 
 ### Suggested Next Step
-Which of these features would you like to prioritize first? I recommend starting with the **Announcement System** or **Weekly Journaling** as they add the most immediate value to the daily workflow.
+Which of these features would you like to prioritize first? I recommend starting with the **Absence Monitoring** or **Automated DTR** as they solve the most common "headaches" for both students and coordinators.

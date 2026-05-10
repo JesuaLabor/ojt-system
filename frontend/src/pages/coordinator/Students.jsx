@@ -16,6 +16,37 @@ function StatusBadge({ status }) {
     )
 }
 
+function AttendanceBadge({ days }) {
+    if (days === 0) return (
+        <div className="flex flex-col">
+            <span className="text-[10px] font-bold text-teal-400 uppercase tracking-tight">Active</span>
+            <span className="text-[9px] text-slate-500 italic">Today</span>
+        </div>
+    )
+    
+    let color = 'text-teal-400 bg-teal-500/10'
+    let label = 'Normal'
+    
+    if (days >= 5) {
+        color = 'text-red-400 bg-red-500/10'
+        label = 'Danger'
+    } else if (days >= 3) {
+        color = 'text-amber-400 bg-amber-500/10'
+        label = 'Warning'
+    }
+
+    return (
+        <div className="flex flex-col items-start">
+            <span className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-widest ${color}`}>
+                {label}
+            </span>
+            <span className="text-[10px] text-slate-400 mt-0.5 font-medium">
+                {days} {days === 1 ? 'day' : 'days'} inactive
+            </span>
+        </div>
+    )
+}
+
 const IconSearch = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
 
 export default function CoordinatorStudents() {
@@ -132,9 +163,9 @@ export default function CoordinatorStudents() {
                <p className="text-[10px] uppercase tracking-wider text-amber-500 font-bold mb-1">Behind Schedule</p>
                <p className="text-2xl font-black text-amber-400">{summary.behind_schedule}</p>
             </div>
-            <div className="card py-4 bg-indigo-900/10 shadow-none border border-indigo-900/30">
-               <p className="text-[10px] uppercase tracking-wider text-indigo-500 font-bold mb-1">Pending Eval</p>
-               <p className="text-2xl font-black text-indigo-400">{summary.pending_evaluations}</p>
+            <div className="card py-4 bg-red-900/10 shadow-none border border-red-900/30">
+               <p className="text-[10px] uppercase tracking-wider text-red-500 font-bold mb-1">Attendance Risk</p>
+               <p className="text-2xl font-black text-red-400">{summary.at_risk_students}</p>
             </div>
          </div>
       )}
@@ -163,6 +194,7 @@ export default function CoordinatorStudents() {
                 <tr>
                   <th className="table-head">Student Information</th>
                   <th className="table-head">Assignment Details</th>
+                  <th className="table-head">Attendance</th>
                   <th className="table-head">Progress</th>
                   <th className="table-head">Status</th>
                   <th className="table-head text-right">Actions</th>
@@ -215,6 +247,9 @@ export default function CoordinatorStudents() {
                                 <p className="text-[10px] text-slate-500">
                                    Supervisor: <span className="text-slate-400">{student.supervisor_name || 'Unassigned'}</span>
                                 </p>
+                            </td>
+                            <td className="table-cell">
+                                <AttendanceBadge days={student.days_inactive} />
                             </td>
                             <td className="table-cell">
                                 <div className="w-48">
