@@ -31,14 +31,16 @@ The **OJT Performance Monitoring and Time Tracking System** is a full-stack web 
 - **Faculty** view student progress in a read-only capacity
 
 **Key Features:**
-- 🕐 Time log management (manual entry + live clock-in/out)
+- 🕐 Time log management (manual entry + biometric clock-in/out)
+- 📸 Biometric Photo Verification (Mandatory snapshots for clock-in/out)
 - ✅ Multi-level approval workflow
 - 📊 5-criteria performance evaluations with grade labels
 - 📄 Automated PDF report generation
 - 📁 Document submission & approval (MOA, Endorsement, Waiver, Insurance)
 - 🔔 In-app notification system
 - 👤 Role-based user registration with coordinator-controlled approvals
-- ☁️ Cloudinary integration for avatar uploads
+- ☁️ Cloudinary integration for avatar and department images
+- ✨ Premium Glassmorphism UI with live clock tracking
 
 ---
 
@@ -156,7 +158,12 @@ ojt-system/
 
 ### User
 ```
-id | name | email (unique) | password (hashed) | role | status | profile_photo
+id | name | email (unique) | password (hashed) | role | status | profile_photo | department_id
+```
+
+### Department
+```
+id | name | code | description | status | profile_image
 ```
 
 ### OJTAssignment
@@ -170,6 +177,7 @@ start_date | end_date | status
 ```
 id | student_id → User | clock_in | clock_out (nullable) | total_hours
 status (pending/approved/rejected) | remarks | approved_by → User
+clock_in_photo | clock_out_photo
 ```
 
 ### Evaluation
@@ -224,8 +232,8 @@ id | user_id → User | message | is_read (default false) | link
 | Method | Endpoint | Role | Notes |
 |--------|---------|------|-------|
 | POST | `/timelogs` | All | Manual entry; `clock_in` required, `clock_out` optional |
-| POST | `/timelogs/clockin` | All | Instant clock-in (server time) |
-| PATCH | `/timelogs/clockout` | All | Clock out current active session |
+| POST | `/timelogs/clockin` | All | Instant clock-in (server time) + Biometric Photo |
+| PATCH | `/timelogs/clockout` | All | Clock out current active session + Biometric Photo |
 | GET | `/timelogs` | Student | Own logs; `?status=` filter |
 | GET | `/timelogs/:student_id` | Sup/Coord/Fac/Admin | Student's logs; `?status=&date_from=&date_to=` |
 | GET | `/timelogs/:student_id/summary` | Sup/Coord/Fac/Admin | Hours progress object |
@@ -509,6 +517,11 @@ Data persists in the `postgres_data` named volume.
 - Cannot approve a log without a `clock_out`
 - `total_hours = round((clockOut - clockIn).hours, 2)`
 
+### Biometric & Manual Verification
+- **Photo Verification:** Mandatory for standard clock-in/out. Photos are stored and visible to supervisors during approval.
+- **Manual Entries:** Logs created via "Add Manual Entry" lack biometric photos and are automatically tagged with a **"Manual" badge** for transparency.
+- **Supervisor Review:** Supervisors can view both "In" and "Out" photos to verify the student's identity and location.
+
 ### OJT Hours Progress
 - Default required hours: **600**
 - `OJTAssignment.required_hours` overrides default if set
@@ -560,10 +573,12 @@ Data persists in the `postgres_data` named volume.
 
 ## 15. Changelog
 
+| May 10, 2026 | v1.5 | **Premium UI & Biometric Verification.** Implemented mandatory photo capture for clock-in/out. Modernized Time Logs with a live clock widget, performance stats, and a high-end dark aesthetic. Added "Manual" entry badges for logs without verification photos. |
+| May 8, 2026 | v1.4 | **Department Image Management.** Added profile image support for departments. Refactored backend models to include `profile_image` in Departments and photo fields in TimeLogs. |
 | May 8, 2026 | v1.3 | **Enforced Assignment-Based Department Logic.** Replaced profile-fallback display with strict assignment-department linkage. Added auto-sync between student approval and active assignments. Updated assignment form with department auto-fill. |
 | May 8, 2026 | v1.2 | Added `admin` (Super Admin) role. Auto-seeded default account. Admin shares Coordinator Dashboard at `/admin/*`. All coordinator/assignment/company/report routes now also accept `admin` role. |
 | May 2026 | v1.1 | Initial documentation generated. |
 
 ---
 
-*Documentation last updated: May 9, 2026*
+*Documentation last updated: May 10, 2026*
