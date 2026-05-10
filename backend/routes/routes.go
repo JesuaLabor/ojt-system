@@ -118,10 +118,12 @@ func RegisterRoutes(r *gin.Engine) {
 			coordinator.GET("/students", controllers.GetCoordinatorStudents) // GET /api/coordinator/students
 			coordinator.GET("/stats", controllers.GetCoordinatorStats)       // GET /api/coordinator/stats
 
-			// User Approvals
+			// User Management
 			coordinator.GET("/users/pending", controllers.GetPendingUsers)    // GET /api/coordinator/users/pending
+			coordinator.GET("/faculty", controllers.GetCoordinatorFaculty)     // GET /api/coordinator/faculty
 			coordinator.PATCH("/users/:id/approve", controllers.ApproveUser)   // PATCH /api/coordinator/users/:id/approve
-			coordinator.PATCH("/users/:id/reject", controllers.RejectUser)   // PATCH /api/coordinator/users/:id/reject
+			coordinator.PATCH("/users/:id/reject", controllers.RejectUser)    // PATCH /api/coordinator/users/:id/reject
+			coordinator.PATCH("/users/:id", controllers.UpdateUser)           // PATCH /api/coordinator/users/:id — general update
 
 			// Document Approvals
 			coordinator.GET("/documents", controllers.GetAllDocuments)         // GET /api/coordinator/documents

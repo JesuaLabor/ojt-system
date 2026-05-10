@@ -10,6 +10,7 @@ import CoordinatorStudents from './Students'
 import CoordinatorEvaluations from './Evaluations'
 import UserApprovals from './UserApprovals'
 import CoordinatorDocuments from './Documents'
+import CoordinatorFaculty from './Faculty'
 import Profile from '../common/Profile'
 
 // Placeholder shells (to be built in later phases)
@@ -27,6 +28,7 @@ export default function CoordinatorDashboard() {
       <Routes>
         <Route index element={<Overview />} />
         <Route path="students" element={<CoordinatorStudents />} />
+        <Route path="faculty" element={<CoordinatorFaculty />} />
         <Route path="approvals" element={<UserApprovals />} />
         <Route path="companies" element={<Companies />} />
         <Route path="departments" element={<Departments />} />

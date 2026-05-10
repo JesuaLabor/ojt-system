@@ -149,3 +149,54 @@ func GetCoordinatorStats(c *gin.Context) {
 		"active_assignments": activeAssignments,
 	})
 }
+
+// ─── GET /api/coordinator/faculty ──────────────────────────────────────────────
+func GetCoordinatorFaculty(c *gin.Context) {
+	var faculty []models.User
+	config.DB.Preload("Department").Where("role = ?", "faculty").Find(&faculty)
+	c.JSON(http.StatusOK, gin.H{"faculty": faculty})
+}
+
+// ─── PATCH /api/coordinator/users/:id ──────────────────────────────────────────
+type UpdateUserInput struct {
+	Name         string `json:"name"`
+	Role         string `json:"role"`
+	Status       string `json:"status"`
+	DepartmentID *uint  `json:"department_id"`
+}
+
+func UpdateUser(c *gin.Context) {
+	id := c.Param("id")
+	var input UpdateUserInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var user models.User
+	if result := config.DB.First(&user, id); result.Error != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	// Update only if provided
+	updates := map[string]interface{}{}
+	if input.Name != "" {
+		updates["name"] = input.Name
+	}
+	if input.Role != "" {
+		updates["role"] = input.Role
+	}
+	if input.Status != "" {
+		updates["status"] = input.Status
+	}
+	// DepartmentID can be nullified, so we use the pointer
+	updates["department_id"] = input.DepartmentID
+
+	if err := config.DB.Model(&user).Updates(updates).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "User updated successfully", "user": user})
+}
