@@ -55,6 +55,7 @@ const NAV = {
         { to: '/admin/timelogs', label: 'Time Logs', icon: IconClock },
         { to: '/admin/evaluations', label: 'Evaluations', icon: IconStar },
         { to: '/admin/reports', label: 'Reports', icon: IconChart },
+        { to: '/admin/profile', label: 'My Profile', icon: IconUser },
     ],
 }
 
