@@ -16,18 +16,26 @@ function StatusBadge({ status }) {
     )
 }
 
+const IconSearch = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+
 export default function FacultyStudents() {
   const navigate = useNavigate()
   const [students, setStudents] = useState([])
   const [summary, setSummary] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  
-  // Search state
-  const [searchQuery, setSearchQuery] = useState('')
 
-  useEffect(() => {
-    api.get('/faculty/students')
+  // Filter state
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedCompany, setSelectedCompany] = useState('')
+  const [companies, setCompanies] = useState([])
+
+  const fetchStudents = () => {
+    setLoading(true)
+    const params = {}
+    if (selectedCompany) params.company_name = selectedCompany
+
+    api.get('/faculty/students', { params })
       .then(res => {
          setStudents(res.data?.students || [])
          setSummary(res.data?.summary || null)
@@ -37,6 +45,14 @@ export default function FacultyStudents() {
         setError('Failed to fetch students.')
       })
       .finally(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    fetchStudents()
+  }, [selectedCompany])
+
+  useEffect(() => {
+    api.get('/companies/').then(res => setCompanies(res.data?.companies || []))
   }, [])
 
   const filteredStudents = students.filter(s => 
@@ -53,18 +69,33 @@ export default function FacultyStudents() {
           <p className="page-sub mt-1">Directory of all active OJT student assignments across the system.</p>
         </div>
         
-        {/* Search Bar */}
-        <div className="relative min-w-[320px]">
-          <input 
-            type="text"
-            placeholder="Search by name, company, or supervisor..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="input w-full pl-10"
-          />
-          <svg className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6M9 13a4 4 0 110-8 4 4 0 010 8zM15 15a6 6 0 11-12 0 6 6 0 0112 0z" />
-          </svg>
+        {/* Filters & Search */}
+        <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+          {/* Company Filter */}
+          <select 
+            value={selectedCompany} 
+            onChange={(e) => setSelectedCompany(e.target.value)}
+            className="input text-xs font-bold bg-slate-900 border-slate-800 w-full sm:w-[180px] h-[42px] shrink-0"
+          >
+            <option value="">All Companies</option>
+            {companies.map(c => (
+              <option key={c.id} value={c.name}>{c.name}</option>
+            ))}
+          </select>
+
+          {/* Search Bar */}
+          <div className="relative flex-1 min-w-[240px]">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+               <IconSearch />
+            </div>
+            <input 
+              type="text"
+              placeholder="Search by student name..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="input w-full pl-10 h-[42px]"
+            />
+          </div>
         </div>
       </div>
 

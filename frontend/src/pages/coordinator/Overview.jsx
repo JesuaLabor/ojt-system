@@ -173,27 +173,42 @@ export default function CoordinatorOverview() {
     // Filters & Sorting
     const [search, setSearch] = useState('')
     const [statusFilter, setStatusFilter] = useState('All')
+    const [selectedDept, setSelectedDept] = useState('')
+    const [selectedCompany, setSelectedCompany] = useState('')
+    const [departments, setDepartments] = useState([])
+    const [companies, setCompanies] = useState([])
     const [selectedStudent, setSelectedStudent] = useState(null)
 
-    useEffect(() => {
-        const fetchStudents = async () => {
-            try {
-                const res = await api.get('/coordinator/students')
-                setStudents(res.data?.students || [])
-                setSummary(res.data?.summary || {
-                    total_students: 0,
-                    completed_ojt: 0,
-                    behind_schedule: 0,
-                    pending_evaluations: 0
-                })
-            } catch (err) {
-                console.error(err)
-                toast.error('Failed to load coordinator data.')
-            } finally {
-                setLoading(false)
-            }
+    const fetchStudents = async () => {
+        setLoading(true)
+        try {
+            const params = {}
+            if (selectedDept) params.department_id = selectedDept
+            if (selectedCompany) params.company_name = selectedCompany
+
+            const res = await api.get('/coordinator/students', { params })
+            setStudents(res.data?.students || [])
+            setSummary(res.data?.summary || {
+                total_students: 0,
+                completed_ojt: 0,
+                behind_schedule: 0,
+                pending_evaluations: 0
+            })
+        } catch (err) {
+            console.error(err)
+            toast.error('Failed to load coordinator data.')
+        } finally {
+            setLoading(false)
         }
+    }
+
+    useEffect(() => {
         fetchStudents()
+    }, [selectedDept, selectedCompany])
+
+    useEffect(() => {
+        api.get('/departments/').then(res => setDepartments(res.data?.departments || []))
+        api.get('/companies/').then(res => setCompanies(res.data?.companies || []))
     }, [])
 
     const filteredStudents = useMemo(() => {
@@ -235,23 +250,50 @@ export default function CoordinatorOverview() {
             {/* ── Data Table Section ── */}
             <div className="card !p-0 overflow-hidden border border-slate-800">
                 {/* Toolbar */}
-                <div className="p-4 border-b border-slate-800 bg-slate-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    {/* Search */}
-                    <div className="relative max-w-sm w-full">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
-                            <IconSearch />
+                <div className="p-4 border-b border-slate-800 bg-slate-900/50 flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+                    {/* Search & Select Filters */}
+                    <div className="flex flex-wrap items-center gap-3 w-full">
+                        {/* Department Select */}
+                        <select 
+                            value={selectedDept}
+                            onChange={(e) => setSelectedDept(e.target.value)}
+                            className="input text-[11px] font-bold bg-slate-800 border-slate-700 h-10 w-full sm:w-[160px] shrink-0"
+                        >
+                            <option value="">All Departments</option>
+                            {departments.map(d => (
+                                <option key={d.id} value={d.id}>{d.name}</option>
+                            ))}
+                        </select>
+
+                        {/* Company Select */}
+                        <select 
+                            value={selectedCompany}
+                            onChange={(e) => setSelectedCompany(e.target.value)}
+                            className="input text-[11px] font-bold bg-slate-800 border-slate-700 h-10 w-full sm:w-[160px] shrink-0"
+                        >
+                            <option value="">All Companies</option>
+                            {companies.map(c => (
+                                <option key={c.id} value={c.name}>{c.name}</option>
+                            ))}
+                        </select>
+
+                        {/* Search */}
+                        <div className="relative flex-1 min-w-[200px]">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                                <IconSearch />
+                            </div>
+                            <input
+                                type="text"
+                                placeholder="Search by student name..."
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                className="input pl-10 h-10 w-full"
+                            />
                         </div>
-                        <input
-                            type="text"
-                            placeholder="Search by student or company name..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            className="input pl-10 h-10 w-full"
-                        />
                     </div>
 
-                    {/* Filters */}
-                    <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+                    {/* Filters (Status) */}
+                    <div className="flex items-center gap-2 overflow-x-auto pb-1 xl:pb-0 shrink-0">
                         {['All', 'On Track', 'Behind', 'Completed'].map(status => (
                             <button
                                 key={status}

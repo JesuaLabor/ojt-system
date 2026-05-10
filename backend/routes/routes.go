@@ -154,7 +154,7 @@ func RegisterRoutes(r *gin.Engine) {
 
 		// ── Companies ─────────────────────────────────────────────────────────
 		companies := protected.Group("/companies")
-		companies.Use(middleware.RoleMiddleware("coordinator", "admin")) // Only coordinators manage companies
+		companies.Use(middleware.RoleMiddleware("coordinator", "admin", "faculty")) // Faculty can list companies
 		{
 			companies.GET("/", controllers.GetCompanies)       // GET    /api/companies
 			companies.POST("/", controllers.CreateCompany)      // POST   /api/companies
@@ -167,7 +167,7 @@ func RegisterRoutes(r *gin.Engine) {
 		{
 			departments.GET("/", controllers.GetDepartments) // GET /api/departments — all authenticated users
 			departments.GET("/:id/members",
-				middleware.RoleMiddleware("coordinator", "admin"),
+				middleware.RoleMiddleware("coordinator", "admin", "faculty"),
 				controllers.GetDepartmentMembers, // GET /api/departments/:id/members
 			)
 			departments.POST("/",

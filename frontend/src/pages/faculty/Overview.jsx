@@ -8,10 +8,25 @@ export default function FacultyOverview() {
     const [summary, setSummary] = useState(null)
     const [loading, setLoading] = useState(true)
 
-    useEffect(() => {
-        api.get('/faculty/students').then(res => {
+    const [selectedCompany, setSelectedCompany] = useState('')
+    const [companies, setCompanies] = useState([])
+
+    const fetchSummary = () => {
+        setLoading(true)
+        const params = {}
+        if (selectedCompany) params.company_name = selectedCompany
+
+        api.get('/faculty/students', { params }).then(res => {
             setSummary(res.data?.summary || null)
         }).finally(() => setLoading(false))
+    }
+
+    useEffect(() => {
+        fetchSummary()
+    }, [selectedCompany])
+
+    useEffect(() => {
+        api.get('/companies/').then(res => setCompanies(res.data?.companies || []))
     }, [])
 
     if (!loading && summary && !summary.has_department) {
@@ -27,9 +42,25 @@ export default function FacultyOverview() {
 
     return (
         <div className="fade-in space-y-6">
-            <div className="page-header">
-                <h1 className="page-title">Faculty Dashboard</h1>
-                <p className="page-sub">Welcome, {user?.name}. Monitor your students' OJT performance.</p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <div>
+                    <h1 className="page-title">Faculty Dashboard</h1>
+                    <p className="page-sub">Welcome, {user?.name}. Monitor your students' OJT performance.</p>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Filter:</span>
+                    <select 
+                        value={selectedCompany}
+                        onChange={(e) => setSelectedCompany(e.target.value)}
+                        className="input text-[11px] font-bold bg-slate-800 border-slate-700 h-10 min-w-[180px]"
+                    >
+                        <option value="">All Companies</option>
+                        {companies.map(c => (
+                            <option key={c.id} value={c.name}>{c.name}</option>
+                        ))}
+                    </select>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">

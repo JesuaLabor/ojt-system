@@ -33,12 +33,18 @@ func GetFacultyStudents(c *gin.Context) {
 	}
 
 	// 3. Fetch assignments scoped to the faculty's department only
-	var assignments []models.OJTAssignment
-	config.DB.
+	companyName := c.Query("company_name")
+	query := config.DB.
 		Preload("Student").
 		Preload("Department").
-		Where("department_id = ?", *faculty.DepartmentID).
-		Find(&assignments)
+		Where("department_id = ?", *faculty.DepartmentID)
+
+	if companyName != "" {
+		query = query.Where("company_name = ?", companyName)
+	}
+
+	var assignments []models.OJTAssignment
+	query.Find(&assignments)
 
 	// 4. Build a trimmed, faculty-appropriate response
 	type FacultyStudentView struct {

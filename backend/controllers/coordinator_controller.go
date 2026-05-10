@@ -14,8 +14,20 @@ import (
 // Returns all students with their OJT assignments, hours progress, and latest evaluation.
 
 func GetCoordinatorStudents(c *gin.Context) {
+	deptID := c.Query("department_id")
+	companyName := c.Query("company_name")
+
+	query := config.DB.Preload("Student").Preload("Supervisor").Preload("Department")
+
+	if deptID != "" {
+		query = query.Where("department_id = ?", deptID)
+	}
+	if companyName != "" {
+		query = query.Where("company_name = ?", companyName)
+	}
+
 	var assignments []models.OJTAssignment
-	config.DB.Preload("Student").Preload("Supervisor").Preload("Department").Find(&assignments)
+	query.Find(&assignments)
 
 	type StudentDetail struct {
 		StudentID      uint    `json:"student_id"`
