@@ -26,3 +26,7 @@ frontend/build/
 *.swp
 *.swo
 Thumbs.db
+
+# Log files
+*.log
+**/*.log

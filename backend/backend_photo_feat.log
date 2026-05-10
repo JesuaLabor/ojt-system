@@ -1,3 +1,0 @@
-# ojt-system/controllers
-controllers/timelog_controller.go:136:14: undefined: fmt
-controllers/timelog_controller.go:185:14: undefined: fmt
