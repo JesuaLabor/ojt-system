@@ -110,29 +110,18 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	// If the user is active (Coordinator), give them a token immediately.
-	// Otherwise (Pending), they must wait for approval and won't get a token yet.
-	var tokenStr string
-	if user.Status == "active" {
-		var err error
-		tokenStr, err = generateToken(user)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
-			return
-		}
+	// Always generate a token so the frontend can identify the user and show the Pending page
+	tokenStr, err := generateToken(user)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
+		return
 	}
 
-	res := gin.H{
+	c.JSON(http.StatusCreated, gin.H{
 		"message": "User registered successfully",
+		"token":   tokenStr,
 		"user":    userResponse(user),
-	}
-	if tokenStr != "" {
-		res["token"] = tokenStr
-	} else {
-		res["message"] = "Account created! Please wait for a coordinator to approve your account before signing in."
-	}
-
-	c.JSON(http.StatusCreated, res)
+	})
 }
 
 // ─── POST /api/auth/login ─────────────────────────────────────────────────────
@@ -153,11 +142,6 @@ func Login(c *gin.Context) {
 
 	if user.Status == "rejected" {
 		c.JSON(http.StatusForbidden, gin.H{"error": "Your account application has been rejected. Please contact the coordinator."})
-		return
-	}
-
-	if user.Status == "pending" {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Your account is still pending approval. Please wait for a coordinator to review your application."})
 		return
 	}
 
