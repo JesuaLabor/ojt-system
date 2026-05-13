@@ -18,10 +18,10 @@ Based on the current state of the system, which already features a premium UI, r
 *   **Value:** Prevents "remote" clock-ins from unauthorized locations.
 
 ## 2. Automation & Reporting
-### 📜 Automated Daily Time Record (DTR) PDF (New!)
+### 📜 Automated Daily Time Record (DTR) PDF (Implemented! ✅)
 *   **Feature:** One-click generation of a professional DTR/Timesheet ready for printing.
 *   **Implementation:** 
-    *   A "Download DTR" button that compiles all approved time logs into a standard school-ready PDF template.
+    *   Added a "Download DTR" button in the Time Logs page that uses `jspdf` and `jspdf-autotable` to compile approved logs into a standard PDF template with signature lines.
 *   **Value:** Saves students hours of manual formatting and ensures data accuracy for school requirements.
 
 ### 📜 Automated Certificate Generation

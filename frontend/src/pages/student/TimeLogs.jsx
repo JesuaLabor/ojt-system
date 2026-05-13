@@ -2,6 +2,8 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 import Webcam from 'react-webcam'
+import { jsPDF } from 'jspdf'
+import autoTable from 'jspdf-autotable'
 import api from '../../services/api'
 import useAuthStore from '../../store/authStore'
 
@@ -204,6 +206,76 @@ export default function TimeLogs() {
         }
     }
 
+    const handleDownloadDTR = () => {
+        if (!logs || logs.length === 0) {
+            toast.error('No time logs available to generate DTR.')
+            return
+        }
+
+        const doc = new jsPDF()
+
+        // Document styling
+        doc.setFontSize(16)
+        doc.setFont('helvetica', 'bold')
+        doc.text('Daily Time Record (DTR)', 14, 20)
+        
+        doc.setFontSize(12)
+        doc.setFont('helvetica', 'normal')
+        doc.text(`Student: ${user?.name || 'Student'}`, 14, 28)
+        
+        const approvedLogs = logs.filter(l => l.status === 'approved')
+        const totalApprovedHours = approvedLogs.reduce((s, l) => s + (l.total_hours || 0), 0)
+
+        doc.text(`Total Approved Hours: ${totalApprovedHours.toFixed(1)} hrs`, 14, 34)
+
+        const tableColumn = ["Date", "Time In", "Time Out", "Break (mins)", "Total Hours", "Remarks"]
+        const tableRows = []
+
+        // Sort logs by date ascending for the DTR
+        const sortedLogs = [...logs].filter(l => l.status === 'approved').sort((a, b) => new Date(a.clock_in) - new Date(b.clock_in))
+
+        if (sortedLogs.length === 0) {
+            toast.error('No approved logs to include in the DTR.')
+            return
+        }
+
+        sortedLogs.forEach(log => {
+            const logData = [
+                fmtDate(log.clock_in),
+                fmtTime(log.clock_in),
+                fmtTime(log.clock_out),
+                log.total_break_minutes || 0,
+                log.total_hours?.toFixed(1) || '-',
+                log.remarks || '-'
+            ]
+            tableRows.push(logData)
+        })
+
+        autoTable(doc, {
+            head: [tableColumn],
+            body: tableRows,
+            startY: 40,
+            theme: 'grid',
+            headStyles: { fillColor: [79, 70, 229] }, // Indigo-600
+            styles: { fontSize: 10, cellPadding: 3 },
+            alternateRowStyles: { fillColor: [248, 250, 252] } // Slate-50
+        })
+
+        doc.setFontSize(10)
+        const finalY = doc.lastAutoTable?.finalY || 40
+        doc.text("I certify on my honor that the above is a true and correct report of the hours of work performed,", 14, finalY + 15)
+        doc.text("record of which was made daily at the time of arrival and departure from office.", 14, finalY + 20)
+        
+        doc.line(14, finalY + 40, 80, finalY + 40)
+        doc.text("Student Signature", 25, finalY + 45)
+
+        doc.line(110, finalY + 40, 180, finalY + 40)
+        doc.text("Supervisor Signature", 125, finalY + 45)
+
+        doc.save(`DTR_${user?.name?.replace(/\s+/g, '_')}_${format(new Date(), 'yyyy-MM-dd')}.pdf`)
+        toast.success('DTR downloaded successfully! 📄')
+    }
+
     const [previewPhoto, setPreviewPhoto] = useState(null)
 
     // -- Early Return (WAITING FOR ASSIGNMENT) ------------------------------------
@@ -236,6 +308,9 @@ export default function TimeLogs() {
                     <p className="text-slate-500 mt-1">Track and manage your daily OJT hours.</p>
                 </div>
                 <div className="flex items-center gap-3">
+                    <button onClick={handleDownloadDTR} className="btn bg-indigo-500 hover:bg-indigo-600 text-white font-bold text-sm py-2 px-4 rounded-xl shadow-lg shadow-indigo-500/20 transition-all flex items-center gap-2">
+                        📄 Download DTR
+                    </button>
                     <button onClick={() => setShowManual(!showManual)} className="btn bg-slate-800 hover:bg-slate-700 text-white border-slate-700 text-sm py-2 px-4 rounded-xl transition-all">
                         {showManual ? 'Close Form' : 'Add Manual Entry'}
                     </button>

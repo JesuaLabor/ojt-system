@@ -30,3 +30,7 @@ Thumbs.db
 # Log files
 *.log
 **/*.log
+
+# Uploaded images (avatars, clock-ins)
+backend/uploads/*
+!backend/uploads/.gitkeep
