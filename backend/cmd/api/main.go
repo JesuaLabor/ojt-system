@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"ojt-system/config"
+	"ojt-system/controllers"
 	"ojt-system/routes"
 
 	"github.com/gin-gonic/gin"
@@ -10,6 +11,9 @@ import (
 )
 
 func main() {
+	// Start WS Hub
+	go controllers.MainHub.Run()
+
 	// Load .env
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found, using system env vars")

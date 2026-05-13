@@ -262,7 +262,7 @@ func UploadDepartmentImage(c *gin.Context) {
 		ext = ".jpg"
 	}
 	publicID := fmt.Sprintf("dept_%s_%d%s", id, time.Now().Unix(), ext)
-	fileURL, err := config.UploadImage(src, publicID, "ojt-system/departments")
+	fileURL, err := config.UploadFile(src, publicID, "ojt-system/departments", "image")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload image: " + err.Error()})
 		return

@@ -9,6 +9,8 @@ import logo from '../../assets/ojt_logo.png'
 const NAV = {
     student: [
         { to: '/student', label: 'Dashboard', icon: IconGrid },
+        { to: '/student/announcements', label: 'Announcements', icon: IconSpeakerphone },
+        { to: '/student/messages', label: 'Messages', icon: IconChat, badgeKey: 'unreadMessages' },
         { to: '/student/timelogs', label: 'Time Logs', icon: IconClock },
         { to: '/student/journals', label: 'Journals', icon: IconBook },
         { to: '/student/evaluations', label: 'Evaluations', icon: IconStar },
@@ -17,6 +19,8 @@ const NAV = {
     ],
     supervisor: [
         { to: '/supervisor', label: 'Dashboard', icon: IconGrid },
+        { to: '/supervisor/announcements', label: 'Announcements', icon: IconSpeakerphone },
+        { to: '/supervisor/messages', label: 'Messages', icon: IconChat, badgeKey: 'unreadMessages' },
         { to: '/supervisor/students', label: 'Students', icon: IconUsers },
         { to: '/supervisor/timelogs', label: 'Time Logs', icon: IconClock, badgeKey: 'pendingApprovals' },
         { to: '/supervisor/journals', label: 'Journals', icon: IconBook },
@@ -26,6 +30,8 @@ const NAV = {
     ],
     coordinator: [
         { to: '/coordinator', label: 'Dashboard', icon: IconGrid },
+        { to: '/coordinator/announcements', label: 'Announcements', icon: IconSpeakerphone },
+        { to: '/coordinator/messages', label: 'Messages', icon: IconChat, badgeKey: 'unreadMessages' },
         { to: '/coordinator/approvals', label: 'Approvals', icon: IconShieldCheck, badgeKey: 'pendingUsers' },
         { to: '/coordinator/students', label: 'Students', icon: IconUsers },
         { to: '/coordinator/faculty', label: 'Faculty', icon: IconFaculty },
@@ -41,6 +47,8 @@ const NAV = {
     ],
     faculty: [
         { to: '/faculty', label: 'Dashboard', icon: IconGrid },
+        { to: '/faculty/announcements', label: 'Announcements', icon: IconSpeakerphone },
+        { to: '/faculty/messages', label: 'Messages', icon: IconChat, badgeKey: 'unreadMessages' },
         { to: '/faculty/students', label: 'Students', icon: IconUsers },
         { to: '/faculty/journals', label: 'Journals', icon: IconBook },
         { to: '/faculty/evaluations', label: 'Evaluations', icon: IconStar },
@@ -49,6 +57,8 @@ const NAV = {
     ],
     admin: [
         { to: '/admin', label: 'Dashboard', icon: IconGrid },
+        { to: '/admin/announcements', label: 'Announcements', icon: IconSpeakerphone },
+        { to: '/admin/messages', label: 'Messages', icon: IconChat, badgeKey: 'unreadMessages' },
         { to: '/admin/approvals', label: 'Approvals', icon: IconShieldCheck, badgeKey: 'pendingUsers' },
         { to: '/admin/students', label: 'Students', icon: IconUsers },
         { to: '/admin/faculty', label: 'Faculty', icon: IconFaculty },
@@ -97,6 +107,18 @@ export default function Sidebar({ open, onClose }) {
                 })
                 .catch(() => { })
         }
+
+        // Fetch unread messages
+        const fetchUnread = () => {
+            api.get('/messages/unread')
+                .then(res => {
+                    setBadges(prev => ({ ...prev, unreadMessages: res.data?.unread_count || 0 }))
+                })
+                .catch(() => { })
+        }
+        fetchUnread()
+        const interval = setInterval(fetchUnread, 30000) // Poll every 30s
+        return () => clearInterval(interval)
     }, [user?.role])
 
     const handleLogout = () => {
@@ -238,3 +260,5 @@ function IconOfficeBuilding({ className }) { return <svg className={className} f
 function IconBuilding({ className }) { return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21h18M3 7l9-4 9 4M4 11h16v10H4V11zm4 0v10m4-10v10m4-10v10" /></svg> }
 function IconFaculty({ className }) { return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" /></svg> }
 function IconBook({ className }) { return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg> }
+function IconSpeakerphone({ className }) { return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg> }
+function IconChat({ className }) { return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg> }

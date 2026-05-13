@@ -30,20 +30,20 @@ func RegisterRoutes(r *gin.Engine) {
 	protected.Use(middleware.AuthMiddleware())
 	{
 		// ── Current User ──────────────────────────────────────────────────────
-		protected.GET("me", controllers.GetMe)         // GET  /api/me
-		protected.PUT("me", controllers.UpdateProfile) // PUT  /api/me
+		protected.GET("me", controllers.GetMe)                // GET  /api/me
+		protected.PUT("me", controllers.UpdateProfile)        // PUT  /api/me
 		protected.POST("me/avatar", controllers.UploadAvatar) // POST /api/me/avatar
 
 		// ── Time Logs ─────────────────────────────────────────────────────────
 		timelogs := protected.Group("/timelogs")
 		{
 			// Student endpoints
-			timelogs.POST("/", controllers.CreateTimeLog)     // POST   /api/timelogs        — manual entry (clock_in + optional clock_out)
-			timelogs.POST("/clockin", controllers.ClockIn)    // POST   /api/timelogs/clockin — instant clock-in (now)
-			timelogs.PATCH("/clockout", controllers.ClockOut) // PATCH  /api/timelogs/clockout — instant clock-out (now)
+			timelogs.POST("/", controllers.CreateTimeLog)          // POST   /api/timelogs        — manual entry (clock_in + optional clock_out)
+			timelogs.POST("/clockin", controllers.ClockIn)         // POST   /api/timelogs/clockin — instant clock-in (now)
+			timelogs.PATCH("/clockout", controllers.ClockOut)      // PATCH  /api/timelogs/clockout — instant clock-out (now)
 			timelogs.PATCH("/break/start", controllers.StartBreak) // PATCH /api/timelogs/break/start
 			timelogs.PATCH("/break/end", controllers.EndBreak)     // PATCH /api/timelogs/break/end
-			timelogs.GET("/", controllers.GetMyTimeLogs)      // GET    /api/timelogs/?status=pending
+			timelogs.GET("/", controllers.GetMyTimeLogs)           // GET    /api/timelogs/?status=pending
 
 			// Supervisor / Coordinator / Faculty endpoints
 			timelogs.GET("/:student_id",
@@ -115,6 +115,20 @@ func RegisterRoutes(r *gin.Engine) {
 			)
 		}
 
+		// ── Announcements ───────────────────────────────────────────────────────
+		announcements := protected.Group("/announcements")
+		{
+			announcements.GET("/", controllers.GetAnnouncements)
+			announcements.POST("/",
+				middleware.RoleMiddleware("coordinator", "supervisor", "faculty", "admin"),
+				controllers.CreateAnnouncement,
+			)
+			announcements.DELETE("/:id",
+				middleware.RoleMiddleware("coordinator", "supervisor", "admin"),
+				controllers.DeleteAnnouncement,
+			)
+		}
+
 		// ── Documents ─────────────────────────────────────────────────────────
 		protected.POST("/documents", controllers.UploadDocument) // POST /api/documents
 		protected.GET("/documents", controllers.GetMyDocuments)  // GET  /api/documents
@@ -122,19 +136,30 @@ func RegisterRoutes(r *gin.Engine) {
 		// ── Notifications ─────────────────────────────────────────────────────
 		notifications := protected.Group("/notifications")
 		{
-			notifications.GET("/", controllers.GetMyNotifications)            // GET   /api/notifications
-			notifications.PATCH("/:id/read", controllers.MarkNotificationRead) // PATCH /api/notifications/:id/read
+			notifications.GET("/", controllers.GetMyNotifications)                       // GET   /api/notifications
+			notifications.PATCH("/:id/read", controllers.MarkNotificationRead)           // PATCH /api/notifications/:id/read
 			notifications.PATCH("/read-all", controllers.MarkAllNotificationsReadGlobal) // PATCH /api/notifications/read-all
+		}
+
+		// ── Direct Messaging ──────────────────────────────────────────────────
+		messages := protected.Group("/messages")
+		{
+			messages.GET("/contacts", controllers.GetContacts)
+			messages.GET("/conversation/:contactId", controllers.GetConversation)
+			messages.POST("/", controllers.SendMessage)
+			messages.GET("/unread", controllers.GetUnreadCount)
+			messages.PUT("/:id/react", controllers.ReactToMessage)
+			messages.GET("/ws", controllers.HandleWS)
 		}
 
 		// ── Supervisor ────────────────────────────────────────────────────────
 		supervisor := protected.Group("/supervisor")
 		supervisor.Use(middleware.RoleMiddleware("supervisor"))
 		{
-			supervisor.GET("/students", controllers.GetSupervisorStudents)                // GET   /api/supervisor/students
-			supervisor.GET("/notifications", controllers.GetSupervisorNotifications)      // GET   /api/supervisor/notifications
+			supervisor.GET("/students", controllers.GetSupervisorStudents)                    // GET   /api/supervisor/students
+			supervisor.GET("/notifications", controllers.GetSupervisorNotifications)          // GET   /api/supervisor/notifications
 			supervisor.PATCH("/notifications/read-all", controllers.MarkAllNotificationsRead) // PATCH /api/supervisor/notifications/read-all
-			supervisor.GET("/activity", controllers.GetSupervisorActivity)                // GET   /api/supervisor/activity
+			supervisor.GET("/activity", controllers.GetSupervisorActivity)                    // GET   /api/supervisor/activity
 		}
 
 		// ── Coordinator ───────────────────────────────────────────────────────
@@ -145,14 +170,14 @@ func RegisterRoutes(r *gin.Engine) {
 			coordinator.GET("/stats", controllers.GetCoordinatorStats)       // GET /api/coordinator/stats
 
 			// User Management
-			coordinator.GET("/users/pending", controllers.GetPendingUsers)    // GET /api/coordinator/users/pending
-			coordinator.GET("/faculty", controllers.GetCoordinatorFaculty)     // GET /api/coordinator/faculty
-			coordinator.PATCH("/users/:id/approve", controllers.ApproveUser)   // PATCH /api/coordinator/users/:id/approve
-			coordinator.PATCH("/users/:id/reject", controllers.RejectUser)    // PATCH /api/coordinator/users/:id/reject
-			coordinator.PATCH("/users/:id", controllers.UpdateUser)           // PATCH /api/coordinator/users/:id — general update
+			coordinator.GET("/users/pending", controllers.GetPendingUsers)   // GET /api/coordinator/users/pending
+			coordinator.GET("/faculty", controllers.GetCoordinatorFaculty)   // GET /api/coordinator/faculty
+			coordinator.PATCH("/users/:id/approve", controllers.ApproveUser) // PATCH /api/coordinator/users/:id/approve
+			coordinator.PATCH("/users/:id/reject", controllers.RejectUser)   // PATCH /api/coordinator/users/:id/reject
+			coordinator.PATCH("/users/:id", controllers.UpdateUser)          // PATCH /api/coordinator/users/:id — general update
 
 			// Document Approvals
-			coordinator.GET("/documents", controllers.GetAllDocuments)         // GET /api/coordinator/documents
+			coordinator.GET("/documents", controllers.GetAllDocuments)               // GET /api/coordinator/documents
 			coordinator.PATCH("/documents/:id/approve", controllers.ApproveDocument) // PATCH /api/coordinator/documents/:id/approve
 			coordinator.PATCH("/documents/:id/reject", controllers.RejectDocument)   // PATCH /api/coordinator/documents/:id/reject
 		}
@@ -169,47 +194,52 @@ func RegisterRoutes(r *gin.Engine) {
 		assignments := protected.Group("/assignments")
 		assignments.Use(middleware.RoleMiddleware("coordinator", "admin")) // Only coordinators manage assignments
 		{
-			assignments.GET("/", controllers.GetAssignments)           // GET    /api/assignments
+			assignments.GET("/", controllers.GetAssignments)              // GET    /api/assignments
 			assignments.GET("/options", controllers.GetAssignmentOptions) // GET    /api/assignments/options
-			assignments.POST("/", controllers.CreateAssignment)        // POST   /api/assignments
-			assignments.PATCH("/:id", controllers.UpdateAssignment)    // PATCH  /api/assignments/:id
-			assignments.DELETE("/:id", controllers.DeleteAssignment)   // DELETE /api/assignments/:id
+			assignments.POST("/", controllers.CreateAssignment)           // POST   /api/assignments
+			assignments.PATCH("/:id", controllers.UpdateAssignment)       // PATCH  /api/assignments/:id
+			assignments.DELETE("/:id", controllers.DeleteAssignment)      // DELETE /api/assignments/:id
 		}
 
 		// ── Companies ─────────────────────────────────────────────────────────
 		companies := protected.Group("/companies")
 		companies.Use(middleware.RoleMiddleware("coordinator", "admin", "faculty")) // Faculty can list companies
 		{
-			companies.GET("/", controllers.GetCompanies)       // GET    /api/companies
+			companies.GET("/", controllers.GetCompanies)        // GET    /api/companies
 			companies.POST("/", controllers.CreateCompany)      // POST   /api/companies
-			companies.PATCH("/:id", controllers.UpdateCompany) // PATCH  /api/companies/:id
+			companies.PATCH("/:id", controllers.UpdateCompany)  // PATCH  /api/companies/:id
 			companies.DELETE("/:id", controllers.DeleteCompany) // DELETE /api/companies/:id
 		}
+	}
 
-		// ── Departments ────────────────────────────────────────────────────────
-		departments := protected.Group("/departments")
-		{
-			departments.GET("/", controllers.GetDepartments) // GET /api/departments — all authenticated users
-			departments.GET("/:id/members",
-				middleware.RoleMiddleware("coordinator", "admin", "faculty"),
-				controllers.GetDepartmentMembers, // GET /api/departments/:id/members
-			)
-			departments.POST("/",
-				middleware.RoleMiddleware("coordinator", "admin"),
-				controllers.CreateDepartment, // POST /api/departments
-			)
-			departments.PATCH("/:id",
-				middleware.RoleMiddleware("coordinator", "admin"),
-				controllers.UpdateDepartment, // PATCH /api/departments/:id
-			)
-			departments.POST("/:id/image",
-				middleware.RoleMiddleware("coordinator", "admin"),
-				controllers.UploadDepartmentImage, // POST /api/departments/:id/image
-			)
-			departments.DELETE("/:id",
-				middleware.RoleMiddleware("coordinator", "admin"),
-				controllers.DeleteDepartment, // DELETE /api/departments/:id
-			)
-		}
+	// ── Departments ────────────────────────────────────────────────────────
+	depts := api.Group("/departments")
+	{
+		depts.GET("/", controllers.GetDepartments) // Public for registration
+		depts.GET("/:id/members",
+			middleware.AuthMiddleware(),
+			middleware.RoleMiddleware("coordinator", "admin", "faculty"),
+			controllers.GetDepartmentMembers,
+		)
+		depts.POST("/",
+			middleware.AuthMiddleware(),
+			middleware.RoleMiddleware("coordinator", "admin"),
+			controllers.CreateDepartment,
+		)
+		depts.PATCH("/:id",
+			middleware.AuthMiddleware(),
+			middleware.RoleMiddleware("coordinator", "admin"),
+			controllers.UpdateDepartment,
+		)
+		depts.POST("/:id/image",
+			middleware.AuthMiddleware(),
+			middleware.RoleMiddleware("coordinator", "admin"),
+			controllers.UploadDepartmentImage,
+		)
+		depts.DELETE("/:id",
+			middleware.AuthMiddleware(),
+			middleware.RoleMiddleware("coordinator", "admin"),
+			controllers.DeleteDepartment,
+		)
 	}
 }

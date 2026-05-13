@@ -62,15 +62,15 @@ type OJTAssignment struct {
 // ─── Time Log ────────────────────────────────────────────
 type TimeLog struct {
 	gorm.Model
-	StudentID  uint       `gorm:"not null" json:"student_id"`
-	ClockIn    time.Time  `gorm:"not null" json:"clock_in"`
-	ClockOut   *time.Time `json:"clock_out"`
-	TotalHours float64    `json:"total_hours"`
-	Status        string     `gorm:"type:varchar(20);default:'pending'" json:"status"`
-	Remarks       string     `json:"remarks"`
-	ApprovedBy    *uint      `json:"approved_by"`
-	ClockInPhoto  string     `json:"clock_in_photo"`
-	ClockOutPhoto string     `json:"clock_out_photo"`
+	StudentID         uint       `gorm:"not null" json:"student_id"`
+	ClockIn           time.Time  `gorm:"not null" json:"clock_in"`
+	ClockOut          *time.Time `json:"clock_out"`
+	TotalHours        float64    `json:"total_hours"`
+	Status            string     `gorm:"type:varchar(20);default:'pending'" json:"status"`
+	Remarks           string     `json:"remarks"`
+	ApprovedBy        *uint      `json:"approved_by"`
+	ClockInPhoto      string     `json:"clock_in_photo"`
+	ClockOutPhoto     string     `json:"clock_out_photo"`
 	BreakStartedAt    *time.Time `json:"break_started_at"`
 	TotalBreakMinutes int        `gorm:"default:0" json:"total_break_minutes"`
 
@@ -127,8 +127,34 @@ type Journal struct {
 	Tasks        string    `gorm:"type:text;not null" json:"tasks"`
 	Learnings    string    `gorm:"type:text;not null" json:"learnings"`
 	Status       string    `gorm:"type:varchar(20);default:'pending'" json:"status"` // pending, acknowledged
-	Feedback     string    `gorm:"type:text" json:"feedback"` // Optional supervisor feedback
+	Feedback     string    `gorm:"type:text" json:"feedback"`                        // Optional supervisor feedback
 
 	Student    User `gorm:"foreignKey:StudentID" json:"student,omitempty"`
 	Supervisor User `gorm:"foreignKey:SupervisorID" json:"supervisor,omitempty"`
+}
+
+// ─── Announcement ─────────────────────────────────────────
+type Announcement struct {
+	gorm.Model
+	Title    string `gorm:"not null" json:"title"`
+	Content  string `gorm:"type:text;not null" json:"content"`
+	AuthorID uint   `gorm:"not null" json:"author_id"`
+	Target   string `gorm:"type:varchar(50);default:'all'" json:"target"` // all, students, supervisors
+
+	Author User `gorm:"foreignKey:AuthorID" json:"author,omitempty"`
+}
+
+// ─── Message ─────────────────────────────────────────────
+type Message struct {
+	gorm.Model
+	SenderID   uint   `gorm:"not null" json:"sender_id"`
+	ReceiverID uint   `gorm:"not null" json:"receiver_id"`
+	Content    string `gorm:"type:text;not null" json:"content"`
+	FileUrl    string `json:"file_url"`
+	FileType   string `json:"file_type"` // image, document
+	IsRead     bool   `gorm:"default:false" json:"is_read"`
+	Reaction   string `json:"reaction"`
+
+	Sender   User `gorm:"foreignKey:SenderID" json:"sender,omitempty"`
+	Receiver User `gorm:"foreignKey:ReceiverID" json:"receiver,omitempty"`
 }

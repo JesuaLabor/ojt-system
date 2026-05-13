@@ -140,7 +140,7 @@ func ClockIn(c *gin.Context) {
 
 	// Upload to Cloudinary
 	publicID := fmt.Sprintf("clockin_%v_%d", userID, time.Now().Unix())
-	photoURL, err := config.UploadImage(src, publicID, "ojt-system/timelogs")
+	photoURL, err := config.UploadFile(src, publicID, "ojt-system/timelogs", "image")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload photo: " + err.Error()})
 		return
@@ -189,7 +189,7 @@ func ClockOut(c *gin.Context) {
 
 	// Upload to Cloudinary
 	publicID := fmt.Sprintf("clockout_%v_%d", userID, time.Now().Unix())
-	photoURL, err := config.UploadImage(src, publicID, "ojt-system/timelogs")
+	photoURL, err := config.UploadFile(src, publicID, "ojt-system/timelogs", "image")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload photo: " + err.Error()})
 		return

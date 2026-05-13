@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import useAuthStore from './store/authStore'
+import { SocketProvider } from './context/SocketContext'
 
 // Auth Pages
 import LoginPage from './pages/auth/LoginPage'
@@ -74,56 +75,58 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <Toaster position="top-right" />
-      <Routes>
-        {/* Public */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/waiting-room" element={<PendingApproval />} />
-        <Route path="/ui-kit" element={<UIKit />} />
+      <SocketProvider>
+        <Toaster position="top-right" />
+        <Routes>
+          {/* ... */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/waiting-room" element={<PendingApproval />} />
+          <Route path="/ui-kit" element={<UIKit />} />
 
-        {/* Auto redirect based on role */}
-        <Route path="/" element={
-          user ? <RoleRedirect user={user} /> : <Navigate to="/login" replace />
-        } />
+          {/* Auto redirect based on role */}
+          <Route path="/" element={
+            user ? <RoleRedirect user={user} /> : <Navigate to="/login" replace />
+          } />
 
-        {/* Student Routes */}
-        <Route path="/student/*" element={
-          <PrivateRoute allowedRoles={['student']}>
-            <StudentDashboard />
-          </PrivateRoute>
-        } />
+          {/* Student Routes */}
+          <Route path="/student/*" element={
+            <PrivateRoute allowedRoles={['student']}>
+              <StudentDashboard />
+            </PrivateRoute>
+          } />
 
-        {/* Supervisor Routes */}
-        <Route path="/supervisor/*" element={
-          <PrivateRoute allowedRoles={['supervisor']}>
-            <SupervisorDashboard />
-          </PrivateRoute>
-        } />
+          {/* Supervisor Routes */}
+          <Route path="/supervisor/*" element={
+            <PrivateRoute allowedRoles={['supervisor']}>
+              <SupervisorDashboard />
+            </PrivateRoute>
+          } />
 
-        {/* Coordinator Routes */}
-        <Route path="/coordinator/*" element={
-          <PrivateRoute allowedRoles={['coordinator']}>
-            <CoordinatorDashboard />
-          </PrivateRoute>
-        } />
+          {/* Coordinator Routes */}
+          <Route path="/coordinator/*" element={
+            <PrivateRoute allowedRoles={['coordinator']}>
+              <CoordinatorDashboard />
+            </PrivateRoute>
+          } />
 
-        {/* Admin Routes (Super access using Coordinator Dashboard) */}
-        <Route path="/admin/*" element={
-          <PrivateRoute allowedRoles={['admin']}>
-            <CoordinatorDashboard />
-          </PrivateRoute>
-        } />
+          {/* Admin Routes (Super access using Coordinator Dashboard) */}
+          <Route path="/admin/*" element={
+            <PrivateRoute allowedRoles={['admin']}>
+              <CoordinatorDashboard />
+            </PrivateRoute>
+          } />
 
-        {/* Faculty Routes */}
-        <Route path="/faculty/*" element={
-          <PrivateRoute allowedRoles={['faculty']}>
-            <FacultyDashboard />
-          </PrivateRoute>
-        } />
+          {/* Faculty Routes */}
+          <Route path="/faculty/*" element={
+            <PrivateRoute allowedRoles={['faculty']}>
+              <FacultyDashboard />
+            </PrivateRoute>
+          } />
 
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </SocketProvider>
     </BrowserRouter>
   )
 }

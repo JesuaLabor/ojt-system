@@ -240,7 +240,7 @@ func UploadAvatar(c *gin.Context) {
 
 	// Upload to Cloudinary
 	publicID := fmt.Sprintf("avatar_%v_%d", userID, time.Now().Unix())
-	fileURL, err := config.UploadImage(src, publicID, "ojt-system/avatars")
+	fileURL, err := config.UploadFile(src, publicID, "ojt-system/avatars", "image")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload image: " + err.Error()})
 		return

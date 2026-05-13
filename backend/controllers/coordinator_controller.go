@@ -74,11 +74,11 @@ func GetCoordinatorStudents(c *gin.Context) {
 			Count(&pendingCount)
 
 		// Find Last Activity
-		var lastLog models.TimeLog
+		var lastActiveStr string = "Never"
 		var daysInactive int
-		lastActiveStr := "Never"
-		
-		if result := config.DB.Where("student_id = ?", a.StudentID).Order("clock_in desc").First(&lastLog); result.Error == nil {
+		var lastLogs []models.TimeLog
+		if config.DB.Where("student_id = ?", a.StudentID).Order("clock_in desc").Limit(1).Find(&lastLogs); len(lastLogs) > 0 {
+			lastLog := lastLogs[0]
 			lastActiveStr = lastLog.ClockIn.Format("2006-01-02")
 			daysInactive = int(time.Since(lastLog.ClockIn).Hours() / 24)
 		} else {
@@ -100,10 +100,11 @@ func GetCoordinatorStudents(c *gin.Context) {
 		}
 
 		// Find latest evaluation
-		var eval models.Evaluation
 		var latestScore float64
 		var latestGrade string
-		if result := config.DB.Where("student_id = ?", a.StudentID).Order("created_at desc").First(&eval); result.Error == nil {
+		var evals []models.Evaluation
+		if config.DB.Where("student_id = ?", a.StudentID).Order("created_at desc").Limit(1).Find(&evals); len(evals) > 0 {
+			eval := evals[0]
 			latestScore = eval.OverallScore
 			latestGrade = gradeLabel(latestScore)
 		} else {

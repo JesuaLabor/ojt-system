@@ -13,6 +13,8 @@ import CoordinatorDocuments from './Documents'
 import CoordinatorFaculty from './Faculty'
 import StaffJournals from '../common/StaffJournals'
 import Profile from '../common/Profile'
+import Announcements from '../common/Announcements'
+import Messages from '../common/Messages'
 
 // Placeholder shells (to be built in later phases)
 const Placeholder = ({ title }) => (
@@ -28,6 +30,8 @@ export default function CoordinatorDashboard() {
     <Layout>
       <Routes>
         <Route index element={<Overview />} />
+        <Route path="announcements" element={<Announcements />} />
+        <Route path="messages" element={<Messages />} />
         <Route path="students" element={<CoordinatorStudents />} />
         <Route path="faculty" element={<CoordinatorFaculty />} />
         <Route path="approvals" element={<UserApprovals />} />
