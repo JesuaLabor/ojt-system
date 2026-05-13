@@ -91,6 +91,30 @@ func RegisterRoutes(r *gin.Engine) {
 			)
 		}
 
+		// ── Journals ──────────────────────────────────────────────────────────
+		journals := protected.Group("/journals")
+		{
+			// Student endpoints
+			journals.GET("/me", controllers.GetStudentJournals)
+			journals.POST("/", controllers.CreateJournal)
+
+			// Supervisor endpoints
+			journals.GET("/supervisor",
+				middleware.RoleMiddleware("supervisor", "coordinator", "admin"),
+				controllers.GetSupervisorJournals,
+			)
+			journals.PATCH("/:id/review",
+				middleware.RoleMiddleware("supervisor"),
+				controllers.ReviewJournal,
+			)
+
+			// Coordinator/Faculty endpoints
+			journals.GET("/all",
+				middleware.RoleMiddleware("coordinator", "admin", "faculty"),
+				controllers.GetCoordinatorJournals,
+			)
+		}
+
 		// ── Documents ─────────────────────────────────────────────────────────
 		protected.POST("/documents", controllers.UploadDocument) // POST /api/documents
 		protected.GET("/documents", controllers.GetMyDocuments)  // GET  /api/documents

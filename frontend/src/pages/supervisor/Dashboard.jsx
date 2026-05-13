@@ -5,6 +5,7 @@ import Evaluations from './Evaluations'
 import SupervisorTimeLogs from './TimeLogs'
 import SupervisorStudents from './Students'
 import SupervisorReports from './Reports'
+import StaffJournals from '../common/StaffJournals'
 import Profile from '../common/Profile'
 
 // Placeholder shells (to be built in later phases)
@@ -23,6 +24,7 @@ export default function SupervisorDashboard() {
         <Route index element={<Overview />} />
         <Route path="students" element={<SupervisorStudents />} />
         <Route path="timelogs" element={<SupervisorTimeLogs />} />
+        <Route path="journals" element={<StaffJournals />} />
         <Route path="evaluations" element={<Evaluations />} />
         <Route path="reports" element={<SupervisorReports />} />
         <Route path="profile" element={<Profile />} />

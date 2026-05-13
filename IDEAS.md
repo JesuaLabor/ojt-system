@@ -41,10 +41,11 @@ Based on the current state of the system, which already features a premium UI, r
 *   **Value:** Streamlines communication for quick questions regarding logs or tasks.
 
 ## 4. Compliance & Qualitative Data
-### 📂 Weekly Accomplishment Journals
-*   **Feature:** A structured journal where students summarize their tasks and learnings for the week.
+### 📂 Accomplishment Journals (Implemented! ✅)
+*   **Feature:** A structured journal where students summarize their tasks and learnings.
 *   **Implementation:** 
-    *   A new `Journals` section where students submit weekly entries for supervisor acknowledgement.
+    *   Added a `Journals` section for students to submit entries.
+    *   Supervisors, Coordinators, and Faculty can view and formally acknowledge entries with feedback.
 *   **Value:** Provides qualitative data on student progress beyond just hours rendered.
 
 ## 5. UI/UX & Platform

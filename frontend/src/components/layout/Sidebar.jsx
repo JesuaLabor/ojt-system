@@ -10,6 +10,7 @@ const NAV = {
     student: [
         { to: '/student', label: 'Dashboard', icon: IconGrid },
         { to: '/student/timelogs', label: 'Time Logs', icon: IconClock },
+        { to: '/student/journals', label: 'Journals', icon: IconBook },
         { to: '/student/evaluations', label: 'Evaluations', icon: IconStar },
         { to: '/student/documents', label: 'Documents', icon: IconDoc },
         { to: '/student/profile', label: 'My Profile', icon: IconUser },
@@ -18,6 +19,7 @@ const NAV = {
         { to: '/supervisor', label: 'Dashboard', icon: IconGrid },
         { to: '/supervisor/students', label: 'Students', icon: IconUsers },
         { to: '/supervisor/timelogs', label: 'Time Logs', icon: IconClock, badgeKey: 'pendingApprovals' },
+        { to: '/supervisor/journals', label: 'Journals', icon: IconBook },
         { to: '/supervisor/evaluations', label: 'Evaluations', icon: IconStar },
         { to: '/supervisor/reports', label: 'Reports', icon: IconChart },
         { to: '/supervisor/profile', label: 'My Profile', icon: IconUser },
@@ -32,6 +34,7 @@ const NAV = {
         { to: '/coordinator/assignments', label: 'Assignments', icon: IconBriefcase },
         { to: '/coordinator/documents', label: 'Documents', icon: IconDoc },
         { to: '/coordinator/timelogs', label: 'Time Logs', icon: IconClock },
+        { to: '/coordinator/journals', label: 'Journals', icon: IconBook },
         { to: '/coordinator/evaluations', label: 'Evaluations', icon: IconStar },
         { to: '/coordinator/reports', label: 'Reports', icon: IconChart },
         { to: '/coordinator/profile', label: 'My Profile', icon: IconUser },
@@ -39,6 +42,7 @@ const NAV = {
     faculty: [
         { to: '/faculty', label: 'Dashboard', icon: IconGrid },
         { to: '/faculty/students', label: 'Students', icon: IconUsers },
+        { to: '/faculty/journals', label: 'Journals', icon: IconBook },
         { to: '/faculty/evaluations', label: 'Evaluations', icon: IconStar },
         { to: '/faculty/reports', label: 'Reports', icon: IconChart },
         { to: '/faculty/profile', label: 'My Profile', icon: IconUser },
@@ -53,6 +57,7 @@ const NAV = {
         { to: '/admin/assignments', label: 'Assignments', icon: IconBriefcase },
         { to: '/admin/documents', label: 'Documents', icon: IconDoc },
         { to: '/admin/timelogs', label: 'Time Logs', icon: IconClock },
+        { to: '/admin/journals', label: 'Journals', icon: IconBook },
         { to: '/admin/evaluations', label: 'Evaluations', icon: IconStar },
         { to: '/admin/reports', label: 'Reports', icon: IconChart },
         { to: '/admin/profile', label: 'My Profile', icon: IconUser },
@@ -232,3 +237,4 @@ function IconX({ className }) { return <svg className={className} fill="none" st
 function IconOfficeBuilding({ className }) { return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg> }
 function IconBuilding({ className }) { return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21h18M3 7l9-4 9 4M4 11h16v10H4V11zm4 0v10m4-10v10m4-10v10" /></svg> }
 function IconFaculty({ className }) { return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" /></svg> }
+function IconBook({ className }) { return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg> }

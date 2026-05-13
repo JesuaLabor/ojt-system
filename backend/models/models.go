@@ -117,3 +117,18 @@ type Notification struct {
 
 	User User `gorm:"foreignKey:UserID" json:"user,omitempty"`
 }
+
+// ─── Journal ─────────────────────────────────────────────
+type Journal struct {
+	gorm.Model
+	StudentID    uint      `gorm:"not null" json:"student_id"`
+	SupervisorID uint      `gorm:"not null" json:"supervisor_id"`
+	Date         time.Time `gorm:"not null" json:"date"` // Represents the week ending date or submission date
+	Tasks        string    `gorm:"type:text;not null" json:"tasks"`
+	Learnings    string    `gorm:"type:text;not null" json:"learnings"`
+	Status       string    `gorm:"type:varchar(20);default:'pending'" json:"status"` // pending, acknowledged
+	Feedback     string    `gorm:"type:text" json:"feedback"` // Optional supervisor feedback
+
+	Student    User `gorm:"foreignKey:StudentID" json:"student,omitempty"`
+	Supervisor User `gorm:"foreignKey:SupervisorID" json:"supervisor,omitempty"`
+}
