@@ -10,19 +10,22 @@ import (
 
 // GetAnnouncements returns announcements relevant to the user
 func GetAnnouncements(c *gin.Context) {
-	role, _ := c.Get("role")
+	userRole, _ := c.Get("userRole")
 
 	var announcements []models.Announcement
 	query := config.DB.Preload("Author", "id, name, role, profile_photo")
 
 	// Filter by target based on role
-	if role == "student" {
+	if userRole == "student" {
 		query = query.Where("target IN ?", []string{"all", "students"})
-	} else if role == "supervisor" {
+	} else if userRole == "supervisor" {
 		query = query.Where("target IN ?", []string{"all", "supervisors"})
 	}
 
-	query.Order("created_at desc").Find(&announcements)
+	if err := query.Order("created_at desc").Find(&announcements).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch announcements"})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{"announcements": announcements})
 }
@@ -68,7 +71,7 @@ func CreateAnnouncement(c *gin.Context) {
 // DeleteAnnouncement deletes an announcement
 func DeleteAnnouncement(c *gin.Context) {
 	userID, _ := c.Get("userID")
-	role, _ := c.Get("role")
+	userRole, _ := c.Get("userRole")
 	announcementID := c.Param("id")
 
 	var announcement models.Announcement
@@ -78,7 +81,7 @@ func DeleteAnnouncement(c *gin.Context) {
 	}
 
 	// Only author or admin can delete
-	if role != "admin" && announcement.AuthorID != userID.(uint) {
+	if userRole != "admin" && announcement.AuthorID != userID.(uint) {
 		c.JSON(http.StatusForbidden, gin.H{"error": "You do not have permission to delete this announcement"})
 		return
 	}

@@ -20,7 +20,7 @@ export default function Announcements() {
     const fetchAnnouncements = async () => {
         setLoading(true)
         try {
-            const res = await api.get('/announcements')
+            const res = await api.get('/announcements/')
             setAnnouncements(res.data.announcements || [])
         } catch (err) {
             toast.error('Failed to load announcements')
