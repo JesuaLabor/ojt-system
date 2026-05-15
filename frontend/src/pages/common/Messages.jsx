@@ -362,8 +362,8 @@ export default function Messages() {
                                 const senderId = m.sender_id || m.SenderID;
                                 const isMe = Number(senderId) === Number(user?.ID || user?.id);
                                 return (
-                                    <div key={m.ID} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[80%] ${isMe ? 'self-end' : 'self-start'} group relative`}>
-                                        <div className={`p-4 shadow-sm relative ${isMe ? 'bg-gradient-to-br from-[#3F4EE8] to-[#4F46E5] text-white rounded-[20px] rounded-tr-md' : 'bg-[#1A1D26] text-slate-200 rounded-[20px] rounded-tl-md'}`}>
+                                    <div key={m.ID} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[80%] ${isMe ? 'self-end' : 'self-start'} relative`}>
+                                        <div className={`p-4 shadow-sm relative group ${isMe ? 'bg-gradient-to-br from-[#3F4EE8] to-[#4F46E5] text-white rounded-[20px] rounded-tr-md' : 'bg-[#1A1D26] text-slate-200 rounded-[20px] rounded-tl-md'}`}>
                                             {m.content && <p className="text-[13px] leading-relaxed font-medium">{m.content}</p>}
                                             {m.file_url && (
                                                 <div className={m.content ? "mt-3" : ""}>
