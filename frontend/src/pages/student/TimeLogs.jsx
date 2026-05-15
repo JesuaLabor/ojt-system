@@ -297,7 +297,9 @@ export default function TimeLogs() {
 
     const filteredLogs = statusFilter === 'all' ? logs : logs.filter(l => l.status === statusFilter)
     const totalApproved = logs.filter(l => l.status === 'approved').reduce((s, l) => s + (l.total_hours || 0), 0)
-    const totalPending = logs.filter(l => l.status === 'pending' && l.clock_out).reduce((s, l) => s + (l    return (
+    const totalPending = logs.filter(l => l.status === 'pending' && l.clock_out).reduce((s, l) => s + (l.total_hours || 0), 0)
+
+    return (
         <>
         <div className="fade-in space-y-8 max-w-7xl mx-auto">
             {/* -- Header Section -- */}
@@ -345,11 +347,11 @@ export default function TimeLogs() {
             )}
 
             {/* -- Hero Section: Clock + Stats -- */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
                 {/* Clock Widget */}
-                <div className="lg:col-span-7 card relative overflow-hidden flex flex-col items-center justify-center py-12">
+                <div className="lg:col-span-7 card relative overflow-hidden flex flex-col items-center justify-center py-8 sm:py-10">
                     {/* Pulsing Aura */}
-                    <div className={`flex items-center gap-2 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-6 border transition-all 
+                    <div className={`flex items-center gap-2 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-4 sm:mb-6 border transition-all 
                         ${activeLog?.break_started_at ? 'bg-amber-500/10 text-amber-400 border-amber-500/30' : 
                           activeLog ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 
                           'bg-slate-800 text-slate-500 border-slate-700'}`}>
@@ -378,42 +380,42 @@ export default function TimeLogs() {
                         </div>
                     )}
 
-                    <div className="mt-10 flex flex-col sm:flex-row gap-4 w-full max-w-sm px-6">
+                    <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row gap-4 w-full max-w-sm px-6">
                         {activeLog ? (
                             <>
                                 {activeLog.break_started_at ? (
-                                    <button onClick={handleEndBreak} disabled={breakBusy} className="flex-1 py-4 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white font-black shadow-xl shadow-amber-900/30 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2">
-                                        {breakBusy ? '...' : <><span>▶️</span> RESUME WORK</>}
+                                    <button onClick={handleEndBreak} disabled={breakBusy} className="flex-1 py-4 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white font-black shadow-xl shadow-amber-900/30 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2 text-sm">
+                                        {breakBusy ? '...' : <><span>▶️</span> RESUME</>}
                                     </button>
                                 ) : (
-                                    <button onClick={handleStartBreak} disabled={breakBusy} className="flex-1 py-4 rounded-2xl bg-slate-800 text-slate-300 border border-slate-700 font-black hover:bg-slate-700 hover:text-white transition-all disabled:opacity-50 flex items-center justify-center gap-2">
-                                        {breakBusy ? '...' : <><span>☕</span> TAKE A BREAK</>}
+                                    <button onClick={handleStartBreak} disabled={breakBusy} className="flex-1 py-4 rounded-2xl bg-slate-800 text-slate-300 border border-slate-700 font-black hover:bg-slate-700 hover:text-white transition-all disabled:opacity-50 flex items-center justify-center gap-2 text-sm">
+                                        {breakBusy ? '...' : <><span>☕</span> BREAK</>}
                                     </button>
                                 )}
                                 
-                                <button onClick={() => { setCameraMode('out'); setShowCamera(true); }} disabled={clockBusy} className="flex-1 py-4 rounded-2xl bg-gradient-to-br from-rose-500 to-red-600 text-white font-black shadow-xl shadow-red-900/30 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50">
-                                    {clockBusy ? 'Saving...' : 'CLOCK OUT'}
+                                <button onClick={() => { setCameraMode('out'); setShowCamera(true); }} disabled={clockBusy} className="flex-1 py-4 rounded-2xl bg-gradient-to-br from-rose-500 to-red-600 text-white font-black shadow-xl shadow-red-900/30 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 text-sm">
+                                    {clockBusy ? '...' : 'CLOCK OUT'}
                                 </button>
                             </>
                         ) : (
                             <button onClick={() => { setCameraMode('in'); setShowCamera(true); }} disabled={clockBusy} className="w-full py-4 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white font-black shadow-xl shadow-emerald-900/30 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50">
-                                {clockBusy ? 'Connecting...' : 'CLOCK IN'}
+                                {clockBusy ? '...' : 'CLOCK IN'}
                             </button>
                         )}
                     </div>
                 </div>
 
                 {/* Quick Stats Grid */}
-                <div className="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 gap-4 h-full">
                     {loading ? (
                         <>
-                            <div className="card h-40 skeleton"></div>
-                            <div className="card h-40 skeleton"></div>
-                            <div className="sm:col-span-2 card h-32 skeleton"></div>
+                            <div className="card h-full min-h-[160px] skeleton"></div>
+                            <div className="card h-full min-h-[160px] skeleton"></div>
+                            <div className="sm:col-span-2 card h-full min-h-[100px] skeleton"></div>
                         </>
                     ) : (
                         <>
-                            <div className="card border-l-4 border-emerald-500 flex flex-col justify-between p-6">
+                            <div className="card h-full border-l-4 border-emerald-500 flex flex-col justify-between p-6">
                                 <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Approved Hours</div>
                                 <div className="mt-2">
                                     <span className="text-4xl font-black text-white">{totalApproved.toFixed(1)}</span>
@@ -424,21 +426,21 @@ export default function TimeLogs() {
                                 </div>
                             </div>
 
-                            <div className="card border-l-4 border-amber-500 flex flex-col justify-between p-6">
+                            <div className="card h-full border-l-4 border-amber-500 flex flex-col justify-between p-6">
                                 <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Pending Hours</div>
                                 <div className="mt-2">
                                     <span className="text-4xl font-black text-white">{totalPending.toFixed(1)}</span>
                                     <span className="text-sm font-bold text-slate-500 ml-2">hrs</span>
                                 </div>
-                                <p className="text-[10px] text-amber-500/60 mt-4 font-bold">Awaiting Supervisor Approval</p>
+                                <p className="text-[10px] text-amber-500/60 mt-4 font-bold">Awaiting Approval</p>
                             </div>
 
-                            <div className="sm:col-span-2 card bg-slate-900/50 border-slate-800 flex items-center justify-between p-6">
+                            <div className="sm:col-span-2 card h-full bg-slate-900/50 border-slate-800 flex items-center justify-between p-6">
                                 <div className="flex items-center gap-4">
                                     <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-2xl">🏆</div>
                                     <div>
                                         <p className="text-sm font-bold text-white">Target Completion</p>
-                                        <p className="text-xs text-slate-500">600 Total Hours Required</p>
+                                        <p className="text-xs text-slate-500">600 Total Hours</p>
                                     </div>
                                 </div>
                                 <div className="text-right">
@@ -529,39 +531,57 @@ export default function TimeLogs() {
 
         {/* -- Modals (Moved outside the animated container to fix viewport centering) -- */}
         {showCamera && (
-            <div className="fixed inset-0 z-[70] flex items-center justify-center p-2 sm:p-4 bg-black/95 backdrop-blur-xl animate-in fade-in duration-300">
-                <div className="relative w-full max-w-lg bg-slate-900 rounded-2xl sm:rounded-[40px] overflow-hidden border border-slate-700/50 shadow-[0_0_100px_rgba(0,0,0,0.8)]">
-                    <div className="p-6 sm:p-10 pb-4 flex items-center justify-between">
+            <div className="fixed inset-0 z-[70] flex items-start justify-center p-3 sm:p-6 pt-4 sm:pt-24 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-300 overflow-y-auto">
+                <div className="relative w-full max-w-2xl bg-slate-900 rounded-[2rem] sm:rounded-[40px] overflow-hidden border border-slate-700/50 shadow-[0_0_100px_rgba(0,0,0,0.9)] my-4">
+                    <div className="p-5 sm:p-10 pb-4 flex items-center justify-between">
                         <div>
-                            <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">Identity Check</h3>
-                            <p className="text-[10px] sm:text-xs text-slate-500 font-bold uppercase tracking-[0.2em] mt-1.5 flex items-center gap-2">
-                                <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+                            <div className="flex items-center gap-2 sm:gap-3">
+                                <h3 className="text-lg sm:text-2xl font-black text-white tracking-tight">Identity Check</h3>
+                                <span className="px-2 py-0.5 rounded-md bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[9px] sm:text-[10px] font-black uppercase tracking-widest">Secure</span>
+                            </div>
+                            <p className="text-[9px] sm:text-xs text-slate-500 font-bold uppercase tracking-[0.1em] sm:tracking-[0.2em] mt-1.5 sm:mt-2 flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 sm:w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
                                 Live Biometric Verification
                             </p>
                         </div>
-                        <button onClick={() => setShowCamera(false)} className="w-10 h-10 rounded-full bg-slate-800/50 hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white transition-all border border-slate-700/50">✕</button>
+                        <button onClick={() => setShowCamera(false)} className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-800/50 hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white transition-all border border-slate-700/50">✕</button>
                     </div>
-                    <div className="px-6 sm:px-10 pb-8 sm:pb-10">
-                        <div className="relative aspect-[4/3] rounded-2xl sm:rounded-[32px] overflow-hidden border-2 border-slate-800 bg-black shadow-inner mb-6 group">
-                            <Webcam audio={false} ref={webcamRef} screenshotFormat="image/jpeg" videoConstraints={{ facingMode: "user" }} className="w-full h-full object-cover" />
-                            <div className="absolute inset-0 border-[15px] sm:border-[30px] border-black/10 pointer-events-none transition-all group-hover:border-black/0" />
+                    <div className="px-5 sm:px-10 pb-8 sm:pb-12">
+                        <div className="relative aspect-[4/3] sm:aspect-video rounded-2xl sm:rounded-[32px] overflow-hidden border-2 border-slate-800 bg-black shadow-inner mb-6 sm:mb-8 group">
+                            <Webcam audio={false} ref={webcamRef} screenshotFormat="image/jpeg" videoConstraints={{ facingMode: "user" }} className="w-full h-full object-cover grayscale-[0.2] contrast-[1.1] transition-all" />
+                            
+                            {/* Biometric Guide Oval */}
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                <div className="w-[140px] sm:w-[180px] h-[200px] sm:h-[240px] border-2 border-dashed border-indigo-500/30 rounded-[100%] shadow-[0_0_40px_rgba(99,102,241,0.05)]"></div>
+                            </div>
+
                             {/* Scanning Line Effect */}
                             <div className="absolute top-0 left-0 w-full h-[2px] bg-indigo-500/50 shadow-[0_0_15px_rgba(99,102,241,0.8)] animate-scan"></div>
+                            
+                            {/* Corners Overlay */}
+                            <div className="absolute top-4 sm:top-6 left-4 sm:left-6 w-6 sm:w-8 h-6 sm:h-8 border-t-2 border-l-2 border-indigo-500/50 rounded-tl-lg"></div>
+                            <div className="absolute top-4 sm:top-6 right-4 sm:right-6 w-6 sm:w-8 h-6 sm:h-8 border-t-2 border-r-2 border-indigo-500/50 rounded-tr-lg"></div>
+                            <div className="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 w-6 sm:w-8 h-6 sm:h-8 border-b-2 border-l-2 border-indigo-500/50 rounded-bl-lg"></div>
+                            <div className="absolute bottom-4 sm:bottom-6 right-4 sm:right-6 w-6 sm:w-8 h-6 sm:h-8 border-b-2 border-r-2 border-indigo-500/50 rounded-br-lg"></div>
+
+                            <div className="absolute bottom-3 sm:bottom-4 left-0 w-full text-center">
+                                <span className="text-[8px] sm:text-[9px] font-black text-indigo-400/60 uppercase tracking-[0.2em] sm:tracking-[0.3em] bg-black/40 backdrop-blur-sm px-3 sm:px-4 py-1 rounded-full">Position Face within Frame</span>
+                            </div>
                         </div>
-                        <button onClick={captureAndSubmit} disabled={clockBusy} className="w-full py-5 sm:py-6 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-lg shadow-2xl shadow-indigo-900/40 active:scale-[0.98] transition-all flex items-center justify-center gap-4 group">
+                        <button onClick={captureAndSubmit} disabled={clockBusy} className="w-full py-4 sm:py-6 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-base sm:text-lg shadow-2xl shadow-indigo-900/40 active:scale-[0.98] transition-all flex items-center justify-center gap-3 sm:gap-4 group">
                             {clockBusy ? (
-                                <span className="flex items-center gap-3">
-                                    <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                                <span className="flex items-center gap-2 sm:gap-3">
+                                    <div className="w-4 h-4 sm:w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
                                     VERIFYING...
                                 </span>
                             ) : (
                                 <>
-                                    <span className="text-2xl group-hover:scale-110 transition-transform">📸</span> 
+                                    <span className="text-xl sm:text-2xl group-hover:scale-110 transition-transform">📸</span> 
                                     CAPTURE & CLOCK {cameraMode.toUpperCase()}
                                 </>
                             )}
                         </button>
-                        <p className="text-center text-[10px] text-slate-600 mt-4 font-bold uppercase tracking-widest">Powered by SecureAuth Biometrics</p>
+                        <p className="text-center text-[9px] sm:text-[10px] text-slate-600 mt-5 sm:mt-6 font-bold uppercase tracking-widest">Powered by SecureAuth Biometrics</p>
                     </div>
                 </div>
             </div>
