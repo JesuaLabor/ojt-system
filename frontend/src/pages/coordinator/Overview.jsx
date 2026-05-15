@@ -233,7 +233,7 @@ export default function CoordinatorOverview() {
             })
         } catch (err) {
             console.error(err)
-            toast.error('Failed to load coordinator data.')
+            toast.error(err.response?.data?.error || err.message || 'Failed to load coordinator data.')
         } finally {
             setLoading(false)
         }

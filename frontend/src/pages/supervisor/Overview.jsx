@@ -217,7 +217,7 @@ export default function Overview() {
                 })
             } catch (err) {
                 console.error(err)
-                setError('Failed to load dashboard data.')
+                setError(err.response?.data?.error || err.message || 'Failed to load dashboard data.')
             } finally {
                 setLoading(false)
             }

@@ -14,7 +14,7 @@ api.interceptors.request.use((config) => {
 })
 
 // Handle 401 globally — but skip public endpoints that are allowed to fail silently
-const PUBLIC_ENDPOINTS = ['/departments/', '/auth/']
+const PUBLIC_ENDPOINTS = ['/departments', '/auth']
 api.interceptors.response.use(
   (res) => res,
   (err) => {

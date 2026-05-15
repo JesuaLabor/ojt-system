@@ -127,7 +127,7 @@ export default function Overview() {
                 setHasAssignment(logsRes.data?.has_assignment ?? true)
                 setEvals(evalsRes.data?.evaluations || [])
             } catch (err) {
-                setError('Failed to load dashboard data.')
+                setError(err.response?.data?.error || err.message || 'Failed to load dashboard data.')
                 console.error(err)
             } finally {
                 setLoading(false)
