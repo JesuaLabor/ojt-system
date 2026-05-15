@@ -207,7 +207,7 @@ id | user_id → User | message | is_read (default false) | link
 
 ## 7. Backend API Reference
 
-**Base URL:** `http://localhost:8080/api`
+**Base URL:** `http://localhost:8000/api`
 
 ### Health
 | Method | Endpoint | Auth | Notes |
@@ -265,6 +265,16 @@ id | user_id → User | message | is_read (default false) | link
 | GET | `/notifications` | Own notifications |
 | PATCH | `/notifications/:id/read` | Mark one read |
 | PATCH | `/notifications/read-all` | Mark all read |
+
+### Messages & Real-time (`/api/messages`)
+| Method | Endpoint | Role | Notes |
+|--------|---------|------|-------|
+| GET | `/messages/contacts` | All | List available contacts with unread counts |
+| GET | `/messages/conversation/:contactId` | All | Get message history |
+| POST | `/messages` | All | Send message (supports file attachments) |
+| GET | `/messages/unread` | All | Total unread message count |
+| GET | `/messages/ws` | All | **WebSocket Upgrade Endpoint** |
+
 
 ### Supervisor (`/api/supervisor`) — Supervisor only
 | Method | Endpoint | Notes |
@@ -412,7 +422,7 @@ Request → AuthMiddleware → [RoleMiddleware] → Controller
 
 ### Backend `.env`
 ```env
-PORT=8080
+PORT=8000
 DB_HOST=localhost
 DB_USER=postgres
 DB_PASSWORD=ojtsystem
@@ -420,7 +430,7 @@ DB_NAME=ojt_system
 DB_PORT=5432
 JWT_SECRET=your_strong_secret_here
 FRONTEND_URL=http://localhost:5173
-APP_BASE_URL=http://localhost:8080
+APP_BASE_URL=http://localhost:8000
 
 # Cloudinary (https://cloudinary.com/console)
 CLOUDINARY_CLOUD_NAME=your_cloud_name
@@ -430,7 +440,7 @@ CLOUDINARY_API_SECRET=your_api_secret
 
 ### Frontend `.env`
 ```env
-VITE_API_URL=http://localhost:8080/api
+VITE_API_URL=/api
 ```
 
 ---
@@ -462,7 +472,7 @@ docker run -d --name pg-container \
 cd backend
 cp .env.example .env   # fill credentials
 go mod tidy
-go run cmd/api/main.go  # → http://localhost:8080
+go run cmd/api/main.go  # → http://localhost:8000
 ```
 
 **Frontend:**
@@ -486,7 +496,7 @@ docker compose up --build
 | Service | Port | Image |
 |---------|------|-------|
 | `db` | 5432 | postgres:14-alpine |
-| `backend` | 8080 | Built from `./backend` |
+| `backend` | 8000 | Built from `./backend` |
 | `frontend` | 5173 | node:20-alpine (dev server) |
 
 Data persists in the `postgres_data` named volume.
@@ -501,10 +511,11 @@ Data persists in the `postgres_data` named volume.
 - Public ID format: `avatar_{userID}_{unixTimestamp}`
 - URL stored in `users.profile_photo`
 
-### Local File Storage (Documents)
+### Local File Storage (Documents & Images)
 - Stored in `backend/uploads/`
-- Filename format: `{studentID}_{docType}_{timestamp}.{ext}`
+- Stored as **Relative Paths** in the database (e.g., `/uploads/ojt-system/...`)
 - Re-uploading the same document type **replaces** the existing DB record
+- Served via static route in backend and proxied via Vite in development
 
 ---
 
@@ -573,6 +584,7 @@ Data persists in the `postgres_data` named volume.
 
 ## 15. Changelog
 
+| May 15, 2026 | v1.6 | **System Stabilization & Port Migration.** Standardized backend on port 8000. Implemented Vite proxying for both `/api` and `/uploads` to resolve CORS. Converted local storage URLs to relative paths for better portability. Fixed GORM Preload syntax bugs and stabilized WebSocket connections with a connection delay. |
 | May 10, 2026 | v1.5 | **Premium UI & Biometric Verification.** Implemented mandatory photo capture for clock-in/out. Modernized Time Logs with a live clock widget, performance stats, and a high-end dark aesthetic. Added "Manual" entry badges for logs without verification photos. |
 | May 8, 2026 | v1.4 | **Department Image Management.** Added profile image support for departments. Refactored backend models to include `profile_image` in Departments and photo fields in TimeLogs. |
 | May 8, 2026 | v1.3 | **Enforced Assignment-Based Department Logic.** Replaced profile-fallback display with strict assignment-department linkage. Added auto-sync between student approval and active assignments. Updated assignment form with department auto-fill. |
@@ -581,4 +593,4 @@ Data persists in the `postgres_data` named volume.
 
 ---
 
-*Documentation last updated: May 10, 2026*
+*Documentation last updated: May 15, 2026*
