@@ -588,21 +588,56 @@ export default function TimeLogs() {
         )}
 
         {previewPhoto && (
-            <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/98 backdrop-blur-md animate-in zoom-in duration-300">
-                <div className="relative max-w-3xl w-full">
-                    <button onClick={() => setPreviewPhoto(null)} className="absolute -top-12 right-0 text-white/70 hover:text-white flex items-center gap-2 text-sm font-bold tracking-widest">
-                        ✕ CLOSE PREVIEW
-                    </button>
-                    <div className="bg-slate-900 rounded-[32px] overflow-hidden border border-slate-800 shadow-[0_0_80px_rgba(0,0,0,0.5)]">
-                        <img src={previewPhoto.url} alt="Verification" className="w-full h-auto" />
-                        <div className="p-8 bg-slate-900/90 border-t border-slate-800 flex items-center justify-between">
-                            <div>
-                                <h4 className="text-white font-black text-xl tracking-tight">{previewPhoto.title}</h4>
-                                <p className="text-xs text-slate-500 font-bold uppercase tracking-[0.2em] mt-1">{fmtDate(previewPhoto.date)} at {fmtTime(previewPhoto.date)}</p>
+            <div 
+                onClick={() => setPreviewPhoto(null)}
+                className="fixed inset-0 z-[80] flex items-center justify-center p-3 sm:p-4 bg-slate-950/90 backdrop-blur-xl animate-in fade-in zoom-in duration-300 cursor-zoom-out"
+            >
+                <div 
+                    onClick={(e) => e.stopPropagation()}
+                    className="relative max-w-4xl w-full flex flex-col items-center cursor-default"
+                >
+                    
+                    <div className="relative w-full bg-slate-900 rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden border border-slate-700/50 shadow-[0_0_100px_rgba(0,0,0,0.8)] animate-in slide-in-from-bottom-8 duration-500">
+                        {/* Integrated Close Button (Safe Position) */}
+                        <button onClick={() => setPreviewPhoto(null)} className="absolute top-4 right-4 sm:top-8 sm:right-8 w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center backdrop-blur-md border border-white/10 transition-all z-20 shadow-2xl group">
+                            <span className="text-lg sm:text-2xl group-hover:scale-110 transition-transform">✕</span>
+                        </button>
+
+                        {/* Image with Pro Corners */}
+                        <div className="relative overflow-hidden group">
+                            <img src={previewPhoto.url} alt="Verification" className="w-full h-auto max-h-[65vh] sm:max-h-[70vh] object-contain bg-black/40 mx-auto" />
+                            
+                            {/* Scanning Corners on Preview */}
+                            <div className="absolute top-6 sm:top-8 left-6 sm:left-8 w-8 sm:w-10 h-8 sm:h-10 border-t-2 border-l-2 border-indigo-500/40 rounded-tl-xl pointer-events-none"></div>
+                            <div className="absolute top-6 sm:top-8 right-6 sm:right-8 w-8 sm:w-10 h-8 sm:h-10 border-t-2 border-r-2 border-indigo-500/40 rounded-tr-xl pointer-events-none"></div>
+                            <div className="absolute bottom-6 sm:bottom-8 left-6 sm:left-8 w-8 sm:w-10 h-8 sm:h-10 border-b-2 border-l-2 border-indigo-500/40 rounded-bl-xl pointer-events-none"></div>
+                            <div className="absolute bottom-6 sm:bottom-8 right-6 sm:right-8 w-8 sm:w-10 h-8 sm:h-10 border-b-2 border-r-2 border-indigo-500/40 rounded-br-xl pointer-events-none"></div>
+                        </div>
+
+                        {/* Glassmorphic Info Bar */}
+                        <div className="p-6 sm:p-10 bg-gradient-to-t from-slate-900 via-slate-900/95 to-slate-900/90 border-t border-slate-800 flex items-center justify-between gap-4">
+                            <div className="flex-1">
+                                <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+                                    <h4 className="text-lg sm:text-2xl font-black text-white tracking-tight leading-tight">{previewPhoto.title}</h4>
+                                    <span className="px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[8px] sm:text-[9px] font-black uppercase tracking-widest hidden xs:inline-block">Verified</span>
+                                </div>
+                                <p className="text-[10px] sm:text-xs text-slate-500 font-bold uppercase tracking-[0.1em] sm:tracking-[0.2em] flex items-center gap-2">
+                                    <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-slate-700"></span>
+                                    {fmtDate(previewPhoto.date)} at {fmtTime(previewPhoto.date)}
+                                </p>
                             </div>
-                            <div className="px-4 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[10px] font-black uppercase tracking-widest">Verified</div>
+                            <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
+                                <div className="text-right hidden sm:block">
+                                    <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest">System Status</p>
+                                    <p className="text-emerald-400 font-black text-sm">SECURE ARCHIVE</p>
+                                </div>
+                                <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-lg sm:text-2xl shadow-inner">
+                                    ✅
+                                </div>
+                            </div>
                         </div>
                     </div>
+                    <p className="mt-4 sm:mt-6 text-slate-500 text-[8px] sm:text-[10px] font-bold uppercase tracking-[0.3em] opacity-50">Secure Biometric Archival System</p>
                 </div>
             </div>
         )}
