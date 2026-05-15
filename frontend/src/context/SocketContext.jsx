@@ -18,12 +18,23 @@ export const SocketProvider = ({ children }) => {
             return
         }
 
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-        const host = window.location.host
-        
         // Add a small delay to avoid "closed before established" during HMR
         const timeoutId = setTimeout(() => {
-            const ws = new WebSocket(`${protocol}//${host}/api/messages/ws?token=${token}`)
+            let wsUrl = ''
+            const apiURL = import.meta.env.VITE_API_URL
+            
+            if (apiURL && apiURL.startsWith('http')) {
+                // Production: Use the absolute API URL host
+                const wsProtocol = apiURL.startsWith('https') ? 'wss:' : 'ws:'
+                const host = apiURL.replace(/^https?:\/\//, '').split('/')[0]
+                wsUrl = `${wsProtocol}//${host}/api/messages/ws?token=${token}`
+            } else {
+                // Local/Relative: Use the current browser host (proxy handles this)
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+                wsUrl = `${protocol}//${window.location.host}/api/messages/ws?token=${token}`
+            }
+
+            const ws = new WebSocket(wsUrl)
             socket.current = ws
 
             ws.onmessage = (event) => {
@@ -38,6 +49,14 @@ export const SocketProvider = ({ children }) => {
                         return next
                     })
                 }
+            }
+
+            ws.onerror = (err) => {
+                console.error('WebSocket Error:', err)
+            }
+
+            ws.onclose = () => {
+                console.log('WebSocket Connection Closed')
             }
         }, 500)
 
