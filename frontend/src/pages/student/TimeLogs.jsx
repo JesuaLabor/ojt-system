@@ -361,7 +361,7 @@ export default function TimeLogs() {
                         {activeLog?.break_started_at ? 'On Break' : activeLog ? 'Recording Live' : 'System Idle'}
                     </div>
 
-                    <h2 className={`text-[80px] sm:text-[100px] font-black leading-none tracking-tighter tabular-nums drop-shadow-2xl transition-colors
+                    <h2 className={`text-[60px] sm:text-[100px] font-black leading-none tracking-tighter tabular-nums drop-shadow-2xl transition-colors
                         ${activeLog?.break_started_at ? 'text-amber-200/50' : 'text-white'}`}>
                         {formatElapsed(elapsed)}
                     </h2>
@@ -519,21 +519,21 @@ export default function TimeLogs() {
 
             {/* -- Modals -- */}
             {showCamera && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl animate-in fade-in duration-300">
-                    <div className="relative w-full max-w-xl bg-slate-900 rounded-[32px] overflow-hidden border border-slate-800 shadow-2xl">
-                        <div className="p-8 pb-4 flex items-center justify-between">
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-2 sm:p-4 bg-black/95 backdrop-blur-xl animate-in fade-in duration-300">
+                    <div className="relative w-full max-w-md bg-slate-900 rounded-2xl sm:rounded-[32px] overflow-hidden border border-slate-800 shadow-2xl">
+                        <div className="p-5 sm:p-8 pb-4 flex items-center justify-between">
                             <div>
-                                <h3 className="text-xl font-black text-white tracking-tight">Identity Check</h3>
-                                <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">Verification Required</p>
+                                <h3 className="text-lg sm:text-xl font-black text-white tracking-tight">Identity Check</h3>
+                                <p className="text-[10px] sm:text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">Verification Required</p>
                             </div>
-                            <button onClick={() => setShowCamera(false)} className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white transition-all">✕</button>
+                            <button onClick={() => setShowCamera(false)} className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white transition-all">✕</button>
                         </div>
-                        <div className="px-8 pb-8">
-                            <div className="relative aspect-[4/3] rounded-[24px] overflow-hidden border-2 border-slate-800 bg-black shadow-inner mb-6">
+                        <div className="px-5 sm:px-8 pb-6 sm:pb-8">
+                            <div className="relative aspect-[4/3] rounded-xl sm:rounded-[24px] overflow-hidden border-2 border-slate-800 bg-black shadow-inner mb-4 sm:mb-6">
                                 <Webcam audio={false} ref={webcamRef} screenshotFormat="image/jpeg" videoConstraints={{ facingMode: "user" }} className="w-full h-full object-cover" />
-                                <div className="absolute inset-0 border-[20px] border-black/20 pointer-events-none" />
+                                <div className="absolute inset-0 border-[10px] sm:border-[20px] border-black/20 pointer-events-none" />
                             </div>
-                            <button onClick={captureAndSubmit} disabled={clockBusy} className="w-full py-5 rounded-[20px] bg-indigo-600 hover:bg-indigo-500 text-white font-black text-lg shadow-xl shadow-indigo-900/40 active:scale-[0.98] transition-all flex items-center justify-center gap-3">
+                            <button onClick={captureAndSubmit} disabled={clockBusy} className="w-full py-4 sm:py-5 rounded-lg sm:rounded-[20px] bg-indigo-600 hover:bg-indigo-500 text-white font-black text-base sm:text-lg shadow-xl shadow-indigo-900/40 active:scale-[0.98] transition-all flex items-center justify-center gap-3">
                                 {clockBusy ? 'PROCESSING...' : (
                                     <><span>📸</span> CAPTURE & PROCEED</>
                                 )}
