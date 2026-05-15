@@ -146,7 +146,7 @@ func RegisterRoutes(r *gin.Engine) {
 		{
 			messages.GET("/contacts", controllers.GetContacts)
 			messages.GET("/conversation/:contactId", controllers.GetConversation)
-			messages.POST("/", controllers.SendMessage)
+			messages.POST("", controllers.SendMessage)
 			messages.GET("/unread", controllers.GetUnreadCount)
 			messages.PUT("/:id/react", controllers.ReactToMessage)
 			messages.GET("/ws", controllers.HandleWS)
