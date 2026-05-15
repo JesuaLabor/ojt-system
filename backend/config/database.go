@@ -87,8 +87,6 @@ func SetupCORS(r *gin.Engine) {
 		"http://127.0.0.1:5174",
 	}
 
-	// Support comma-separated FRONTEND_URL env var, e.g.:
-	// FRONTEND_URL=https://ojt-system.vercel.app,https://ojt-system-git-develop.vercel.app
 	if frontendURL := os.Getenv("FRONTEND_URL"); frontendURL != "" {
 		for _, url := range strings.Split(frontendURL, ",") {
 			url = strings.TrimSpace(url)
@@ -99,7 +97,16 @@ func SetupCORS(r *gin.Engine) {
 	}
 
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     allowedOrigins,
+		AllowOriginFunc: func(origin string) bool {
+			// Allow local development
+			for _, allowed := range allowedOrigins {
+				if origin == allowed {
+					return true
+				}
+			}
+			// Automatically allow all Vercel subdomains in production
+			return strings.HasSuffix(origin, ".vercel.app")
+		},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization", "X-Requested-With"},
 		ExposeHeaders:    []string{"Content-Length"},
