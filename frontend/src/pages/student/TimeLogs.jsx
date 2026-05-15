@@ -297,9 +297,8 @@ export default function TimeLogs() {
 
     const filteredLogs = statusFilter === 'all' ? logs : logs.filter(l => l.status === statusFilter)
     const totalApproved = logs.filter(l => l.status === 'approved').reduce((s, l) => s + (l.total_hours || 0), 0)
-    const totalPending = logs.filter(l => l.status === 'pending' && l.clock_out).reduce((s, l) => s + (l.total_hours || 0), 0)
-
-    return (
+    const totalPending = logs.filter(l => l.status === 'pending' && l.clock_out).reduce((s, l) => s + (l    return (
+        <>
         <div className="fade-in space-y-8 max-w-7xl mx-auto">
             {/* -- Header Section -- */}
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
@@ -406,39 +405,49 @@ export default function TimeLogs() {
 
                 {/* Quick Stats Grid */}
                 <div className="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="card border-l-4 border-emerald-500 flex flex-col justify-between p-6">
-                        <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Approved Hours</div>
-                        <div className="mt-2">
-                            <span className="text-4xl font-black text-white">{totalApproved.toFixed(1)}</span>
-                            <span className="text-sm font-bold text-slate-500 ml-2">hrs</span>
-                        </div>
-                        <div className="mt-4 h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                            <div className="h-full bg-emerald-500" style={{ width: `${Math.min(100, (totalApproved/600)*100)}%` }} />
-                        </div>
-                    </div>
-
-                    <div className="card border-l-4 border-amber-500 flex flex-col justify-between p-6">
-                        <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Pending Hours</div>
-                        <div className="mt-2">
-                            <span className="text-4xl font-black text-white">{totalPending.toFixed(1)}</span>
-                            <span className="text-sm font-bold text-slate-500 ml-2">hrs</span>
-                        </div>
-                        <p className="text-[10px] text-amber-500/60 mt-4 font-bold">Awaiting Supervisor Approval</p>
-                    </div>
-
-                    <div className="sm:col-span-2 card bg-slate-900/50 border-slate-800 flex items-center justify-between p-6">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-2xl">🏆</div>
-                            <div>
-                                <p className="text-sm font-bold text-white">Target Completion</p>
-                                <p className="text-xs text-slate-500">600 Total Hours Required</p>
+                    {loading ? (
+                        <>
+                            <div className="card h-40 skeleton"></div>
+                            <div className="card h-40 skeleton"></div>
+                            <div className="sm:col-span-2 card h-32 skeleton"></div>
+                        </>
+                    ) : (
+                        <>
+                            <div className="card border-l-4 border-emerald-500 flex flex-col justify-between p-6">
+                                <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Approved Hours</div>
+                                <div className="mt-2">
+                                    <span className="text-4xl font-black text-white">{totalApproved.toFixed(1)}</span>
+                                    <span className="text-sm font-bold text-slate-500 ml-2">hrs</span>
+                                </div>
+                                <div className="mt-4 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                                    <div className="h-full bg-emerald-500" style={{ width: `${Math.min(100, (totalApproved/600)*100)}%` }} />
+                                </div>
                             </div>
-                        </div>
-                        <div className="text-right">
-                            <p className="text-xl font-black text-indigo-400">{Math.round((totalApproved/600)*100)}%</p>
-                            <p className="text-[10px] font-bold text-slate-600 uppercase">Progress</p>
-                        </div>
-                    </div>
+
+                            <div className="card border-l-4 border-amber-500 flex flex-col justify-between p-6">
+                                <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Pending Hours</div>
+                                <div className="mt-2">
+                                    <span className="text-4xl font-black text-white">{totalPending.toFixed(1)}</span>
+                                    <span className="text-sm font-bold text-slate-500 ml-2">hrs</span>
+                                </div>
+                                <p className="text-[10px] text-amber-500/60 mt-4 font-bold">Awaiting Supervisor Approval</p>
+                            </div>
+
+                            <div className="sm:col-span-2 card bg-slate-900/50 border-slate-800 flex items-center justify-between p-6">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-2xl">🏆</div>
+                                    <div>
+                                        <p className="text-sm font-bold text-white">Target Completion</p>
+                                        <p className="text-xs text-slate-500">600 Total Hours Required</p>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-xl font-black text-indigo-400">{Math.round((totalApproved/600)*100)}%</p>
+                                    <p className="text-[10px] font-bold text-slate-600 uppercase">Progress</p>
+                                </div>
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
 
@@ -516,49 +525,67 @@ export default function TimeLogs() {
                     </table>
                 </div>
             </div>
-
-            {/* -- Modals -- */}
-            {showCamera && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center p-2 sm:p-4 bg-black/95 backdrop-blur-xl animate-in fade-in duration-300">
-                    <div className="relative w-full max-w-md bg-slate-900 rounded-2xl sm:rounded-[32px] overflow-hidden border border-slate-800 shadow-2xl">
-                        <div className="p-5 sm:p-8 pb-4 flex items-center justify-between">
-                            <div>
-                                <h3 className="text-lg sm:text-xl font-black text-white tracking-tight">Identity Check</h3>
-                                <p className="text-[10px] sm:text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">Verification Required</p>
-                            </div>
-                            <button onClick={() => setShowCamera(false)} className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white transition-all">✕</button>
-                        </div>
-                        <div className="px-5 sm:px-8 pb-6 sm:pb-8">
-                            <div className="relative aspect-[4/3] rounded-xl sm:rounded-[24px] overflow-hidden border-2 border-slate-800 bg-black shadow-inner mb-4 sm:mb-6">
-                                <Webcam audio={false} ref={webcamRef} screenshotFormat="image/jpeg" videoConstraints={{ facingMode: "user" }} className="w-full h-full object-cover" />
-                                <div className="absolute inset-0 border-[10px] sm:border-[20px] border-black/20 pointer-events-none" />
-                            </div>
-                            <button onClick={captureAndSubmit} disabled={clockBusy} className="w-full py-4 sm:py-5 rounded-lg sm:rounded-[20px] bg-indigo-600 hover:bg-indigo-500 text-white font-black text-base sm:text-lg shadow-xl shadow-indigo-900/40 active:scale-[0.98] transition-all flex items-center justify-center gap-3">
-                                {clockBusy ? 'PROCESSING...' : (
-                                    <><span>📸</span> CAPTURE & PROCEED</>
-                                )}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {previewPhoto && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/95 backdrop-blur-sm animate-in zoom-in duration-300">
-                    <div className="relative max-w-3xl w-full">
-                        <button onClick={() => setPreviewPhoto(null)} className="absolute -top-12 right-0 text-white/70 hover:text-white flex items-center gap-2 text-sm font-bold">
-                            ✕ CLOSE PREVIEW
-                        </button>
-                        <div className="bg-slate-900 rounded-[32px] overflow-hidden border border-slate-800 shadow-2xl">
-                            <img src={previewPhoto.url} alt="Verification" className="w-full h-auto" />
-                            <div className="p-6 bg-slate-900/90 border-t border-slate-800">
-                                <h4 className="text-white font-black text-lg">{previewPhoto.title}</h4>
-                                <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">{fmtDate(previewPhoto.date)} at {fmtTime(previewPhoto.date)}</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
+
+        {/* -- Modals (Moved outside the animated container to fix viewport centering) -- */}
+        {showCamera && (
+            <div className="fixed inset-0 z-[70] flex items-center justify-center p-2 sm:p-4 bg-black/95 backdrop-blur-xl animate-in fade-in duration-300">
+                <div className="relative w-full max-w-lg bg-slate-900 rounded-2xl sm:rounded-[40px] overflow-hidden border border-slate-700/50 shadow-[0_0_100px_rgba(0,0,0,0.8)]">
+                    <div className="p-6 sm:p-10 pb-4 flex items-center justify-between">
+                        <div>
+                            <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">Identity Check</h3>
+                            <p className="text-[10px] sm:text-xs text-slate-500 font-bold uppercase tracking-[0.2em] mt-1.5 flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+                                Live Biometric Verification
+                            </p>
+                        </div>
+                        <button onClick={() => setShowCamera(false)} className="w-10 h-10 rounded-full bg-slate-800/50 hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white transition-all border border-slate-700/50">✕</button>
+                    </div>
+                    <div className="px-6 sm:px-10 pb-8 sm:pb-10">
+                        <div className="relative aspect-[4/3] rounded-2xl sm:rounded-[32px] overflow-hidden border-2 border-slate-800 bg-black shadow-inner mb-6 group">
+                            <Webcam audio={false} ref={webcamRef} screenshotFormat="image/jpeg" videoConstraints={{ facingMode: "user" }} className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 border-[15px] sm:border-[30px] border-black/10 pointer-events-none transition-all group-hover:border-black/0" />
+                            {/* Scanning Line Effect */}
+                            <div className="absolute top-0 left-0 w-full h-[2px] bg-indigo-500/50 shadow-[0_0_15px_rgba(99,102,241,0.8)] animate-scan"></div>
+                        </div>
+                        <button onClick={captureAndSubmit} disabled={clockBusy} className="w-full py-5 sm:py-6 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-lg shadow-2xl shadow-indigo-900/40 active:scale-[0.98] transition-all flex items-center justify-center gap-4 group">
+                            {clockBusy ? (
+                                <span className="flex items-center gap-3">
+                                    <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                                    VERIFYING...
+                                </span>
+                            ) : (
+                                <>
+                                    <span className="text-2xl group-hover:scale-110 transition-transform">📸</span> 
+                                    CAPTURE & CLOCK {cameraMode.toUpperCase()}
+                                </>
+                            )}
+                        </button>
+                        <p className="text-center text-[10px] text-slate-600 mt-4 font-bold uppercase tracking-widest">Powered by SecureAuth Biometrics</p>
+                    </div>
+                </div>
+            </div>
+        )}
+
+        {previewPhoto && (
+            <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/98 backdrop-blur-md animate-in zoom-in duration-300">
+                <div className="relative max-w-3xl w-full">
+                    <button onClick={() => setPreviewPhoto(null)} className="absolute -top-12 right-0 text-white/70 hover:text-white flex items-center gap-2 text-sm font-bold tracking-widest">
+                        ✕ CLOSE PREVIEW
+                    </button>
+                    <div className="bg-slate-900 rounded-[32px] overflow-hidden border border-slate-800 shadow-[0_0_80px_rgba(0,0,0,0.5)]">
+                        <img src={previewPhoto.url} alt="Verification" className="w-full h-auto" />
+                        <div className="p-8 bg-slate-900/90 border-t border-slate-800 flex items-center justify-between">
+                            <div>
+                                <h4 className="text-white font-black text-xl tracking-tight">{previewPhoto.title}</h4>
+                                <p className="text-xs text-slate-500 font-bold uppercase tracking-[0.2em] mt-1">{fmtDate(previewPhoto.date)} at {fmtTime(previewPhoto.date)}</p>
+                            </div>
+                            <div className="px-4 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[10px] font-black uppercase tracking-widest">Verified</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )}
+        </>
     )
 }
