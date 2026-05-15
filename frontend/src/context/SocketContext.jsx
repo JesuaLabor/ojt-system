@@ -19,7 +19,7 @@ export const SocketProvider = ({ children }) => {
         }
 
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-        const host = window.location.host === 'localhost:5173' ? 'localhost:8080' : window.location.host
+        const host = window.location.host
         
         const ws = new WebSocket(`${protocol}//${host}/api/messages/ws?token=${token}`)
         socket.current = ws
