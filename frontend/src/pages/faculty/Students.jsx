@@ -83,7 +83,7 @@ export default function FacultyStudents() {
   }, [selectedCompany])
 
   useEffect(() => {
-    api.get('/companies/').then(res => setCompanies(res.data?.companies || []))
+    api.get('/companies').then(res => setCompanies(res.data?.companies || []))
   }, [])
 
   const filteredStudents = students.filter(s => 

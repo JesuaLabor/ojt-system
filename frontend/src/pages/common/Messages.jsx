@@ -158,7 +158,7 @@ export default function Messages() {
         setSelectedFile(null)
 
         try {
-            const res = await api.post('/messages/', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+            const res = await api.post('/messages', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
             setMessages(prev => prev.map(m => m.is_sending && m.content === tempMsg.content ? res.data.message : m))
             fetchContacts(true)
         } catch (err) {

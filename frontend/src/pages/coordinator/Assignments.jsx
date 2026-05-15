@@ -36,7 +36,7 @@ export default function CoordinatorAssignments() {
         setLoading(true)
         try {
             const [assRes, optRes] = await Promise.all([
-                api.get('/assignments/'),
+                api.get('/assignments'),
                 api.get('/assignments/options')
             ])
             setAssignments(assRes.data?.assignments || [])
@@ -91,7 +91,7 @@ export default function CoordinatorAssignments() {
                 await api.patch(`/assignments/${editAssignment.id}`, formData)
                 toast.success('Assignment updated successfully')
             } else {
-                await api.post('/assignments/', formData)
+                await api.post('/assignments', formData)
                 toast.success('Assignment created successfully')
             }
             setShowCreate(false)

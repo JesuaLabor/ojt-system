@@ -28,7 +28,7 @@ export default function StudentJournals() {
         e.preventDefault()
         setSubmitting(true)
         try {
-            await api.post('/journals/', form)
+            await api.post('/journals', form)
             toast.success('Journal submitted successfully!')
             setShowForm(false)
             setForm({ date: format(new Date(), 'yyyy-MM-dd'), tasks: '', learnings: '' })

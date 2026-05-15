@@ -26,7 +26,7 @@ export default function FacultyOverview() {
     }, [selectedCompany])
 
     useEffect(() => {
-        api.get('/companies/').then(res => setCompanies(res.data?.companies || []))
+        api.get('/companies').then(res => setCompanies(res.data?.companies || []))
     }, [])
 
     if (!loading && summary && !summary.has_department) {

@@ -65,7 +65,7 @@ export default function TimeLogs() {
 
     const fetchLogs = useCallback(async () => {
         try {
-            const res = await api.get('/timelogs/')
+            const res = await api.get('/timelogs')
             const all = res.data?.logs || []
             setLogs(all)
             setHasAssignment(res.data?.has_assignment ?? true)
@@ -195,7 +195,7 @@ export default function TimeLogs() {
                 ...(manualForm.time_out && { clock_out: toISO(manualForm.date, manualForm.time_out) }),
                 ...(manualForm.remarks && { remarks: manualForm.remarks }),
             }
-            await api.post('/timelogs/', payload)
+            await api.post('/timelogs', payload)
             toast.success('Manual entry saved!')
             setShowManual(false)
             await fetchLogs()

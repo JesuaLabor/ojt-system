@@ -31,7 +31,7 @@ export default function CoordinatorCompanies() {
     const fetchData = async () => {
         setLoading(true)
         try {
-            const res = await api.get('/companies/')
+            const res = await api.get('/companies')
             setCompanies(res.data?.companies || [])
         } catch (err) {
             console.error(err)
@@ -78,7 +78,7 @@ export default function CoordinatorCompanies() {
                 await api.patch(`/companies/${editCompany.id}`, formData)
                 toast.success('Company updated successfully')
             } else {
-                await api.post('/companies/', formData)
+                await api.post('/companies', formData)
                 toast.success('Company created successfully')
             }
             setShowCreate(false)

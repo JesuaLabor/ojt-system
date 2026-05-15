@@ -88,8 +88,8 @@ export default function CoordinatorStudents() {
 
   // Fetch filter options
   useEffect(() => {
-    api.get('/departments/').then(res => setDepartments(res.data?.departments || []))
-    api.get('/companies/').then(res => setCompanies(res.data?.companies || []))
+    api.get('/departments').then(res => setDepartments(res.data?.departments || []))
+    api.get('/companies').then(res => setCompanies(res.data?.companies || []))
   }, [])
 
   const filteredStudents = students.filter(s => 

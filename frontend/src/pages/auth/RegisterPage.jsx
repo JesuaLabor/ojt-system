@@ -19,7 +19,7 @@ export default function RegisterPage() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    api.get('/departments/')
+    api.get('/departments')
       .then(res => setDepartments(res.data?.departments || []))
       .catch(() => {}) // silently fail — departments may not exist yet
   }, [])

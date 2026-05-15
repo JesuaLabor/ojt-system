@@ -24,7 +24,7 @@ export default function UserApprovals() {
 
     useEffect(() => {
         fetchUsers()
-        api.get('/departments/')
+        api.get('/departments')
             .then(res => setDepartments(res.data?.departments || []))
             .catch(() => {})
     }, [activeTab])

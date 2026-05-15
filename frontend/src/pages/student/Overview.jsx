@@ -119,7 +119,7 @@ export default function Overview() {
         const fetchAll = async () => {
             try {
                 const [logsRes, evalsRes] = await Promise.all([
-                    api.get('/timelogs/'),
+                    api.get('/timelogs'),
                     api.get('/evaluations/me'),
                 ])
                 setLogs(logsRes.data?.logs || [])

@@ -99,7 +99,7 @@ export default function SupervisorEvaluations() {
                 ...formData,
                 student_id: Number(formData.student_id),
             }
-            const res = await api.post('/evaluations/', payload)
+            const res = await api.post('/evaluations', payload)
             toast.success('Evaluation submitted successfully!')
             
             // Reset form (keep the same student and period, reset scores/feedback)

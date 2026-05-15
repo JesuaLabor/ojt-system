@@ -244,8 +244,8 @@ export default function CoordinatorOverview() {
     }, [selectedDept, selectedCompany])
 
     useEffect(() => {
-        api.get('/departments/').then(res => setDepartments(res.data?.departments || []))
-        api.get('/companies/').then(res => setCompanies(res.data?.companies || []))
+        api.get('/departments').then(res => setDepartments(res.data?.departments || []))
+        api.get('/companies').then(res => setCompanies(res.data?.companies || []))
     }, [])
 
     const filteredStudents = useMemo(() => {
