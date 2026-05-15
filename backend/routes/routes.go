@@ -38,12 +38,12 @@ func RegisterRoutes(r *gin.Engine) {
 		timelogs := protected.Group("/timelogs")
 		{
 			// Student endpoints
-			timelogs.POST("/", controllers.CreateTimeLog)          // POST   /api/timelogs        — manual entry (clock_in + optional clock_out)
+			timelogs.POST("", controllers.CreateTimeLog)          // POST   /api/timelogs        — manual entry (clock_in + optional clock_out)
 			timelogs.POST("/clockin", controllers.ClockIn)         // POST   /api/timelogs/clockin — instant clock-in (now)
 			timelogs.PATCH("/clockout", controllers.ClockOut)      // PATCH  /api/timelogs/clockout — instant clock-out (now)
 			timelogs.PATCH("/break/start", controllers.StartBreak) // PATCH /api/timelogs/break/start
 			timelogs.PATCH("/break/end", controllers.EndBreak)     // PATCH /api/timelogs/break/end
-			timelogs.GET("/", controllers.GetMyTimeLogs)           // GET    /api/timelogs/?status=pending
+			timelogs.GET("", controllers.GetMyTimeLogs)           // GET    /api/timelogs/?status=pending
 
 			// Supervisor / Coordinator / Faculty endpoints
 			timelogs.GET("/:student_id",
@@ -67,9 +67,9 @@ func RegisterRoutes(r *gin.Engine) {
 		// ── Evaluations ───────────────────────────────────────────────────────
 		evaluations := protected.Group("/evaluations")
 		{
-			evaluations.POST("/",
+			evaluations.POST("",
 				middleware.RoleMiddleware("supervisor"),
-				controllers.CreateEvaluation, // POST /api/evaluations/
+				controllers.CreateEvaluation, // POST /api/evaluations
 			)
 			evaluations.GET("/me", controllers.GetMyEvaluations) // GET /api/evaluations/me
 			evaluations.GET("/:student_id",
@@ -96,7 +96,7 @@ func RegisterRoutes(r *gin.Engine) {
 		{
 			// Student endpoints
 			journals.GET("/me", controllers.GetStudentJournals)
-			journals.POST("/", controllers.CreateJournal)
+			journals.POST("", controllers.CreateJournal)
 
 			// Supervisor endpoints
 			journals.GET("/supervisor",
@@ -118,8 +118,8 @@ func RegisterRoutes(r *gin.Engine) {
 		// ── Announcements ───────────────────────────────────────────────────────
 		announcements := protected.Group("/announcements")
 		{
-			announcements.GET("/", controllers.GetAnnouncements)
-			announcements.POST("/",
+			announcements.GET("", controllers.GetAnnouncements)
+			announcements.POST("",
 				middleware.RoleMiddleware("coordinator", "supervisor", "faculty", "admin"),
 				controllers.CreateAnnouncement,
 			)
@@ -136,7 +136,7 @@ func RegisterRoutes(r *gin.Engine) {
 		// ── Notifications ─────────────────────────────────────────────────────
 		notifications := protected.Group("/notifications")
 		{
-			notifications.GET("/", controllers.GetMyNotifications)                       // GET   /api/notifications
+			notifications.GET("", controllers.GetMyNotifications)                       // GET   /api/notifications
 			notifications.PATCH("/:id/read", controllers.MarkNotificationRead)           // PATCH /api/notifications/:id/read
 			notifications.PATCH("/read-all", controllers.MarkAllNotificationsReadGlobal) // PATCH /api/notifications/read-all
 		}
@@ -194,9 +194,9 @@ func RegisterRoutes(r *gin.Engine) {
 		assignments := protected.Group("/assignments")
 		assignments.Use(middleware.RoleMiddleware("coordinator", "admin")) // Only coordinators manage assignments
 		{
-			assignments.GET("/", controllers.GetAssignments)              // GET    /api/assignments
+			assignments.GET("", controllers.GetAssignments)              // GET    /api/assignments
 			assignments.GET("/options", controllers.GetAssignmentOptions) // GET    /api/assignments/options
-			assignments.POST("/", controllers.CreateAssignment)           // POST   /api/assignments
+			assignments.POST("", controllers.CreateAssignment)           // POST   /api/assignments
 			assignments.PATCH("/:id", controllers.UpdateAssignment)       // PATCH  /api/assignments/:id
 			assignments.DELETE("/:id", controllers.DeleteAssignment)      // DELETE /api/assignments/:id
 		}
@@ -205,8 +205,8 @@ func RegisterRoutes(r *gin.Engine) {
 		companies := protected.Group("/companies")
 		companies.Use(middleware.RoleMiddleware("coordinator", "admin", "faculty")) // Faculty can list companies
 		{
-			companies.GET("/", controllers.GetCompanies)        // GET    /api/companies
-			companies.POST("/", controllers.CreateCompany)      // POST   /api/companies
+			companies.GET("", controllers.GetCompanies)        // GET    /api/companies
+			companies.POST("", controllers.CreateCompany)      // POST   /api/companies
 			companies.PATCH("/:id", controllers.UpdateCompany)  // PATCH  /api/companies/:id
 			companies.DELETE("/:id", controllers.DeleteCompany) // DELETE /api/companies/:id
 		}
@@ -215,13 +215,13 @@ func RegisterRoutes(r *gin.Engine) {
 	// ── Departments ────────────────────────────────────────────────────────
 	depts := api.Group("/departments")
 	{
-		depts.GET("/", controllers.GetDepartments) // Public for registration
+		depts.GET("", controllers.GetDepartments) // Public for registration
 		depts.GET("/:id/members",
 			middleware.AuthMiddleware(),
 			middleware.RoleMiddleware("coordinator", "admin", "faculty"),
 			controllers.GetDepartmentMembers,
 		)
-		depts.POST("/",
+		depts.POST("",
 			middleware.AuthMiddleware(),
 			middleware.RoleMiddleware("coordinator", "admin"),
 			controllers.CreateDepartment,

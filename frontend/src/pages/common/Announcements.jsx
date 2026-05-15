@@ -20,7 +20,7 @@ export default function Announcements() {
     const fetchAnnouncements = async () => {
         setLoading(true)
         try {
-            const res = await api.get('/announcements/')
+            const res = await api.get('/announcements')
             setAnnouncements(res.data.announcements || [])
         } catch (err) {
             toast.error('Failed to load announcements')
@@ -37,7 +37,7 @@ export default function Announcements() {
 
         setSubmitting(true)
         try {
-            await api.post('/announcements/', form)
+            await api.post('/announcements', form)
             toast.success('Announcement posted!')
             setShowModal(false)
             setForm({ title: '', content: '', target: 'all' })

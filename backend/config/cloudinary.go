@@ -60,8 +60,7 @@ func UploadFile(file multipart.File, publicID string, folder string, resourceTyp
 		if _, err := io.Copy(dst, file); err != nil {
 			return "", fmt.Errorf("failed to write local file: %w", err)
 		}
-		baseURL := GetEnv("APP_BASE_URL", "http://localhost:8080")
-		return fmt.Sprintf("%s/uploads/%s/%s", baseURL, folder, filename), nil
+		return fmt.Sprintf("/uploads/%s/%s", folder, filename), nil
 	}
 
 	ctx := context.Background()

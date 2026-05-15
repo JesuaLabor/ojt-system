@@ -16,7 +16,7 @@ export default function CoordinatorFaculty() {
         try {
             const [facRes, deptRes] = await Promise.all([
                 api.get('/coordinator/faculty'),
-                api.get('/departments/')
+                api.get('/departments')
             ])
             setFaculty(facRes.data?.faculty || [])
             setDepartments(deptRes.data?.departments || [])

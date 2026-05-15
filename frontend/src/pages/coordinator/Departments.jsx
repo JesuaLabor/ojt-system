@@ -69,7 +69,7 @@ function DeptModal({ dept, onClose, onSaved }) {
             if (isEdit) {
                 await api.patch(`/departments/${deptId}`, form)
             } else {
-                const res = await api.post('/departments/', form)
+                const res = await api.post('/departments', form)
                 deptId = res.data.department.id
             }
 
@@ -265,7 +265,7 @@ export default function Departments() {
     const fetchDepts = async () => {
         setLoading(true)
         try {
-            const res = await api.get('/departments/')
+            const res = await api.get('/departments')
             setDepartments(res.data?.departments || [])
         } catch {
             toast.error('Failed to load departments')

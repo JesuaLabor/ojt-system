@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"log"
 	"net/http"
 	"ojt-system/config"
 	"ojt-system/models"
@@ -13,7 +14,7 @@ func GetAnnouncements(c *gin.Context) {
 	userRole, _ := c.Get("userRole")
 
 	var announcements []models.Announcement
-	query := config.DB.Preload("Author", "id, name, role, profile_photo")
+	query := config.DB.Preload("Author")
 
 	// Filter by target based on role
 	if userRole == "student" {
@@ -23,6 +24,7 @@ func GetAnnouncements(c *gin.Context) {
 	}
 
 	if err := query.Order("created_at desc").Find(&announcements).Error; err != nil {
+		log.Printf("❌ Failed to fetch announcements: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch announcements"})
 		return
 	}
@@ -63,7 +65,7 @@ func CreateAnnouncement(c *gin.Context) {
 	}
 
 	// Preload author for the response
-	config.DB.Preload("Author", "id, name, role, profile_photo").First(&announcement, announcement.ID)
+	config.DB.Preload("Author").First(&announcement, announcement.ID)
 
 	c.JSON(http.StatusCreated, gin.H{"message": "Announcement posted successfully", "announcement": announcement})
 }
