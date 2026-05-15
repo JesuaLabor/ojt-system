@@ -30,7 +30,7 @@ export default function Messages() {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
     }
 
-    const { socket, lastEvent } = useSocket()
+    const { socket, lastEvent, onlineUsers } = useSocket()
     const activeContactRef = useRef(null)
     
     useEffect(() => {
@@ -118,7 +118,9 @@ export default function Messages() {
     }, [activeContact])
 
     useEffect(() => {
-        scrollToBottom()
+        if (activeContact) {
+            scrollToBottom()
+        }
     }, [messages])
 
     const fetchConversation = async (contactId) => {
@@ -187,8 +189,12 @@ export default function Messages() {
     const sharedImages = sharedMedia.filter(m => m.file_type === 'image')
     const sharedDocs = sharedMedia.filter(m => m.file_type !== 'image')
 
-    // Derived active contact with real-time status
-    const currentContact = contacts.find(c => Number(c.ID || c.id) === Number(activeContact?.ID || activeContact?.id)) || activeContact;
+    // Derived active contact with real-time status override
+    const currentContactRaw = contacts.find(c => Number(c.ID || c.id) === Number(activeContact?.ID || activeContact?.id)) || activeContact;
+    const currentContact = currentContactRaw ? {
+        ...currentContactRaw,
+        is_online: currentContactRaw.is_online || onlineUsers.has(Number(currentContactRaw.ID || currentContactRaw.id))
+    } : null;
 
     const lastReadMessageId = [...messages]
         .reverse()
@@ -234,6 +240,7 @@ export default function Messages() {
                         const activeId = activeContact?.ID || activeContact?.id;
                         const isActive = activeId && contactId === activeId;
                         const hasUnread = c.unread_count > 0;
+                        const isOnline = c.is_online || onlineUsers.has(Number(contactId));
 
                         return (
                             <button
@@ -250,7 +257,7 @@ export default function Messages() {
                                                 {c.name.charAt(0)}
                                             </div>
                                         )}
-                                        {c.is_online && <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 rounded-full border-2 border-[#0B0D14]"></div>}
+                                        {isOnline && <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 rounded-full border-2 border-[#0B0D14]"></div>}
                                     </div>
                                 <div className="flex-1 min-w-0 text-left">
                                     <div className="flex items-center justify-between gap-2">
