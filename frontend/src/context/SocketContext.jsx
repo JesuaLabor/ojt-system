@@ -21,26 +21,32 @@ export const SocketProvider = ({ children }) => {
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
         const host = window.location.host
         
-        const ws = new WebSocket(`${protocol}//${host}/api/messages/ws?token=${token}`)
-        socket.current = ws
+        // Add a small delay to avoid "closed before established" during HMR
+        const timeoutId = setTimeout(() => {
+            const ws = new WebSocket(`${protocol}//${host}/api/messages/ws?token=${token}`)
+            socket.current = ws
 
-        ws.onmessage = (event) => {
-            const data = JSON.parse(event.data)
-            setLastEvent(data)
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data)
+                setLastEvent(data)
 
-            if (data.type === 'user_status') {
-                setOnlineUsers(prev => {
-                    const next = new Set(prev)
-                    if (data.is_online) next.add(Number(data.user_id))
-                    else next.delete(Number(data.user_id))
-                    return next
-                })
+                if (data.type === 'user_status') {
+                    setOnlineUsers(prev => {
+                        const next = new Set(prev)
+                        if (data.is_online) next.add(Number(data.user_id))
+                        else next.delete(Number(data.user_id))
+                        return next
+                    })
+                }
             }
-        }
+        }, 500)
 
         return () => {
-            ws.close()
-            socket.current = null
+            clearTimeout(timeoutId)
+            if (socket.current) {
+                socket.current.close()
+                socket.current = null
+            }
         }
     }, [token, user])
 

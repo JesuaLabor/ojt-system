@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"log"
 	"net/http"
 	"ojt-system/config"
 	"ojt-system/models"
@@ -24,7 +23,6 @@ func GetAnnouncements(c *gin.Context) {
 	}
 
 	if err := query.Order("created_at desc").Find(&announcements).Error; err != nil {
-		log.Printf("❌ Failed to fetch announcements: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch announcements"})
 		return
 	}
