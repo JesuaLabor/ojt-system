@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { format } from 'date-fns'
+import { format, formatDistanceToNow } from 'date-fns'
 import toast from 'react-hot-toast'
 import api from '../../services/api'
 import useAuthStore from '../../store/authStore'
@@ -65,7 +65,7 @@ export default function Messages() {
         } else if (data.type === 'user_status') {
             setContacts(prev => prev.map(c => 
                 (Number(c.ID || c.id) === Number(data.user_id)) 
-                ? { ...c, is_online: data.is_online } 
+                ? { ...c, is_online: data.is_online, last_seen: new Date().toISOString() } 
                 : c
             ))
         }
@@ -200,9 +200,21 @@ export default function Messages() {
         .reverse()
         .find(m => m.is_read && Number(m.sender_id || m.SenderID) === Number(user?.ID || user?.id))?.ID;
 
+    const formatLastSeen = (dateStr) => {
+        if (!dateStr) return 'Offline';
+        try {
+            const date = new Date(dateStr);
+            if (isNaN(date.getTime())) return 'Offline';
+            return `Active ${formatDistanceToNow(date, { addSuffix: true })}`;
+        } catch (e) {
+            return 'Offline';
+        }
+    };
+
     const formatTimeAgo = (dateStr) => {
         if (!dateStr) return '';
         const date = new Date(dateStr);
+        if (isNaN(date.getTime())) return '';
         const now = new Date();
         const diffInSeconds = Math.floor((now - date) / 1000);
 
@@ -324,7 +336,7 @@ export default function Messages() {
                                                 <div className="flex items-center gap-1.5">
                                                     <div className={`w-1.5 h-1.5 rounded-full ${currentContact.is_online ? 'bg-emerald-500 animate-pulse' : 'bg-slate-600'}`}></div>
                                                     <p className={`text-[10px] font-black uppercase tracking-widest ${currentContact.is_online ? 'text-emerald-400' : 'text-slate-500'}`}>
-                                                        {otherUserTyping ? 'Typing...' : currentContact.is_online ? 'Online' : 'Offline'}
+                                                        {otherUserTyping ? 'Typing...' : currentContact.is_online ? 'Online' : formatLastSeen(currentContact.last_seen)}
                                                     </p>
                                                 </div>
                                                 {currentContact.department?.name && (

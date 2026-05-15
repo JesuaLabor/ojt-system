@@ -4,7 +4,10 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"ojt-system/config"
+	"ojt-system/models"
 	"sync"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -43,7 +46,20 @@ func (h *Hub) Run() {
 		case client := <-h.register:
 			h.mu.Lock()
 			h.clients[client.UserID] = client
+			
+			// Send initial list of online users to the new client
+			onlineUserIDs := make([]uint, 0, len(h.clients))
+			for id := range h.clients {
+				onlineUserIDs = append(onlineUserIDs, id)
+			}
 			h.mu.Unlock()
+
+			initialStatus, _ := json.Marshal(map[string]interface{}{
+				"type":     "initial_online_users",
+				"user_ids": onlineUserIDs,
+			})
+			client.Send <- initialStatus
+
 			h.broadcastStatus(client.UserID, true)
 		case client := <-h.unregister:
 			h.mu.Lock()
@@ -52,6 +68,10 @@ func (h *Hub) Run() {
 				close(client.Send)
 				h.mu.Unlock()
 				h.broadcastStatus(client.UserID, false)
+
+				// Update LastSeen in DB
+				now := time.Now()
+				config.DB.Model(&models.User{}).Where("id = ?", client.UserID).Update("last_seen", now)
 			} else {
 				h.mu.Unlock()
 			}

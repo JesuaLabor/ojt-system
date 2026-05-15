@@ -48,6 +48,8 @@ export const SocketProvider = ({ children }) => {
                         else next.delete(Number(data.user_id))
                         return next
                     })
+                } else if (data.type === 'initial_online_users') {
+                    setOnlineUsers(new Set(data.user_ids.map(id => Number(id))))
                 }
             }
 

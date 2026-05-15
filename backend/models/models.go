@@ -27,6 +27,7 @@ type User struct {
 	ProfilePhoto string      `json:"profile_photo"`
 	DepartmentID *uint       `json:"department_id"`                                       // nullable — existing users unaffected
 	Department   *Department `gorm:"foreignKey:DepartmentID" json:"department,omitempty"` // eager-loadable
+	LastSeen     *time.Time  `json:"last_seen"`                                           // Timestamp for "Last Active" status
 }
 
 // ─── Company ────────────────────────────────────────────
