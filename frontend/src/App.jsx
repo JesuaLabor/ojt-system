@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import useAuthStore from './store/authStore'
 import { SocketProvider } from './context/SocketContext'
+import InstallPrompt from './components/InstallPrompt'
 
 // Auth Pages
 import LoginPage from './pages/auth/LoginPage'
@@ -77,6 +78,7 @@ export default function App() {
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <SocketProvider>
         <Toaster position="top-right" />
+        <InstallPrompt />
         <Routes>
           {/* ... */}
           <Route path="/login" element={<LoginPage />} />
