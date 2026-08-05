@@ -1,291 +1,240 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import toast from 'react-hot-toast'
 import api from '../../services/api'
 
+// ── Job Factor Definitions (for display) ──────────────────────────────────────
+const JOB_FACTORS = [
+    { key: 'quality_work_accuracy',    label: 'Quality of Work (Accuracy & Neatness)',         max: 20 },
+    { key: 'quality_work_timeliness',  label: 'Quality of Work (Completion in Allotted Time)', max: 20 },
+    { key: 'dependability',            label: 'Dependability, Reliability & Resourcefulness',   max: 10 },
+    { key: 'attendance',               label: 'Attendance & Punctuality',                       max: 10 },
+    { key: 'cooperation',              label: 'Cooperation',                                    max: 10 },
+    { key: 'company_rules_observance', label: 'Observance of Company Rules & Regulations',     max: 10 },
+    { key: 'personality',              label: 'Personality',                                    max: 5  },
+    { key: 'safety_housekeeping',      label: 'Safety and Housekeeping',                       max: 10 },
+    { key: 'tools_equipment',          label: 'Proper Use of Tools / Equipment',               max: 5  },
+]
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
-const computeOverall = (scores) => {
-    const values = Object.values(scores)
-    const sum = values.reduce((acc, val) => acc + (Number(val) || 0), 0)
-    return Math.round((sum / 5) * 100) / 100
+function getGradeInfo(score) {
+    if (score >= 90) return { label: 'Outstanding',         color: 'text-emerald-400', ring: 'border-emerald-500/30 bg-emerald-500/10' }
+    if (score >= 80) return { label: 'Very Satisfactory',   color: 'text-teal-400',    ring: 'border-teal-500/30 bg-teal-500/10' }
+    if (score >= 70) return { label: 'Satisfactory',        color: 'text-cyan-400',    ring: 'border-cyan-500/30 bg-cyan-500/10' }
+    if (score >= 60) return { label: 'Fairly Satisfactory', color: 'text-amber-400',   ring: 'border-amber-500/30 bg-amber-500/10' }
+    return                   { label: 'Needs Improvement',  color: 'text-red-400',     ring: 'border-red-500/30 bg-red-500/10' }
 }
 
-const getGradeColor = (score) => {
-    if (score >= 90) return 'text-emerald-400'
-    if (score >= 80) return 'text-teal-400'
-    if (score >= 70) return 'text-cyan-400'
-    if (score >= 60) return 'text-amber-400'
-    return 'text-red-400'
+function progressBarColor(pct) {
+    if (pct >= 90) return 'bg-emerald-500'
+    if (pct >= 70) return 'bg-teal-500'
+    if (pct >= 50) return 'bg-cyan-500'
+    return 'bg-amber-500'
 }
 
+function FactorScore({ label, score, max }) {
+    const pct = Math.min(100, (score / max) * 100)
+    return (
+        <div className="space-y-1.5">
+            <div className="flex justify-between items-end text-[10px] sm:text-xs">
+                <span className="font-semibold text-slate-400 leading-tight">{label}</span>
+                <span className="font-bold text-slate-200 shrink-0 ml-2">
+                    {score} <span className="text-slate-600 font-normal">/ {max}</span>
+                </span>
+            </div>
+            <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                <div
+                    className={`h-full rounded-full transition-all duration-700 ${progressBarColor(pct)}`}
+                    style={{ width: `${pct}%` }}
+                />
+            </div>
+        </div>
+    )
+}
+
+// ── Main Component ────────────────────────────────────────────────────────────
 export default function FacultyEvaluations() {
-    const [searchParams] = useSearchParams()
-    const studentQueryId = searchParams.get('student') // From URL if navigating from overview
+    const [searchParams, setSearchParams] = useSearchParams()
+    const studentQueryId = searchParams.get('student')
 
     const [students, setStudents] = useState([])
-    const [loading, setLoading] = useState(true)
-    const [submitting, setSubmitting] = useState(false)
-    const [errors, setErrors] = useState({})
+    const [evals, setEvals] = useState([])
+    const [summary, setSummary] = useState(null)
+    const [selectedStudent, setSelectedStudent] = useState(null)
+    const [loadingStudents, setLoadingStudents] = useState(true)
+    const [loadingEvals, setLoadingEvals] = useState(false)
 
-    const [formData, setFormData] = useState({
-        student_id: studentQueryId ? Number(studentQueryId) : '',
-        period: 'Midterm', // Default
-        technical_score: 85,
-        communication_score: 85,
-        punctuality_score: 85,
-        teamwork_score: 85,
-        initiative_score: 85,
-        feedback: ''
-    })
-
+    // Load student list
     useEffect(() => {
         const fetchStudents = async () => {
             try {
                 const res = await api.get('/faculty/students')
-                const studentList = res.data?.students || []
-                setStudents(studentList)
-                
-                // If a student was in query but not in list, or no student elected, 
-                // we'll just wait for user to select. But if we have students and no selection, pick first.
-                if (!studentQueryId && studentList.length > 0) {
-                    setFormData(prev => ({ ...prev, student_id: studentList[0].student_id }))
-                }
+                const list = res.data?.students || []
+                setStudents(list)
+                const initial = studentQueryId
+                    ? list.find(s => String(s.student_id) === studentQueryId)
+                    : list[0]
+                if (initial) setSelectedStudent(initial)
             } catch (err) {
                 console.error(err)
-                toast.error('Failed to load students.')
             } finally {
-                setLoading(false)
+                setLoadingStudents(false)
             }
         }
         fetchStudents()
-    }, [studentQueryId])
+    }, [])
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target
-        setFormData(prev => ({ ...prev, [name]: value }))
-        // Clear error for this field
-        if (errors[name]) {
-            setErrors(prev => ({ ...prev, [name]: null }))
-        }
-    }
-
-    const handleScoreChange = (e) => {
-        const { name, value } = e.target
-        setFormData(prev => ({ ...prev, [name]: Number(value) }))
-    }
-
-    const validate = () => {
-        const newErrors = {}
-        if (!formData.student_id) newErrors.student_id = 'Please select a student'
-        if (!formData.period) newErrors.period = 'Please select or enter an evaluation period'
-        
-        const criteria = ['technical_score', 'communication_score', 'punctuality_score', 'teamwork_score', 'initiative_score']
-        criteria.forEach(c => {
-            if (formData[c] < 0 || formData[c] > 100) {
-                newErrors[c] = 'Score must be between 0 and 100'
+    // Load evaluations when selected student changes
+    useEffect(() => {
+        if (!selectedStudent) return
+        const fetchEvals = async () => {
+            setLoadingEvals(true)
+            try {
+                const res = await api.get(`/evaluations/${selectedStudent.student_id}`)
+                setEvals(res.data?.evaluations || [])
+                setSummary(res.data?.summary || null)
+            } catch (err) {
+                console.error(err)
+                setEvals([])
+                setSummary(null)
+            } finally {
+                setLoadingEvals(false)
             }
-        })
-
-        setErrors(newErrors)
-        return Object.keys(newErrors).length === 0
-    }
-
-    const handleSubmit = async (e) => {
-        e.preventDefault()
-        if (!validate()) return
-
-        setSubmitting(true)
-        try {
-            const payload = {
-                ...formData,
-                student_id: Number(formData.student_id),
-            }
-            const res = await api.post('/evaluations', payload)
-            toast.success('Evaluation submitted successfully!')
-            
-            // Reset form (keep the same student and period, reset scores/feedback)
-            setFormData(prev => ({
-                ...prev,
-                technical_score: 85,
-                communication_score: 85,
-                punctuality_score: 85,
-                teamwork_score: 85,
-                initiative_score: 85,
-                feedback: ''
-            }))
-        } catch (err) {
-            console.error(err)
-            const msg = err.response?.data?.error || 'Failed to submit evaluation'
-            toast.error(msg)
-            setErrors(prev => ({ ...prev, submit: msg }))
-        } finally {
-            setSubmitting(false)
         }
+        fetchEvals()
+    }, [selectedStudent?.student_id])
+
+    const handleStudentChange = (e) => {
+        const student = students.find(s => String(s.student_id) === e.target.value)
+        setSelectedStudent(student || null)
+        setSearchParams(student ? { student: e.target.value } : {})
     }
-
-    const overallScore = computeOverall({
-        tech: formData.technical_score,
-        comm: formData.communication_score,
-        punct: formData.punctuality_score,
-        team: formData.teamwork_score,
-        init: formData.initiative_score
-    })
-
-    const scoresList = [
-        { name: 'technical_score', label: 'Technical Skills', desc: 'Proficiency and application of learned concepts' },
-        { name: 'communication_score', label: 'Communication', desc: 'Clarity in written and verbal communication' },
-        { name: 'teamwork_score', label: 'Teamwork', desc: 'Collaboration and cooperation with others' },
-        { name: 'punctuality_score', label: 'Punctuality', desc: 'Attendance and timely completion of tasks' },
-        { name: 'initiative_score', label: 'Initiative', desc: 'Proactiveness and willingness to learn' }
-    ]
 
     return (
-        <div className="fade-in max-w-4xl mx-auto space-y-6 pb-12">
+        <div className="fade-in max-w-5xl mx-auto space-y-6 pb-12">
             <div className="mb-6">
-                <h1 className="page-title">Submit Performance Evaluation</h1>
-                <p className="page-sub mt-1">Evaluate any active student in the OJT system.</p>
+                <h1 className="page-title">Student Evaluations</h1>
+                <p className="page-sub mt-1">View OJT performance evaluations — read-only access.</p>
             </div>
 
-            {loading ? (
-                 <div className="flex justify-center p-12"><div className="spinner w-8 h-8 border-indigo-500 border-t-indigo-200" /></div>
-            ) : students.length === 0 ? (
-                <div className="card text-center py-12">
-                    <p className="text-3xl mb-3">👥</p>
-                    <p className="text-sm font-medium text-slate-400">No students available</p>
-                    <p className="text-xs text-slate-600 mt-1">You need active students in the system before you can submit evaluations.</p>
-                </div>
+            {/* Info banner */}
+            <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-800/40 border border-slate-700/30 text-xs text-slate-400">
+                <span>ℹ️</span>
+                <span>Evaluations are submitted by assigned supervisors only, after students complete their required OJT hours. You have read-only access.</span>
+            </div>
+
+            {/* Student selector */}
+            {loadingStudents ? (
+                <div className="flex justify-center p-12"><div className="spinner w-8 h-8" /></div>
             ) : (
-                <form onSubmit={handleSubmit} className="card space-y-8 relative overflow-hidden">
-                    {/* Decorative backdrop glow */}
-                    <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none" />
-
-                    {/* Form Header info */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10 p-1">
-                        <div className="input-group">
-                            <label className="input-label">Student</label>
-                            <select
-                                name="student_id"
-                                value={formData.student_id}
-                                onChange={handleInputChange}
-                                className={`input ${errors.student_id ? 'border-red-500 ring-red-500/20' : ''}`}
-                            >
-                                <option value="" disabled>Select a student</option>
-                                {students.map(s => (
-                                    <option key={s.student_id} value={s.student_id}>
-                                        {s.student_name} ({s.company_name})
-                                    </option>
-                                ))}
-                            </select>
-                            {errors.student_id && <p className="text-[10px] text-red-500 mt-1">{errors.student_id}</p>}
-                        </div>
-
-                        <div className="input-group">
-                            <label className="input-label">Evaluation Period</label>
-                            <select
-                                name="period"
-                                value={formData.period}
-                                onChange={handleInputChange}
-                                className={`input ${errors.period ? 'border-red-500 ring-red-500/20' : ''}`}
-                            >
-                                <option value="Week 1-2">Week 1-2</option>
-                                <option value="Midterm">Midterm</option>
-                                <option value="Final">Final</option>
-                                <option value="Overall">Overall</option>
-                            </select>
-                            {errors.period && <p className="text-[10px] text-red-500 mt-1">{errors.period}</p>}
-                        </div>
-                    </div>
-
-                    <hr className="border-slate-800" />
-
-                    {/* Scoring Grid */}
-                    <div className="relative z-10">
-                        <div className="flex items-center justify-between xl:items-end mb-6">
-                            <div>
-                                <h2 className="text-sm font-semibold text-white">Performance Criteria</h2>
-                                <p className="text-xs text-slate-500 mt-1">Score each metric from 0 to 100.</p>
-                            </div>
-                            <div className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 flex items-center gap-4 text-right">
-                                <div className="hidden sm:block">
-                                    <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Overall Average</p>
-                                    <p className="text-xs text-slate-400 mt-0.5">Calculated score</p>
-                                </div>
-                                <div className={`text-3xl font-black ${getGradeColor(overallScore)}`}>
-                                    {overallScore.toFixed(1)}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="space-y-6">
-                            {scoresList.map((item) => (
-                                <div key={item.name} className="flex flex-col md:flex-row md:items-center gap-4 bg-slate-900/50 p-4 rounded-xl border border-slate-800/60 hover:border-slate-700 transition-colors">
-                                    <div className="md:w-1/3">
-                                        <p className="text-sm font-semibold text-slate-200">{item.label}</p>
-                                        <p className="text-[11px] text-slate-500 mt-0.5">{item.desc}</p>
-                                    </div>
-                                    <div className="md:w-2/3 flex items-center gap-4">
-                                        <input
-                                            type="range"
-                                            name={item.name}
-                                            min="0"
-                                            max="100"
-                                            step="1"
-                                            value={formData[item.name]}
-                                            onChange={handleScoreChange}
-                                            className="flex-1 w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
-                                        />
-                                        <input
-                                            type="number"
-                                            name={item.name}
-                                            min="0"
-                                            max="100"
-                                            value={formData[item.name]}
-                                            onChange={handleScoreChange}
-                                            className="w-16 bg-slate-950 border border-slate-700 rounded-md px-2 py-1 text-sm text-center font-semibold text-white focus:outline-none focus:border-indigo-500"
-                                        />
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    <hr className="border-slate-800" />
-
-                    {/* Feedback */}
-                    <div className="relative z-10 input-group">
-                        <label className="input-label">Qualitative Feedback</label>
-                        <textarea
-                            name="feedback"
-                            rows="4"
-                            placeholder="Provide constructive feedback, noting strengths and areas for improvement..."
-                            value={formData.feedback}
-                            onChange={handleInputChange}
-                            className="input resize-none py-3"
-                        ></textarea>
-                        <p className="text-[11px] text-slate-500">This feedback will be visible to the student.</p>
-                    </div>
-
-                    {errors.submit && (
-                        <div className="p-3 bg-red-900/20 border border-red-900/50 rounded-lg text-xs text-red-400">
-                            {errors.submit}
-                        </div>
-                    )}
-
-                    {/* Submit */}
-                    <div className="relative z-10 flex justify-end pt-4">
-                        <button
-                            type="submit"
-                            disabled={submitting}
-                            className="btn bg-indigo-600 hover:bg-indigo-500 text-white min-w-[160px] justify-center shadow-lg shadow-indigo-900/30 font-medium"
+                <div className="card">
+                    <div className="input-group">
+                        <label className="input-label">Select Student</label>
+                        <select
+                            value={selectedStudent?.student_id || ''}
+                            onChange={handleStudentChange}
+                            className="input"
                         >
-                            {submitting ? (
-                                <><span className="spinner mr-2 border-white/40 border-t-white relative -left-1" /> Submitting...</>
-                            ) : (
-                                'Submit Evaluation'
-                            )}
-                        </button>
+                            <option value="" disabled>Choose a student to view evaluations</option>
+                            {students.map(s => (
+                                <option key={s.student_id} value={s.student_id}>
+                                    {s.student_name} — {s.company_name || s.department_name || ''}
+                                </option>
+                            ))}
+                        </select>
                     </div>
-                </form>
+                </div>
+            )}
+
+            {/* Evaluations */}
+            {selectedStudent && (
+                loadingEvals ? (
+                    <div className="flex justify-center p-12"><div className="spinner w-8 h-8" /></div>
+                ) : evals.length === 0 ? (
+                    <div className="card text-center py-12">
+                        <p className="text-3xl mb-3">📋</p>
+                        <p className="text-sm font-medium text-slate-400">No evaluations yet for {selectedStudent.student_name}</p>
+                        <p className="text-xs text-slate-600 mt-1">
+                            Evaluation is only available after the student completes their required OJT hours.
+                        </p>
+                    </div>
+                ) : (
+                    <div className="space-y-6">
+                        {/* Summary card */}
+                        {summary && (
+                            <div className="card bg-gradient-to-br from-slate-800/30 to-slate-900/50 border-slate-700/40">
+                                <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4">Average Across {summary.total_evaluations} Evaluation{summary.total_evaluations !== 1 ? 's' : ''}</h2>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-4">
+                                    {JOB_FACTORS.map(f => (
+                                        <FactorScore
+                                            key={f.key}
+                                            label={f.label}
+                                            score={summary[`avg_${f.key}`] ?? 0}
+                                            max={f.max}
+                                        />
+                                    ))}
+                                </div>
+                                <div className="flex items-center justify-between mt-5 px-3 py-2.5 rounded-xl bg-slate-900/60 border border-slate-800">
+                                    <span className="text-xs font-bold uppercase tracking-widest text-slate-500">Average Total</span>
+                                    <div className={`text-sm font-black ${getGradeInfo(summary.avg_overall_score).color}`}>
+                                        {summary.avg_overall_score} / 100 — {summary.grade}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Individual evaluations */}
+                        {evals.map((ev) => {
+                            const grade = getGradeInfo(ev.overall_score)
+                            return (
+                                <div key={ev.ID || ev.id} className="card hover:border-slate-700 transition-colors">
+                                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-6 pb-6 border-b border-slate-800/50">
+                                        <div>
+                                            <div className="flex items-center gap-3 mb-1">
+                                                <h2 className="text-lg font-bold text-white">🎓 OJT Completion Evaluation</h2>
+                                                <span className="badge badge-approved text-[9px] uppercase tracking-widest font-black">Submitted</span>
+                                            </div>
+                                            <p className="text-xs text-slate-500">
+                                                By <span className="text-slate-300 font-semibold">{ev.Supervisor?.name || ev.supervisor_name}</span>
+                                            </p>
+                                        </div>
+                                        <div className={`w-20 h-20 rounded-2xl border flex flex-col items-center justify-center ${grade.ring}`}>
+                                            <span className={`text-3xl font-black ${grade.color}`}>{ev.overall_score ?? ev.OverallScore}</span>
+                                            <span className={`text-[9px] font-bold uppercase mt-0.5 ${grade.color}`}>{grade.label}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-4 mb-5">
+                                        {JOB_FACTORS.map(f => (
+                                            <FactorScore
+                                                key={f.key}
+                                                label={f.label}
+                                                score={ev[f.key] ?? 0}
+                                                max={f.max}
+                                            />
+                                        ))}
+                                    </div>
+
+                                    <div className="flex items-center justify-between mb-5 px-3 py-2.5 rounded-xl bg-slate-900/60 border border-slate-800">
+                                        <span className="text-xs font-bold uppercase tracking-widest text-slate-500">Total Rating</span>
+                                        <span className={`text-sm font-black ${grade.color}`}>{ev.overall_score ?? ev.OverallScore} / 100</span>
+                                    </div>
+
+                                    {(ev.recommendation || ev.Recommendation) && (
+                                        <div className="bg-slate-900/40 border border-slate-700/30 rounded-2xl p-5">
+                                            <h3 className="text-[10px] font-black uppercase tracking-widest text-indigo-400 mb-3 flex items-center gap-2">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                                                Recommendation For the Trainees Growth
+                                            </h3>
+                                            <p className="text-slate-300 text-sm leading-relaxed italic">
+                                                {ev.recommendation || ev.Recommendation}
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            )
+                        })}
+                    </div>
+                )
             )}
         </div>
     )
