@@ -335,96 +335,96 @@ func GenerateStudentReport(c *gin.Context) {
 		pdf.SetFont("Helvetica", "I", 9)
 		pdf.CellFormat(contentW, 7, "No evaluations recorded yet.", "", 1, "L", false, 0, "")
 	} else {
-		evalCols := []struct {
+		type jobFactor struct {
 			label string
-			w     float64
-		}{
-			{"Period", 30},
-			{"Supervisor", 35},
-			{"Tech", 18},
-			{"Comm", 18},
-			{"Punct", 18},
-			{"Team", 18},
-			{"Init", 18},
-			{"Overall", 22},
-			{"Grade", contentW - 177},
+			max   float64
+			value float64
 		}
 
-		// Eval table header
-		setFillRGB(primary)
-		setTextRGB(white)
-		pdf.SetFont("Helvetica", "B", 7)
-		for _, col := range evalCols {
-			pdf.CellFormat(col.w, 7, col.label, "1", 0, "C", true, 0, "")
-		}
-		pdf.Ln(-1)
-
-		// Eval rows
 		var sumOverall float64
 		for i, ev := range evaluations {
-			if i%2 == 0 {
-				setFillRGB(RGB{248, 250, 252})
-			} else {
-				setFillRGB(white)
-			}
-			setTextRGB(textDark)
-			pdf.SetFont("Helvetica", "", 7)
-
-			// Color overall score
-			grade := gradeLabel(ev.OverallScore)
 			sumOverall += ev.OverallScore
 
-			pdf.CellFormat(evalCols[0].w, 6, ev.Period, "1", 0, "L", true, 0, "")
-			pdf.CellFormat(evalCols[1].w, 6, ev.Supervisor.Name, "1", 0, "L", true, 0, "")
-			pdf.CellFormat(evalCols[2].w, 6, fmt.Sprintf("%.1f", ev.TechnicalScore), "1", 0, "C", true, 0, "")
-			pdf.CellFormat(evalCols[3].w, 6, fmt.Sprintf("%.1f", ev.CommunicationScore), "1", 0, "C", true, 0, "")
-			pdf.CellFormat(evalCols[4].w, 6, fmt.Sprintf("%.1f", ev.PunctualityScore), "1", 0, "C", true, 0, "")
-			pdf.CellFormat(evalCols[5].w, 6, fmt.Sprintf("%.1f", ev.TeamworkScore), "1", 0, "C", true, 0, "")
-			pdf.CellFormat(evalCols[6].w, 6, fmt.Sprintf("%.1f", ev.InitiativeScore), "1", 0, "C", true, 0, "")
+			// Evaluation header row
+			if i > 0 {
+				pdf.Ln(3)
+			}
+			setFillRGB(primary)
+			setTextRGB(white)
+			pdf.SetFont("Helvetica", "B", 8)
+			pdf.CellFormat(contentW, 7, fmt.Sprintf("  OJT Completion Evaluation  |  Supervisor: %s", ev.Supervisor.Name), "1", 1, "L", true, 0, "")
 
-			// Overall score cell colored by grade
+			// 9 Job Factors — 2-column layout
+			factors := []jobFactor{
+				{"1. Quality of Work (Accuracy & Neatness)", 20, ev.QualityWorkAccuracy},
+				{"2. Quality of Work (Complete in Allotted Time)", 20, ev.QualityWorkTimeliness},
+				{"3. Dependability, Reliability & Resourcefulness", 10, ev.Dependability},
+				{"4. Attendance & Punctuality", 10, ev.Attendance},
+				{"5. Cooperation", 10, ev.Cooperation},
+				{"6. Observance of Company Rules & Regulations", 10, ev.CompanyRulesObservance},
+				{"7. Personality", 5, ev.Personality},
+				{"8. Safety and Housekeeping", 10, ev.SafetyHousekeeping},
+				{"9. Proper Use of Tools / Equipment", 5, ev.ToolsEquipment},
+			}
+
+			half := contentW / 2
+			pdf.SetFont("Helvetica", "", 7)
+			for j := 0; j < len(factors); j += 2 {
+				if j%2 == 0 {
+					setFillRGB(RGB{248, 250, 252})
+				} else {
+					setFillRGB(white)
+				}
+				setTextRGB(textDark)
+				f1 := factors[j]
+				pdf.CellFormat(half*0.70, 6, f1.label, "1", 0, "L", true, 0, "")
+				pdf.CellFormat(half*0.30, 6, fmt.Sprintf("%.1f / %.0f", f1.value, f1.max), "1", 0, "C", true, 0, "")
+				if j+1 < len(factors) {
+					f2 := factors[j+1]
+					pdf.CellFormat(half*0.70, 6, f2.label, "1", 0, "L", true, 0, "")
+					pdf.CellFormat(half*0.30, 6, fmt.Sprintf("%.1f / %.0f", f2.value, f2.max), "1", 0, "C", true, 0, "")
+				} else {
+					pdf.CellFormat(half, 6, "", "1", 0, "L", true, 0, "")
+				}
+				pdf.Ln(-1)
+			}
+
+			// Total Rating row
+			grade := gradeLabel(ev.OverallScore)
 			switch {
 			case ev.OverallScore >= 90:
 				setFillRGB(success)
-				setTextRGB(white)
 			case ev.OverallScore >= 70:
 				setFillRGB(secondary)
-				setTextRGB(white)
 			default:
 				setFillRGB(warning)
-				setTextRGB(white)
 			}
-			pdf.CellFormat(evalCols[7].w, 6, fmt.Sprintf("%.1f", ev.OverallScore), "1", 0, "C", true, 0, "")
-			pdf.CellFormat(evalCols[8].w, 6, grade, "1", 0, "C", true, 0, "")
-
-			// Reset fill after colored cell
-			if i%2 == 0 {
-				setFillRGB(RGB{248, 250, 252})
-			} else {
-				setFillRGB(white)
-			}
-			setTextRGB(textDark)
+			setTextRGB(white)
+			pdf.SetFont("Helvetica", "B", 8)
+			pdf.CellFormat(contentW*0.65, 7, "TOTAL RATING", "1", 0, "R", true, 0, "")
+			pdf.CellFormat(contentW*0.20, 7, fmt.Sprintf("%.2f / 100", ev.OverallScore), "1", 0, "C", true, 0, "")
+			pdf.CellFormat(contentW*0.15, 7, grade, "1", 0, "C", true, 0, "")
 			pdf.Ln(-1)
 		}
 
-		// Average row
+		// Average overall row
 		avgOverall := round2(sumOverall / float64(len(evaluations)))
 		setFillRGB(primary)
 		setTextRGB(white)
 		pdf.SetFont("Helvetica", "B", 8)
-		pdf.CellFormat(evalCols[0].w+evalCols[1].w+evalCols[2].w+evalCols[3].w+evalCols[4].w+evalCols[5].w+evalCols[6].w,
-			7, "AVERAGE OVERALL SCORE", "1", 0, "R", true, 0, "")
-		pdf.CellFormat(evalCols[7].w, 7, fmt.Sprintf("%.2f", avgOverall), "1", 0, "C", true, 0, "")
-		pdf.CellFormat(evalCols[8].w, 7, gradeLabel(avgOverall), "1", 0, "C", true, 0, "")
+		pdf.Ln(3)
+		pdf.CellFormat(contentW*0.65, 7, "AVERAGE OVERALL SCORE", "1", 0, "R", true, 0, "")
+		pdf.CellFormat(contentW*0.20, 7, fmt.Sprintf("%.2f / 100", avgOverall), "1", 0, "C", true, 0, "")
+		pdf.CellFormat(contentW*0.15, 7, gradeLabel(avgOverall), "1", 0, "C", true, 0, "")
 		pdf.Ln(-1)
 	}
 
-	// Evaluation feedback section
+	// Recommendation section
 	if len(evaluations) > 0 {
 		pdf.Ln(4)
-		sectionHeader("SUPERVISOR FEEDBACK")
+		sectionHeader("RECOMMENDATION FOR THE TRAINEES GROWTH")
 		for _, ev := range evaluations {
-			if ev.Feedback == "" {
+			if ev.Recommendation == "" {
 				continue
 			}
 			setTextRGB(primary)
@@ -432,7 +432,7 @@ func GenerateStudentReport(c *gin.Context) {
 			pdf.CellFormat(contentW, 6, fmt.Sprintf("[%s] — %s", ev.Period, ev.Supervisor.Name), "", 1, "L", false, 0, "")
 			setTextRGB(textDark)
 			pdf.SetFont("Helvetica", "", 8)
-			pdf.MultiCell(contentW, 5, ev.Feedback, "", "L", false)
+			pdf.MultiCell(contentW, 5, ev.Recommendation, "", "L", false)
 			pdf.Ln(2)
 		}
 	}
