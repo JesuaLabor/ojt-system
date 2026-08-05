@@ -79,18 +79,28 @@ type TimeLog struct {
 }
 
 // ─── Evaluation ──────────────────────────────────────────
+// Job Factors follow the official OJT evaluation form.
+// Each score is rated from 0 up to its Max Rating (weighted percentage).
+// OverallScore = sum of all 9 factors (max 100).
 type Evaluation struct {
 	gorm.Model
-	StudentID          uint    `gorm:"not null" json:"student_id"`
-	SupervisorID       uint    `gorm:"not null" json:"supervisor_id"`
-	Period             string  `gorm:"not null" json:"period"`
-	TechnicalScore     float64 `json:"technical_score"`
-	CommunicationScore float64 `json:"communication_score"`
-	PunctualityScore   float64 `json:"punctuality_score"`
-	TeamworkScore      float64 `json:"teamwork_score"`
-	InitiativeScore    float64 `json:"initiative_score"`
-	OverallScore       float64 `json:"overall_score"`
-	Feedback           string  `json:"feedback"`
+	StudentID              uint    `gorm:"not null" json:"student_id"`
+	SupervisorID           uint    `gorm:"not null" json:"supervisor_id"`
+	Period                 string  `gorm:"not null" json:"period"`
+
+	// Job Factors (max rating per factor shown in comments)
+	QualityWorkAccuracy    float64 `json:"quality_work_accuracy"`    // max 20
+	QualityWorkTimeliness  float64 `json:"quality_work_timeliness"`  // max 20
+	Dependability          float64 `json:"dependability"`            // max 10
+	Attendance             float64 `json:"attendance"`               // max 10
+	Cooperation            float64 `json:"cooperation"`              // max 10
+	CompanyRulesObservance float64 `json:"company_rules_observance"` // max 10
+	Personality            float64 `json:"personality"`              // max 5
+	SafetyHousekeeping     float64 `json:"safety_housekeeping"`      // max 10
+	ToolsEquipment         float64 `json:"tools_equipment"`          // max 5
+
+	OverallScore   float64 `json:"overall_score"`  // sum of all factors (max 100)
+	Recommendation string  `json:"recommendation"` // Recommendation For the Trainees Growth
 
 	Student    User `gorm:"foreignKey:StudentID" json:"student,omitempty"`
 	Supervisor User `gorm:"foreignKey:SupervisorID" json:"supervisor,omitempty"`
