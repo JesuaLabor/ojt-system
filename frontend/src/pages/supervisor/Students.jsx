@@ -125,14 +125,15 @@ export default function SupervisorStudents() {
                   <th className="table-head">Student Information</th>
                   <th className="table-head">Company</th>
                   <th className="table-head">Progress</th>
-                  <th className="table-head">Status</th>
+                  <th className="table-head">OJT Status</th>
+                  <th className="table-head">Evaluation</th>
                   <th className="table-head text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800">
                 {filteredStudents.length === 0 ? (
                     <tr>
-                        <td colSpan="5" className="table-cell text-center py-8 text-slate-500">
+                        <td colSpan="6" className="table-cell text-center py-8 text-slate-500">
                             No students match your search.
                         </td>
                     </tr>
@@ -195,19 +196,34 @@ export default function SupervisorStudents() {
                                     )}
                                 </div>
                             </td>
+                            {/* OJT Status */}
                             <td className="table-cell">
-                                <div className="flex flex-col gap-1.5">
-                                    <StatusBadge status={student.status} />
-                                    {student.has_evaluation ? (
-                                        <span className="inline-flex w-fit items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/30">
-                                            ⭐ {student.evaluation_score.toFixed(1)} Evaluated
+                                <StatusBadge status={student.status} />
+                            </td>
+
+                            {/* Evaluation */}
+                            <td className="table-cell">
+                                {student.has_evaluation ? (
+                                    <div className="flex flex-col gap-0.5">
+                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                            <span className="text-sm">⭐</span>
+                                            {student.evaluation_score.toFixed(1)}
+                                            <span className="text-emerald-500/70 font-semibold">/ 100</span>
                                         </span>
-                                    ) : (
-                                        <span className="inline-flex w-fit items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide bg-slate-600/20 text-slate-500 ring-1 ring-slate-600/30">
-                                            ○ Not Yet Evaluated
+                                        <span className="text-[10px] text-emerald-500/60 font-medium pl-0.5">
+                                            {student.evaluation_score >= 90 ? 'Outstanding'
+                                                : student.evaluation_score >= 80 ? 'Very Satisfactory'
+                                                : student.evaluation_score >= 70 ? 'Satisfactory'
+                                                : student.evaluation_score >= 60 ? 'Fairly Satisfactory'
+                                                : 'Needs Improvement'}
                                         </span>
-                                    )}
-                                </div>
+                                    </div>
+                                ) : (
+                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-800 text-slate-500 border border-slate-700/50">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-slate-600"></span>
+                                        Pending
+                                    </span>
+                                )}
                             </td>
                             <td className="table-cell text-right">
                                 <div className="flex items-center justify-end gap-2">
