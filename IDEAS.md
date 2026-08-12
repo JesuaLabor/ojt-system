@@ -3,11 +3,11 @@
 Based on the current state of the system, which already features a premium UI, robust biometric verification, and advanced filtering, here are several high-impact features and improvements to take the platform to the next level.
 
 ## 1. Attendance & Accountability
-### 🚨 Absence & Inactivity Monitoring (New!)
+### 🚨 Absence & Inactivity Monitoring (Implemented! ✅)
 *   **Feature:** Automatically flag students who haven't logged time in a specified period (e.g., 3+ days).
-*   **Implementation:** 
-    *   Backend: Calculate `days_since_last_log` in the student list API.
-    *   Frontend: Add "Risk Levels" (Normal, Warning, Danger) with color-coded badges and a "Students at Risk" dashboard card.
+*   **Implementation:**
+    *   Backend: `days_inactive` is calculated per student in the coordinator and faculty student list APIs. Students with ≥ 3 days of inactivity are counted as `at_risk_students`.
+    *   Frontend: `AttendanceBadge` component displays color-coded inactivity badges on the Students and Overview pages for Coordinators and Faculty. An "Attendance Risk" stat card on the dashboard shows the total count.
 *   **Value:** Proactively identifies potential dropouts or issues at the workplace before they become major problems.
 
 ### 📍 Geofencing for Time Logs
@@ -32,12 +32,18 @@ Based on the current state of the system, which already features a premium UI, r
 *   **Value:** Instant gratification for students and less manual work for coordinators.
 
 ## 3. Communication & Engagement
-### 📢 Announcement System
+### 📢 Announcement System (Implemented! ✅)
 *   **Feature:** A dedicated space for Coordinators and Supervisors to post announcements (e.g., deadlines, holiday schedules, seminar invites).
+*   **Implementation:**
+    *   Backend: `Announcement` model with `GET/POST/DELETE /api/announcements` endpoints. Target filtering (`all`, `students`, `supervisors`) per role.
+    *   Frontend: Shared `Announcements.jsx` page accessible to all roles via sidebar. Coordinators, Supervisors, and Faculty can post and delete; Students are read-only.
 *   **Value:** Keeps students informed without relying on external messaging apps.
 
-### 💬 Direct Messaging (Lightweight)
+### 💬 Direct Messaging (Implemented! ✅)
 *   **Feature:** Simple chat or inquiry system between Students and their assigned Supervisor/Coordinator.
+*   **Implementation:**
+    *   Backend: `Message` model with contacts list, conversation history, send, unread count, and reaction endpoints. File uploads (images & documents) via Cloudinary.
+    *   Frontend: Full-featured `Messages.jsx` chat UI with real-time WebSocket delivery, typing indicators, read receipts, emoji reactions, file/image sharing, online status, and in-chat search.
 *   **Value:** Streamlines communication for quick questions regarding logs or tasks.
 
 ## 4. Compliance & Qualitative Data
