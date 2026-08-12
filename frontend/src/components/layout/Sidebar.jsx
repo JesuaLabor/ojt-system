@@ -83,7 +83,7 @@ const ROLE_META = {
     admin: { label: 'System Admin', color: 'text-rose-400', dot: 'bg-rose-400' },
 }
 
-export default function Sidebar({ open, onClose }) {
+export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }) {
     const { user, logout } = useAuthStore()
     const navigate = useNavigate()
     const links = NAV[user?.role] || []
@@ -151,12 +151,18 @@ export default function Sidebar({ open, onClose }) {
                 />
             )}
 
-            {/* Sidebar panel */}
+            {/* Sidebar panel (Navigation Drawer) */}
             <aside
-                className={`sidebar ${open ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}
+                className={`sidebar ${
+                    open ? 'translate-x-0' : '-translate-x-full'
+                } md:translate-x-0 ${
+                    collapsed ? 'md:w-[72px]' : 'md:w-[260px]'
+                }`}
             >
                 {/* Logo / Brand */}
-                <div className="flex items-center gap-3 px-5 py-5 border-b border-slate-800">
+                <div className={`flex items-center gap-3 py-5 border-b border-slate-800 transition-all ${
+                    collapsed ? 'px-4 justify-center' : 'px-5'
+                }`}>
                     <div className="w-10 h-10 rounded-xl bg-white/10 p-0.5 flex items-center justify-center flex-shrink-0 shadow-lg shadow-teal-900/20">
                         <img
                             src={logo}
@@ -164,23 +170,25 @@ export default function Sidebar({ open, onClose }) {
                             className="w-full h-full object-cover rounded-lg"
                         />
                     </div>
-                    <div className="flex-1 min-w-0">
+                    <div className={`flex-1 min-w-0 ${collapsed ? 'md:hidden' : 'block'}`}>
                         <p className="text-sm font-bold text-white leading-none">OJT Tracker</p>
                         <p className="text-xs text-slate-500 mt-0.5">Performance Monitor</p>
                     </div>
-                    {/* Close on mobile */}
+                    {/* Close button on mobile */}
                     <button
                         onClick={onClose}
                         className="md:hidden w-7 h-7 flex items-center justify-center rounded-lg
-                       text-slate-500 hover:text-white hover:bg-slate-800 transition-colors"
+                       text-slate-500 hover:text-white hover:bg-slate-800 transition-colors ml-auto"
                     >
                         <IconX className="w-4 h-4" />
                     </button>
                 </div>
 
                 {/* User info strip */}
-                <div className="px-4 py-3 mx-3 mt-3 rounded-xl bg-slate-800/60 border border-slate-700/50">
-                    <div className="flex items-center gap-2.5">
+                <div className={`mt-3 rounded-xl bg-slate-800/60 border border-slate-700/50 transition-all ${
+                    collapsed ? 'mx-2 p-2 flex justify-center' : 'mx-3 px-4 py-3'
+                }`}>
+                    <div className="flex items-center gap-2.5" title={`${user?.name} (${meta.label})`}>
                         {user?.profile_photo ? (
                             <img
                                 src={user.profile_photo}
@@ -195,7 +203,7 @@ export default function Sidebar({ open, onClose }) {
                                 </span>
                             </div>
                         )}
-                        <div className="min-w-0 flex-1">
+                        <div className={`min-w-0 flex-1 ${collapsed ? 'md:hidden' : 'block'}`}>
                             <p className="text-xs font-semibold text-white truncate">{user?.name}</p>
                             <div className="flex items-center gap-1 mt-0.5">
                                 <span className={`w-1.5 h-1.5 rounded-full ${meta.dot}`} />
@@ -206,37 +214,62 @@ export default function Sidebar({ open, onClose }) {
                 </div>
 
                 {/* Nav links */}
-                <nav className="flex-1 overflow-y-auto py-3 px-3 space-y-0.5">
-                    <p className="section-label">Navigation</p>
+                <nav className="flex-1 overflow-y-auto py-3 px-3 space-y-1">
+                    <p className={`section-label ${collapsed ? 'md:hidden' : 'block'}`}>Navigation</p>
                     {links.map(({ to, label, icon: Icon, badgeKey }) => (
                         <NavLink
                             key={to}
                             to={to}
                             end={to === `/${user?.role}`} /* exact match for dashboard root */
-                            className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                            title={label}
+                            className={({ isActive }) => `nav-link relative ${isActive ? 'active' : ''} ${
+                                collapsed ? 'md:justify-center md:px-0 md:py-3' : ''
+                            }`}
                             onClick={onClose}
                         >
                             <Icon className="icon" />
-                            <span className="flex-1">{label}</span>
+                            <span className={`flex-1 ${collapsed ? 'md:hidden' : 'block'}`}>{label}</span>
                             {badgeKey && badges[badgeKey] > 0 && (
-                                <span className="ml-auto min-w-[20px] h-5 px-1.5 rounded-full bg-amber-500
+                                <span className={`min-w-[20px] h-5 px-1.5 rounded-full bg-amber-500
                                     text-white text-[10px] font-bold flex items-center justify-center
-                                    shadow-lg shadow-amber-900/50 animate-pulse">
-                                    {badges[badgeKey]}
+                                    shadow-lg shadow-amber-900/50 animate-pulse ${
+                                        collapsed ? 'ml-auto md:absolute md:top-1 md:right-1 md:w-2.5 md:h-2.5 md:min-w-0 md:p-0 md:rounded-full' : 'ml-auto'
+                                    }`}>
+                                    <span className={collapsed ? 'md:hidden' : 'block'}>{badges[badgeKey]}</span>
                                 </span>
                             )}
                         </NavLink>
                     ))}
                 </nav>
 
-                {/* Logout */}
-                <div className="px-3 py-4 border-t border-slate-800">
+                {/* Footer Controls */}
+                <div className="px-3 py-3 border-t border-slate-800 space-y-1">
+                    {/* Desktop Collapse Toggle */}
+                    <button
+                        onClick={onToggleCollapse}
+                        className={`hidden md:flex nav-link w-full text-slate-400 hover:text-white hover:bg-slate-800/80 transition-colors ${
+                            collapsed ? 'justify-center' : ''
+                        }`}
+                        title={collapsed ? "Expand Navigation Drawer" : "Collapse Navigation Drawer"}
+                    >
+                        <svg className={`w-4 h-4 transition-transform duration-300 ${collapsed ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                        </svg>
+                        <span className={`flex-1 text-left ${collapsed ? 'md:hidden' : 'block'}`}>
+                            Collapse Drawer
+                        </span>
+                    </button>
+
+                    {/* Logout */}
                     <button
                         onClick={handleLogout}
-                        className="nav-link w-full text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                        title="Sign Out"
+                        className={`nav-link w-full text-red-400 hover:text-red-300 hover:bg-red-500/10 ${
+                            collapsed ? 'md:justify-center' : ''
+                        }`}
                     >
                         <IconLogout className="icon" />
-                        <span>Sign Out</span>
+                        <span className={collapsed ? 'md:hidden' : 'block'}>Sign Out</span>
                     </button>
                 </div>
             </aside>
