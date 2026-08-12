@@ -159,6 +159,18 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }) 
                     collapsed ? 'md:w-[72px]' : 'md:w-[260px]'
                 }`}
             >
+                {/* Sleek Floating Circular Toggle Button (Slack / Linear style) */}
+                <button
+                    onClick={onToggleCollapse}
+                    className="hidden md:flex absolute -right-3.5 top-6 w-7 h-7 items-center justify-center rounded-full bg-slate-800 border border-slate-700 text-slate-400 hover:text-white hover:bg-slate-700 shadow-xl transition-all z-50 cursor-pointer"
+                    title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+                    aria-label="Toggle sidebar collapse"
+                >
+                    <svg className={`w-3.5 h-3.5 transition-transform duration-300 ${collapsed ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
+
                 {/* Logo / Brand */}
                 <div className={`flex items-center gap-3 py-5 border-b border-slate-800 transition-all ${
                     collapsed ? 'px-4 justify-center' : 'px-5'
@@ -243,23 +255,7 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }) 
                 </nav>
 
                 {/* Footer Controls */}
-                <div className="px-3 py-3 border-t border-slate-800 space-y-1">
-                    {/* Desktop Collapse Toggle */}
-                    <button
-                        onClick={onToggleCollapse}
-                        className={`hidden md:flex nav-link w-full text-slate-400 hover:text-white hover:bg-slate-800/80 transition-colors ${
-                            collapsed ? 'justify-center' : ''
-                        }`}
-                        title={collapsed ? "Expand Navigation Drawer" : "Collapse Navigation Drawer"}
-                    >
-                        <svg className={`w-4 h-4 transition-transform duration-300 ${collapsed ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-                        </svg>
-                        <span className={`flex-1 text-left ${collapsed ? 'md:hidden' : 'block'}`}>
-                            Collapse Drawer
-                        </span>
-                    </button>
-
+                <div className="px-3 py-3 border-t border-slate-800">
                     {/* Logout */}
                     <button
                         onClick={handleLogout}

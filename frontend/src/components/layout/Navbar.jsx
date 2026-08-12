@@ -31,7 +31,7 @@ function Breadcrumbs() {
     )
 }
 
-export default function Navbar({ onMenuClick, collapsed, onToggleCollapse }) {
+export default function Navbar({ onMenuClick }) {
     const { user } = useAuthStore()
     const now = new Date()
     const timeStr = now.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' })
@@ -41,7 +41,7 @@ export default function Navbar({ onMenuClick, collapsed, onToggleCollapse }) {
         <header className="sticky top-0 z-20 flex items-center justify-between
                        px-5 py-3.5 bg-slate-950/80 backdrop-blur-md
                        border-b border-slate-800/80">
-            {/* Left: Sidebar Toggle + Breadcrumbs */}
+            {/* Left: Hamburger (Mobile) + Breadcrumbs */}
             <div className="flex items-center gap-3">
                 {/* Mobile Drawer Trigger */}
                 <button
@@ -54,21 +54,6 @@ export default function Navbar({ onMenuClick, collapsed, onToggleCollapse }) {
                 >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                    </svg>
-                </button>
-
-                {/* Desktop Mini-Drawer Collapse Trigger */}
-                <button
-                    id="sidebar-toggle-desktop"
-                    onClick={onToggleCollapse}
-                    className="hidden md:flex w-9 h-9 items-center justify-center rounded-xl
-                     bg-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-700/80
-                     border border-slate-700/50 transition-colors"
-                    aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-                    title={collapsed ? "Expand navigation drawer" : "Collapse navigation drawer"}
-                >
-                    <svg className={`w-5 h-5 transition-transform duration-300 ${collapsed ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
                     </svg>
                 </button>
 
