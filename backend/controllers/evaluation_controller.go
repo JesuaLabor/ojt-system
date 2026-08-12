@@ -118,7 +118,7 @@ func CreateEvaluation(c *gin.Context) {
 	// The supervisor must be assigned to this student via an active OJTAssignment.
 	var assignment models.OJTAssignment
 	if result := config.DB.Where(
-		"student_id = ? AND supervisor_id = ? AND status = 'active'",
+		"student_id = ? AND supervisor_id = ? AND status IN ('active', 'completed')",
 		input.StudentID, supervisorID,
 	).First(&assignment); result.Error != nil {
 		c.JSON(http.StatusForbidden, gin.H{

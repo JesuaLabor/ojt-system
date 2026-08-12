@@ -33,12 +33,15 @@ type User struct {
 // ─── Company ────────────────────────────────────────────
 type Company struct {
 	gorm.Model
-	Name          string `gorm:"not null" json:"name"`
-	Address       string `json:"address"`
-	ContactPerson string `json:"contact_person"`
-	ContactEmail  string `json:"contact_email"`
-	ContactPhone  string `json:"contact_phone"`
-	Status        string `gorm:"type:varchar(20);default:'active'" json:"status"`
+	Name          string  `gorm:"not null" json:"name"`
+	Address       string  `json:"address"`
+	ContactPerson string  `json:"contact_person"`
+	ContactEmail  string  `json:"contact_email"`
+	ContactPhone  string  `json:"contact_phone"`
+	Status        string  `gorm:"type:varchar(20);default:'active'" json:"status"`
+	Latitude      float64 `json:"latitude"`                           // Geofence pin lat (0 = not set)
+	Longitude     float64 `json:"longitude"`                          // Geofence pin lng (0 = not set)
+	GeoRadius     float64 `gorm:"default:200" json:"geo_radius"`       // Allowed radius in metres
 }
 
 // ─── OJT Assignment ─────────────────────────────────────
@@ -53,6 +56,7 @@ type OJTAssignment struct {
 	StartDate     time.Time `json:"start_date"`
 	EndDate       time.Time `json:"end_date"`
 	Status        string    `gorm:"type:varchar(20);default:'active'" json:"status"`
+	WorkMode      string    `gorm:"type:varchar(20);default:'onsite'" json:"work_mode"` // onsite | hybrid | remote
 
 	Student     User       `gorm:"foreignKey:StudentID" json:"student,omitempty"`
 	Department  Department `gorm:"foreignKey:DepartmentID" json:"department,omitempty"`
@@ -74,6 +78,8 @@ type TimeLog struct {
 	ClockOutPhoto     string     `json:"clock_out_photo"`
 	BreakStartedAt    *time.Time `json:"break_started_at"`
 	TotalBreakMinutes int        `gorm:"default:0" json:"total_break_minutes"`
+	ClockInLat        float64    `json:"clock_in_lat"`  // GPS latitude at clock-in (0 = not captured)
+	ClockInLng        float64    `json:"clock_in_lng"`  // GPS longitude at clock-in
 
 	Student User `gorm:"foreignKey:StudentID" json:"student,omitempty"`
 }
@@ -168,4 +174,17 @@ type Message struct {
 
 	Sender   User `gorm:"foreignKey:SenderID" json:"sender,omitempty"`
 	Receiver User `gorm:"foreignKey:ReceiverID" json:"receiver,omitempty"`
+}
+
+// ─── Certificate ──────────────────────────────────────────
+type Certificate struct {
+	gorm.Model
+	StudentID    uint      `gorm:"not null;uniqueIndex" json:"student_id"` // one certificate per student
+	SupervisorID uint      `gorm:"not null" json:"supervisor_id"`
+	FileURL      string    `gorm:"not null" json:"file_url"`    // Cloudinary URL
+	FileName     string    `json:"file_name"`                   // Original file name for display
+	IssuedAt     time.Time `gorm:"not null" json:"issued_at"`
+
+	Student    User `gorm:"foreignKey:StudentID" json:"student,omitempty"`
+	Supervisor User `gorm:"foreignKey:SupervisorID" json:"supervisor,omitempty"`
 }

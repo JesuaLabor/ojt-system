@@ -6,10 +6,25 @@ import (
 	"net/http"
 	"ojt-system/config"
 	"ojt-system/models"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 )
+
+// haversineDistance returns the distance in metres between two lat/lng points.
+func haversineDistance(lat1, lng1, lat2, lng2 float64) float64 {
+	const R = 6371000 // Earth radius in metres
+	phi1 := lat1 * math.Pi / 180
+	phi2 := lat2 * math.Pi / 180
+	dphi := (lat2 - lat1) * math.Pi / 180
+	dlambda := (lng2 - lng1) * math.Pi / 180
+	a := math.Sin(dphi/2)*math.Sin(dphi/2) +
+		math.Cos(phi1)*math.Cos(phi2)*math.Sin(dlambda/2)*math.Sin(dlambda/2)
+	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
+	return R * c
+}
 
 // ─── Input Structs ────────────────────────────────────────────────────────────
 
@@ -146,11 +161,57 @@ func ClockIn(c *gin.Context) {
 		return
 	}
 
+	// ── Geofence check ───────────────────────────────────────────────────────
+	// 1. Get student's assignment and work mode
+	var assignment models.OJTAssignment
+	hasAssignment := config.DB.Where("student_id = ? AND status = 'active'", userID).First(&assignment).Error == nil
+
+	var clockInLat, clockInLng float64
+	latStr := c.PostForm("latitude")
+	lngStr := c.PostForm("longitude")
+	if latStr != "" && lngStr != "" {
+		clockInLat, _ = strconv.ParseFloat(latStr, 64)
+		clockInLng, _ = strconv.ParseFloat(lngStr, 64)
+	}
+
+	if hasAssignment && assignment.WorkMode != "remote" {
+		// Look up the company by name (case-insensitive)
+		var company models.Company
+		companyFound := config.DB.Where("LOWER(name) = LOWER(?)", strings.TrimSpace(assignment.CompanyName)).First(&company).Error == nil
+
+		if companyFound && company.Latitude != 0 && company.Longitude != 0 {
+			if clockInLat == 0 && clockInLng == 0 {
+				// No GPS sent by client
+				if assignment.WorkMode == "onsite" {
+					c.JSON(http.StatusForbidden, gin.H{"error": "Location access is required to clock in. Please enable GPS on your device."})
+					return
+				}
+				// hybrid with no GPS — allow but no distance to log
+			} else {
+				distance := haversineDistance(clockInLat, clockInLng, company.Latitude, company.Longitude)
+				radius := company.GeoRadius
+				if radius <= 0 {
+					radius = 200
+				}
+				if assignment.WorkMode == "onsite" && distance > radius {
+					c.JSON(http.StatusForbidden, gin.H{
+						"error": fmt.Sprintf("You are %.0fm away from %s. You must be within %.0fm to clock in.", distance, company.Name, radius),
+					})
+					return
+				}
+				// hybrid — just note the distance in remarks silently (don't block)
+			}
+		}
+	}
+	// ── End geofence check ───────────────────────────────────────────────────
+
 	entry := models.TimeLog{
 		StudentID:    userID.(uint),
 		ClockIn:      time.Now(),
 		Status:       "pending",
 		ClockInPhoto: photoURL,
+		ClockInLat:   clockInLat,
+		ClockInLng:   clockInLng,
 	}
 
 	if result := config.DB.Create(&entry); result.Error != nil {
@@ -245,6 +306,7 @@ func GetMyTimeLogs(c *gin.Context) {
 		"logs":           logs,
 		"required_hours": requiredHours,
 		"has_assignment": hasAssignment,
+		"work_mode":      assignment.WorkMode,
 	})
 }
 

@@ -47,6 +47,7 @@ export default function TimeLogs() {
     const [logs, setLogs] = useState([])
     const [loading, setLoading] = useState(true)
     const [hasAssignment, setHasAssignment] = useState(true)
+    const [workMode, setWorkMode] = useState('onsite') // onsite | hybrid | remote
     const [activeLog, setActiveLog] = useState(null)
     const [elapsed, setElapsed] = useState(0)
     const [clockBusy, setClockBusy] = useState(false)
@@ -69,6 +70,7 @@ export default function TimeLogs() {
             const all = res.data?.logs || []
             setLogs(all)
             setHasAssignment(res.data?.has_assignment ?? true)
+            setWorkMode(res.data?.work_mode || 'onsite')
             const active = all.find(l => !l.clock_out && l.status === 'pending') || null
             setActiveLog(active)
             return active
@@ -117,11 +119,36 @@ export default function TimeLogs() {
         return new File([u8arr], filename, { type: mime });
     }
 
+    // Helper: get GPS position as a Promise
+    const getGPS = () => new Promise((resolve) => {
+        if (!navigator.geolocation) { resolve(null); return }
+        navigator.geolocation.getCurrentPosition(
+            pos => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+            () => resolve(null),
+            { timeout: 10000, maximumAge: 0 }
+        )
+    })
+
     const handleClockIn = async (photoData) => {
         setClockBusy(true)
         try {
             const formData = new FormData()
             if (photoData) formData.append('photo', dataURLtoFile(photoData, 'clockin.jpg'))
+
+            // GPS capture based on work mode
+            if (workMode !== 'remote') {
+                const gps = await getGPS()
+                if (gps) {
+                    formData.append('latitude', gps.lat)
+                    formData.append('longitude', gps.lng)
+                } else if (workMode === 'onsite') {
+                    toast.error('Location access is required to clock in. Please enable GPS.')
+                    setClockBusy(false)
+                    return
+                }
+                // hybrid with no GPS → proceed without coords
+            }
+
             await api.post('/timelogs/clockin', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
             toast.success('Clocked in successfully! Have a great shift 🚀')
             setShowCamera(false)
@@ -380,7 +407,18 @@ export default function TimeLogs() {
                         </div>
                     )}
 
-                    <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row gap-4 w-full max-w-sm px-6">
+                    {/* Work Mode Badge */}
+                    <div className="flex justify-center mb-2">
+                        <span className={`px-3 py-1 rounded-full text-[11px] font-bold tracking-wider flex items-center gap-1.5 ${
+                            workMode === 'onsite' ? 'bg-blue-500/15 text-blue-400 border border-blue-500/20' :
+                            workMode === 'hybrid' ? 'bg-purple-500/15 text-purple-400 border border-purple-500/20' :
+                            'bg-slate-500/15 text-slate-400 border border-slate-500/20'
+                        }`}>
+                            {workMode === 'onsite' ? '🏢 Onsite' : workMode === 'hybrid' ? '🔀 Hybrid' : '🏠 Remote'}
+                        </span>
+                    </div>
+
+                    <div className="mt-2 sm:mt-4 flex flex-col sm:flex-row gap-4 w-full max-w-sm px-6">
                         {activeLog ? (
                             <>
                                 {activeLog.break_started_at ? (

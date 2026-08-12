@@ -152,7 +152,6 @@ func RegisterRoutes(r *gin.Engine) {
 			messages.GET("/ws", controllers.HandleWS)
 		}
 
-		// ── Supervisor ────────────────────────────────────────────────────────
 		supervisor := protected.Group("/supervisor")
 		supervisor.Use(middleware.RoleMiddleware("supervisor"))
 		{
@@ -241,5 +240,30 @@ func RegisterRoutes(r *gin.Engine) {
 			middleware.RoleMiddleware("coordinator", "admin"),
 			controllers.DeleteDepartment,
 		)
+	}
+
+	// ── Certificates ──────────────────────────────────────────────────────────
+	certs := api.Group("/certificates")
+	{
+		// Supervisor: upload a certificate for a student
+		certs.POST("",
+			middleware.AuthMiddleware(),
+			middleware.RoleMiddleware("supervisor"),
+			controllers.UploadCertificate,
+		) // POST /api/certificates
+
+		// Student: get their own certificate
+		certs.GET("/me",
+			middleware.AuthMiddleware(),
+			middleware.RoleMiddleware("student"),
+			controllers.GetMyCertificate,
+		) // GET /api/certificates/me
+
+		// Supervisor / Coordinator: check a specific student's certificate
+		certs.GET("/student/:student_id",
+			middleware.AuthMiddleware(),
+			middleware.RoleMiddleware("supervisor", "coordinator", "admin"),
+			controllers.GetStudentCertificate,
+		) // GET /api/certificates/student/:student_id
 	}
 }

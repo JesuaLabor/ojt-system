@@ -28,7 +28,8 @@ export default function CoordinatorAssignments() {
         required_hours: 600,
         start_date: format(new Date(), 'yyyy-MM-dd'),
         end_date: format(new Date(new Date().setMonth(new Date().getMonth() + 4)), 'yyyy-MM-dd'),
-        status: 'active'
+        status: 'active',
+        work_mode: 'onsite',
     }
     const [formData, setFormData] = useState(initialForm)
 
@@ -76,7 +77,8 @@ export default function CoordinatorAssignments() {
             required_hours: assignment.required_hours,
             start_date: assignment.start_date.split('T')[0],
             end_date: assignment.end_date.split('T')[0],
-            status: assignment.status
+            status: assignment.status,
+            work_mode: assignment.work_mode || 'onsite',
         })
         setEditAssignment(assignment)
         setShowCreate(true)
@@ -181,9 +183,18 @@ export default function CoordinatorAssignments() {
                                             </div>
                                         </td>
                                         <td>
-                                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${a.status === 'active' ? 'bg-orange-500/15 text-orange-400' : 'bg-slate-500/15 text-slate-400'}`}>
-                                                {a.status}
-                                            </span>
+                                            <div className="flex flex-col gap-1">
+                                                <span className={`inline-flex w-fit px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                                                    a.status === 'active' ? 'bg-orange-500/15 text-orange-400' : 'bg-slate-500/15 text-slate-400'
+                                                }`}>{a.status}</span>
+                                                <span className={`inline-flex w-fit px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                                                    a.work_mode === 'onsite' ? 'bg-blue-500/15 text-blue-400' :
+                                                    a.work_mode === 'hybrid' ? 'bg-purple-500/15 text-purple-400' :
+                                                    'bg-slate-500/15 text-slate-400'
+                                                }`}>
+                                                    {a.work_mode === 'onsite' ? '🏢 Onsite' : a.work_mode === 'hybrid' ? '🔀 Hybrid' : '🏠 Remote'}
+                                                </span>
+                                            </div>
                                         </td>
                                         <td className="text-right">
                                             <div className="flex justify-end items-center gap-2">
@@ -332,19 +343,28 @@ export default function CoordinatorAssignments() {
                                 {editAssignment && (
                                     <div className="input-group pt-2">
                                         <label className="input-label">Status</label>
-                                        <select
-                                            name="status"
-                                            value={formData.status}
-                                            onChange={handleInputChange}
-                                            required
-                                            className="input"
-                                        >
+                                        <select name="status" value={formData.status} onChange={handleInputChange} required className="input">
                                             <option value="active">Active</option>
                                             <option value="withdrawn">Withdrawn</option>
                                             <option value="completed">Completed</option>
                                         </select>
                                     </div>
                                 )}
+
+                                {/* Work Mode */}
+                                <div className="input-group border-t border-slate-800 pt-4">
+                                    <label className="input-label">Work Mode</label>
+                                    <select name="work_mode" value={formData.work_mode} onChange={handleInputChange} className="input">
+                                        <option value="onsite">🏢 Onsite — Geofencing enforced</option>
+                                        <option value="hybrid">🔀 Hybrid — Location logged, never blocked</option>
+                                        <option value="remote">🏠 Remote — No location check</option>
+                                    </select>
+                                    <p className="text-[11px] text-slate-500 mt-1">
+                                        {formData.work_mode === 'onsite' && 'Student must be within the company\'s geofence radius to clock in.'}
+                                        {formData.work_mode === 'hybrid' && 'Student can clock in from anywhere. Location is logged for records.'}
+                                        {formData.work_mode === 'remote' && 'No location check. Student clocks in freely from any location.'}
+                                    </p>
+                                </div>
                             </div>
 
                             <div className="px-6 py-4 border-t border-slate-800 bg-slate-900/50 flex justify-end gap-3">

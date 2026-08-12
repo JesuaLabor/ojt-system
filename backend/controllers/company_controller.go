@@ -9,22 +9,28 @@ import (
 )
 
 type CompanyInput struct {
-	Name          string `json:"name" binding:"required"`
-	Address       string `json:"address"`
-	ContactPerson string `json:"contact_person"`
-	ContactEmail  string `json:"contact_email"`
-	ContactPhone  string `json:"contact_phone"`
-	Status        string `json:"status"`
+	Name          string  `json:"name" binding:"required"`
+	Address       string  `json:"address"`
+	ContactPerson string  `json:"contact_person"`
+	ContactEmail  string  `json:"contact_email"`
+	ContactPhone  string  `json:"contact_phone"`
+	Status        string  `json:"status"`
+	Latitude      float64 `json:"latitude"`
+	Longitude     float64 `json:"longitude"`
+	GeoRadius     float64 `json:"geo_radius"`
 }
 
 type CompanyDetail struct {
-	ID            uint   `json:"id"`
-	Name          string `json:"name"`
-	Address       string `json:"address"`
-	ContactPerson string `json:"contact_person"`
-	ContactEmail  string `json:"contact_email"`
-	ContactPhone  string `json:"contact_phone"`
-	Status        string `json:"status"`
+	ID            uint    `json:"id"`
+	Name          string  `json:"name"`
+	Address       string  `json:"address"`
+	ContactPerson string  `json:"contact_person"`
+	ContactEmail  string  `json:"contact_email"`
+	ContactPhone  string  `json:"contact_phone"`
+	Status        string  `json:"status"`
+	Latitude      float64 `json:"latitude"`
+	Longitude     float64 `json:"longitude"`
+	GeoRadius     float64 `json:"geo_radius"`
 }
 
 // GetCompanies returns all companies
@@ -42,6 +48,9 @@ func GetCompanies(c *gin.Context) {
 			ContactEmail:  comp.ContactEmail,
 			ContactPhone:  comp.ContactPhone,
 			Status:        comp.Status,
+			Latitude:      comp.Latitude,
+			Longitude:     comp.Longitude,
+			GeoRadius:     comp.GeoRadius,
 		})
 	}
 
@@ -63,6 +72,13 @@ func CreateCompany(c *gin.Context) {
 		ContactEmail:  input.ContactEmail,
 		ContactPhone:  input.ContactPhone,
 		Status:        "active",
+		Latitude:      input.Latitude,
+		Longitude:     input.Longitude,
+		GeoRadius:     input.GeoRadius,
+	}
+
+	if input.GeoRadius == 0 {
+		company.GeoRadius = 200 // default 200m
 	}
 
 	if input.Status != "" {
@@ -97,6 +113,11 @@ func UpdateCompany(c *gin.Context) {
 	company.ContactPerson = input.ContactPerson
 	company.ContactEmail = input.ContactEmail
 	company.ContactPhone = input.ContactPhone
+	company.Latitude = input.Latitude
+	company.Longitude = input.Longitude
+	if input.GeoRadius > 0 {
+		company.GeoRadius = input.GeoRadius
+	}
 	if input.Status != "" {
 		company.Status = input.Status
 	}

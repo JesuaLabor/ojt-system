@@ -110,6 +110,7 @@ export default function Overview() {
     const { user } = useAuthStore()
     const [logs, setLogs] = useState([])
     const [evals, setEvals] = useState([])
+    const [cert, setCert] = useState(null)
     const [requiredHours, setRequiredHours] = useState(600)
     const [hasAssignment, setHasAssignment] = useState(true)
     const [loading, setLoading] = useState(true)
@@ -118,14 +119,16 @@ export default function Overview() {
     useEffect(() => {
         const fetchAll = async () => {
             try {
-                const [logsRes, evalsRes] = await Promise.all([
+                const [logsRes, evalsRes, certRes] = await Promise.all([
                     api.get('/timelogs'),
                     api.get('/evaluations/me'),
+                    api.get('/certificates/me'),
                 ])
                 setLogs(logsRes.data?.logs || [])
                 setRequiredHours(logsRes.data?.required_hours || 600)
                 setHasAssignment(logsRes.data?.has_assignment ?? true)
                 setEvals(evalsRes.data?.evaluations || [])
+                setCert(certRes.data?.certificate || null)
             } catch (err) {
                 setError(err.response?.data?.error || err.message || 'Failed to load dashboard data.')
                 console.error(err)
@@ -187,6 +190,34 @@ export default function Overview() {
             {error && (
                 <div className="flex items-center gap-3 bg-red-900/30 border border-red-800 rounded-xl p-4 text-sm text-red-400">
                     <span>⚠️</span> {error}
+                </div>
+            )}
+
+            {/* ── Certificate Banner ───────────────────────────────────────────── */}
+            {cert && (
+                <div className="card bg-gradient-to-r from-amber-900/30 via-slate-900 to-amber-900/20 border-2 border-amber-500/40 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xl shadow-amber-950/30 animate-in fade-in slide-in-from-top-4 duration-300">
+                    <div className="flex items-center gap-4">
+                        <div className="w-14 h-14 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-3xl flex-shrink-0">
+                            🎓
+                        </div>
+                        <div>
+                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-widest bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                                Official Certificate
+                            </span>
+                            <h2 className="text-lg font-black text-white mt-1">Certificate of Completion Issued!</h2>
+                            <p className="text-xs text-slate-300 mt-0.5">
+                                Uploaded by <span className="font-semibold text-amber-300">{cert.supervisor?.name || 'Supervisor'}</span> on {format(new Date(cert.issued_at), 'MMMM d, yyyy')}.
+                            </p>
+                        </div>
+                    </div>
+                    <a
+                        href={cert.file_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black shadow-lg shadow-amber-900/40 whitespace-nowrap text-sm flex items-center gap-2"
+                    >
+                        <span>⬇️</span> Download Certificate (PDF)
+                    </a>
                 </div>
             )}
 

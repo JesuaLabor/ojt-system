@@ -19,6 +19,7 @@ type AssignmentInput struct {
 	RequiredHours float64 `json:"required_hours" binding:"required,min=1"`
 	StartDate     string  `json:"start_date" binding:"required"`
 	EndDate       string  `json:"end_date" binding:"required"`
+	WorkMode      string  `json:"work_mode"` // onsite | hybrid | remote (defaults to onsite)
 }
 
 type AssignmentUpdateInput struct {
@@ -29,6 +30,7 @@ type AssignmentUpdateInput struct {
 	StartDate     *string  `json:"start_date"`
 	EndDate       *string  `json:"end_date"`
 	Status        *string  `json:"status"`
+	WorkMode      *string  `json:"work_mode"`
 }
 
 // ─── GET /api/assignments ──────────────────────────────────────────────────────
@@ -51,6 +53,7 @@ func GetAssignments(c *gin.Context) {
 		StartDate      string  `json:"start_date"`
 		EndDate        string  `json:"end_date"`
 		Status         string  `json:"status"`
+		WorkMode       string  `json:"work_mode"`
 	}
 
 	var results []AssignmentDetail
@@ -77,6 +80,7 @@ func GetAssignments(c *gin.Context) {
 			StartDate:      startDate,
 			EndDate:        endDate,
 			Status:         a.Status,
+			WorkMode:       a.WorkMode,
 		})
 	}
 
@@ -178,6 +182,11 @@ func CreateAssignment(c *gin.Context) {
 	startDate, _ := time.Parse("2006-01-02", input.StartDate)
 	endDate, _ := time.Parse("2006-01-02", input.EndDate)
 
+	workMode := input.WorkMode
+	if workMode == "" {
+		workMode = "onsite"
+	}
+
 	assignment := models.OJTAssignment{
 		StudentID:     input.StudentID,
 		DepartmentID:  input.DepartmentID,
@@ -188,6 +197,7 @@ func CreateAssignment(c *gin.Context) {
 		StartDate:     startDate,
 		EndDate:       endDate,
 		Status:        "active",
+		WorkMode:      workMode,
 	}
 
 	if result := config.DB.Create(&assignment); result.Error != nil {
@@ -229,6 +239,9 @@ func UpdateAssignment(c *gin.Context) {
 	}
 	if input.Status != nil {
 		assignment.Status = *input.Status
+	}
+	if input.WorkMode != nil {
+		assignment.WorkMode = *input.WorkMode
 	}
 	if input.StartDate != nil {
 		parsed, _ := time.Parse("2006-01-02", *input.StartDate)

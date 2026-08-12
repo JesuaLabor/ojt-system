@@ -20,24 +20,44 @@ func GetSupervisorStudents(c *gin.Context) {
 	config.DB.Preload("Student").Where("supervisor_id = ?", userID).Find(&assignments)
 
 	type StudentSummary struct {
-		StudentID      uint    `json:"student_id"`
-		StudentName    string  `json:"student_name"`
-		StudentEmail   string  `json:"student_email"`
-		ProfilePhoto   string  `json:"profile_photo"`
-		CompanyName    string  `json:"company_name"`
-		RequiredHours  float64 `json:"required_hours"`
-		CompletedHours float64 `json:"completed_hours"`
-		PendingHours   float64 `json:"pending_hours"`
-		ProgressPct    float64 `json:"progress_pct"`
-		Status         string  `json:"status"` // On Track, Behind, Completed
-		PendingLogs    int64   `json:"pending_logs"`
-		StartDate      string  `json:"start_date"`
-		EndDate        string  `json:"end_date"`
+		StudentID       uint    `json:"student_id"`
+		StudentName     string  `json:"student_name"`
+		StudentEmail    string  `json:"student_email"`
+		ProfilePhoto    string  `json:"profile_photo"`
+		CompanyName     string  `json:"company_name"`
+		RequiredHours   float64 `json:"required_hours"`
+		CompletedHours  float64 `json:"completed_hours"`
+		PendingHours    float64 `json:"pending_hours"`
+		ProgressPct     float64 `json:"progress_pct"`
+		Status          string  `json:"status"` // On Track, Behind, Completed
+		PendingLogs     int64   `json:"pending_logs"`
+		StartDate       string  `json:"start_date"`
+		EndDate         string  `json:"end_date"`
+		HasCertificate  bool    `json:"has_certificate"`
+		CertificateURL  string  `json:"certificate_url"`
+		HasEvaluation   bool    `json:"has_evaluation"`
+		EvaluationScore float64 `json:"evaluation_score"`
 	}
 
 	var students []StudentSummary
 
 	for _, a := range assignments {
+		// Check certificate
+		var cert models.Certificate
+		hasCert := config.DB.Where("student_id = ?", a.StudentID).First(&cert).Error == nil
+		certURL := ""
+		if hasCert {
+			certURL = cert.FileURL
+		}
+
+		// Check evaluation
+		var eval models.Evaluation
+		hasEval := config.DB.Where("student_id = ?", a.StudentID).First(&eval).Error == nil
+		evalScore := 0.0
+		if hasEval {
+			evalScore = math.Round(eval.OverallScore*100) / 100
+		}
+
 		// Sum approved hours
 		var approvedLogs []models.TimeLog
 		config.DB.Where("student_id = ? AND status = 'approved'", a.StudentID).Find(&approvedLogs)
@@ -89,19 +109,23 @@ func GetSupervisorStudents(c *gin.Context) {
 		}
 
 		students = append(students, StudentSummary{
-			StudentID:      a.StudentID,
-			StudentName:    a.Student.Name,
-			StudentEmail:   a.Student.Email,
-			ProfilePhoto:   a.Student.ProfilePhoto,
-			CompanyName:    a.CompanyName,
-			RequiredHours:  requiredHours,
-			CompletedHours: approvedHours,
-			PendingHours:   pendingHours,
-			ProgressPct:    progress,
-			Status:         status,
-			PendingLogs:    pendingCount,
-			StartDate:      startDate,
-			EndDate:        endDate,
+			StudentID:       a.StudentID,
+			StudentName:     a.Student.Name,
+			StudentEmail:    a.Student.Email,
+			ProfilePhoto:    a.Student.ProfilePhoto,
+			CompanyName:     a.CompanyName,
+			RequiredHours:   requiredHours,
+			CompletedHours:  approvedHours,
+			PendingHours:    pendingHours,
+			ProgressPct:     progress,
+			Status:          status,
+			PendingLogs:     pendingCount,
+			StartDate:       startDate,
+			EndDate:         endDate,
+			HasCertificate:  hasCert,
+			CertificateURL:  certURL,
+			HasEvaluation:   hasEval,
+			EvaluationScore: evalScore,
 		})
 	}
 

@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
+import toast from 'react-hot-toast'
 import api from '../../services/api'
 import Avatar from '../../components/ui/Avatar'
 
@@ -26,7 +28,13 @@ export default function SupervisorStudents() {
   // Search state
   const [searchQuery, setSearchQuery] = useState('')
 
-  useEffect(() => {
+  // Certificate Modal state
+  const [certModalStudent, setCertModalStudent] = useState(null)
+  const [certFile, setCertFile] = useState(null)
+  const [uploadingCert, setUploadingCert] = useState(false)
+
+  const fetchStudents = () => {
+    setLoading(true)
     api.get('/supervisor/students')
       .then(res => setStudents(res.data?.students || []))
       .catch(err => {
@@ -34,12 +42,40 @@ export default function SupervisorStudents() {
         setError('Failed to fetch students.')
       })
       .finally(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    fetchStudents()
   }, [])
 
   const filteredStudents = students.filter(s => 
     s.student_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     s.company_name.toLowerCase().includes(searchQuery.toLowerCase())
   )
+
+  const handleCertSubmit = async (e) => {
+    e.preventDefault()
+    if (!certFile || !certModalStudent) return
+
+    setUploadingCert(true)
+    const formData = new FormData()
+    formData.append('student_id', certModalStudent.student_id)
+    formData.append('pdf', certFile)
+
+    try {
+      await api.post('/certificates', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      toast.success(`Certificate uploaded for ${certModalStudent.student_name}! 📜`)
+      setCertModalStudent(null)
+      setCertFile(null)
+      fetchStudents()
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to upload certificate')
+    } finally {
+      setUploadingCert(false)
+    }
+  }
 
   return (
     <div className="fade-in space-y-6 max-w-7xl pb-10">
@@ -119,7 +155,14 @@ export default function SupervisorStudents() {
                                         className="border border-slate-700/50"
                                     />
                                     <div>
-                                        <p className="font-semibold text-white">{student.student_name}</p>
+                                        <p className="font-semibold text-white flex items-center gap-2">
+                                          {student.student_name}
+                                          {student.has_certificate && (
+                                            <span className="text-[10px] bg-amber-500/15 text-amber-400 border border-amber-500/20 px-1.5 py-0.5 rounded font-bold">
+                                              🎓 Cert Issued
+                                            </span>
+                                          )}
+                                        </p>
                                         <p className="text-xs text-slate-500">{student.student_email}</p>
                                     </div>
                                 </div>
@@ -146,14 +189,25 @@ export default function SupervisorStudents() {
                                         />
                                     </div>
                                     {student.pending_logs > 0 && (
-                                        <p className="text-[10px] text-amber-400 mt-1 mt-1 font-medium animate-pulse">
+                                        <p className="text-[10px] text-amber-400 mt-1 font-medium animate-pulse">
                                             {student.pending_logs} log{student.pending_logs > 1 ? 's' : ''} pending
                                         </p>
                                     )}
                                 </div>
                             </td>
                             <td className="table-cell">
-                                <StatusBadge status={student.status} />
+                                <div className="flex flex-col gap-1.5">
+                                    <StatusBadge status={student.status} />
+                                    {student.has_evaluation ? (
+                                        <span className="inline-flex w-fit items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/30">
+                                            ⭐ {student.evaluation_score.toFixed(1)} Evaluated
+                                        </span>
+                                    ) : (
+                                        <span className="inline-flex w-fit items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide bg-slate-600/20 text-slate-500 ring-1 ring-slate-600/30">
+                                            ○ Not Yet Evaluated
+                                        </span>
+                                    )}
+                                </div>
                             </td>
                             <td className="table-cell text-right">
                                 <div className="flex items-center justify-end gap-2">
@@ -165,9 +219,21 @@ export default function SupervisorStudents() {
                                     </button>
                                     <button 
                                         onClick={() => navigate(`/supervisor/evaluations?student=${student.student_id}`)}
-                                        className="btn btn-sm bg-teal-500/10 text-teal-400 hover:bg-teal-500/20"
+                                        className={`btn btn-sm ${
+                                            student.has_evaluation
+                                                ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'
+                                                : 'bg-teal-500/10 text-teal-400 hover:bg-teal-500/20'
+                                        }`}
+                                        title={student.has_evaluation ? `Score: ${student.evaluation_score.toFixed(1)}` : 'Submit evaluation'}
                                     >
-                                        Evaluate
+                                        {student.has_evaluation ? '✓ Evaluated' : 'Evaluate'}
+                                    </button>
+                                    <button
+                                        onClick={() => { setCertModalStudent(student); setCertFile(null) }}
+                                        className={`btn btn-sm ${student.has_certificate ? 'bg-amber-500/10 text-amber-400 hover:bg-amber-500/20' : 'bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20'}`}
+                                        title={student.has_certificate ? "Update Certificate" : "Upload Certificate of Completion"}
+                                    >
+                                        📜 {student.has_certificate ? 'Cert' : 'Upload Cert'}
                                     </button>
                                 </div>
                             </td>
@@ -179,6 +245,60 @@ export default function SupervisorStudents() {
             </table>
           </div>
         </div>
+      )}
+
+      {/* Upload Certificate Modal */}
+      {certModalStudent && createPortal(
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="absolute inset-0" onClick={() => setCertModalStudent(null)} />
+          <div className="flex min-h-full items-center justify-center p-4">
+            <form onSubmit={handleCertSubmit} className="relative bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-md animate-in zoom-in-95 duration-200 my-4 overflow-hidden">
+              <div className="px-6 py-5 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
+                <div>
+                  <h2 className="text-lg font-bold text-white">📜 Upload Certificate of Completion</h2>
+                  <p className="text-xs text-slate-400 mt-0.5">For {certModalStudent.student_name}</p>
+                </div>
+                <button type="button" onClick={() => setCertModalStudent(null)} className="text-slate-500 hover:text-white transition">✕</button>
+              </div>
+
+              <div className="p-6 space-y-4">
+                <p className="text-xs text-slate-400">
+                  Select your company's official Certificate of Completion (PDF format). The student will be notified and can download it directly from their dashboard.
+                </p>
+
+                {certModalStudent.has_certificate && (
+                  <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-xs text-amber-400 flex items-center justify-between">
+                    <span>⚠️ Certificate already issued for this student. Uploading a new PDF will replace it.</span>
+                    <a href={certModalStudent.certificate_url} target="_blank" rel="noopener noreferrer" className="underline font-bold whitespace-nowrap ml-2">View Existing</a>
+                  </div>
+                )}
+
+                <div className="input-group">
+                  <label className="input-label">Certificate PDF File</label>
+                  <input
+                    type="file"
+                    accept=".pdf,application/pdf"
+                    required
+                    onChange={(e) => setCertFile(e.target.files[0] || null)}
+                    className="input text-sm text-slate-300 file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-500/10 file:text-amber-400 hover:file:bg-amber-500/20"
+                  />
+                  {certFile && (
+                    <p className="text-[11px] text-emerald-400 mt-1">✓ Selected: {certFile.name} ({(certFile.size / 1024 / 1024).toFixed(2)} MB)</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="px-6 py-4 border-t border-slate-800 bg-slate-900/50 flex justify-end gap-3">
+                <button type="button" onClick={() => setCertModalStudent(null)} className="btn btn-ghost text-sm">Cancel</button>
+                <button type="submit" disabled={uploadingCert || !certFile} className="btn bg-amber-600 hover:bg-amber-500 text-white text-sm font-semibold">
+                  {uploadingCert ? <span className="spinner w-4 h-4 mr-2" /> : null}
+                  {uploadingCert ? 'Uploading...' : 'Upload & Issue'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>,
+        document.body
       )}
     </div>
   )

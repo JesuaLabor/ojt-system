@@ -10,12 +10,12 @@ Based on the current state of the system, which already features a premium UI, r
     *   Frontend: `AttendanceBadge` component displays color-coded inactivity badges on the Students and Overview pages for Coordinators and Faculty. An "Attendance Risk" stat card on the dashboard shows the total count.
 *   **Value:** Proactively identifies potential dropouts or issues at the workplace before they become major problems.
 
-### 📍 Geofencing for Time Logs
+### 📍 Geofencing for Time Logs (Implemented! ✅)
 *   **Feature:** Verify that students are physically at the company location when they clock in/out.
-*   **Implementation:** 
-    *   Use the browser's Geolocation API to capture coordinates.
-    *   Compare coordinates with the Company's stored location (with a configurable radius, e.g., 200m).
-*   **Value:** Prevents "remote" clock-ins from unauthorized locations.
+*   **Implementation:**
+    *   Backend: Added `Latitude`, `Longitude`, `GeoRadius` to the `Company` model. Added `WorkMode` (`onsite` | `hybrid` | `remote`) to `OJTAssignment` and `ClockInLat`/`ClockInLng` to `TimeLog` for audit. `ClockIn` controller runs a **Haversine** distance check — onsite students are hard-blocked if outside the radius, hybrid students are logged but never blocked, remote students skip GPS entirely.
+    *   Frontend: Coordinators set a company pin via a **Leaflet + OpenStreetMap** map picker (click-to-pin, radius slider with circle overlay) inside the Companies modal. Assignments form has a **Work Mode dropdown** (🏢 Onsite / 🔀 Hybrid / 🏠 Remote) with contextual hints. Students see their current work mode badge on the clock-in card; GPS is silently captured before the photo is submitted.
+*   **Value:** Prevents "remote" clock-ins from unauthorized locations, while accommodating hybrid and fully remote arrangements per student.
 
 ## 2. Automation & Reporting
 ### 📜 Automated Daily Time Record (DTR) PDF (Implemented! ✅)
@@ -24,12 +24,12 @@ Based on the current state of the system, which already features a premium UI, r
     *   Added a "Download DTR" button in the Time Logs page that uses `jspdf` and `jspdf-autotable` to compile approved logs into a standard PDF template with signature lines.
 *   **Value:** Saves students hours of manual formatting and ensures data accuracy for school requirements.
 
-### 📜 Automated Certificate Generation
-*   **Feature:** Auto-generate a professional PDF "Certificate of Completion" once the student hits 100% progress.
-*   **Implementation:** 
-    *   Backend logic to verify all requirements (Hours + Documents + Evaluations).
-    *   PDF generation using a library like `gofpdf` (Go) or a frontend library like `jsPDF`.
-*   **Value:** Instant gratification for students and less manual work for coordinators.
+### 📜 Certificate of Completion PDF (Implemented! ✅)
+*   **Feature:** Allows company supervisors to issue and send official company Certificate of Completion PDFs directly to students upon finishing their OJT.
+*   **Implementation:**
+    *   Backend: Added `Certificate` model (`StudentID`, `SupervisorID`, `FileURL`, `FileName`, `IssuedAt`). Added supervisor upload endpoint `POST /api/certificates` (saves PDF to Cloudinary under `ojt-system/certificates` as raw resource and creates student notification) and retrieval endpoints (`GET /api/certificates/me`, `GET /api/certificates/student/:student_id`).
+    *   Frontend: Added **📜 Upload Cert** modal in `SupervisorStudents.jsx` allowing supervisors to select and upload custom company PDF certificates for their assigned students. Added a premium **Certificate of Completion Banner** on `Overview.jsx` (Student Dashboard) with direct PDF download button.
+*   **Value:** Respects each company's unique branding, logos, and official letterheads while providing instant, secure digital delivery to students.
 
 ## 3. Communication & Engagement
 ### 📢 Announcement System (Implemented! ✅)
@@ -55,8 +55,12 @@ Based on the current state of the system, which already features a premium UI, r
 *   **Value:** Provides qualitative data on student progress beyond just hours rendered.
 
 ## 5. UI/UX & Platform
-### 📱 Progressive Web App (PWA) Support
+### 📱 Progressive Web App (PWA) Support (Implemented! ✅)
 *   **Feature:** Allow students to "Install" the app on their phone for easier access to the camera for clocking in.
+*   **Implementation:**
+    *   Configured via `vite-plugin-pwa` with a full service worker and web manifest.
+    *   `InstallPrompt.jsx` component detects the `beforeinstallprompt` event and shows a custom install banner.
+    *   Merged via the `feat/added_pwa` branch into `demo`.
 *   **Value:** Provides a native-app feel and easier access for daily clock-ins.
 
 ---

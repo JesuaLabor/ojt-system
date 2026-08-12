@@ -57,6 +57,7 @@ func MigrateDB() {
 		&models.Journal{},
 		&models.Announcement{},
 		&models.Message{},
+		&models.Certificate{},
 	)
 	log.Println("Database migrated successfully")
 	seedAdmin()
