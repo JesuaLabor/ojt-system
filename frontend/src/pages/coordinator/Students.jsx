@@ -2,313 +2,375 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../../services/api'
 
-// ── Status Badge ──────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 function StatusBadge({ status }) {
     const map = {
-        'On Track': 'bg-teal-500/15 text-teal-400 ring-1 ring-teal-500/30',
-        'Behind': 'bg-amber-500/15 text-amber-400 ring-1 ring-amber-500/30',
-        'Completed': 'bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/30',
+        'On Track': { cls: 'bg-teal-500/15 text-teal-400 ring-1 ring-teal-500/30', icon: '●' },
+        'Behind':   { cls: 'bg-amber-500/15 text-amber-400 ring-1 ring-amber-500/30', icon: '●' },
+        'Completed':{ cls: 'bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/30', icon: '✓' },
     }
+    const { cls, icon } = map[status] || { cls: 'bg-slate-500/15 text-slate-400', icon: '●' }
     return (
-        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wide ${map[status] || 'bg-slate-500/15 text-slate-400'}`}>
-            {status === 'Completed' && '✓ '}{status}
+        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wide ${cls}`}>
+            <span className="text-[10px]">{icon}</span>
+            {status}
         </span>
     )
 }
 
-function AttendanceBadge({ days }) {
+function ActivityDot({ days }) {
     if (days === 0) return (
-        <div className="flex flex-col">
-            <span className="text-[10px] font-bold text-teal-400 uppercase tracking-tight">Active</span>
-            <span className="text-[9px] text-slate-500 italic">Today</span>
+        <span className="inline-flex items-center gap-1 text-teal-400 text-xs font-semibold">
+            <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse"></span> Today
+        </span>
+    )
+    if (days >= 5) return (
+        <span className="inline-flex items-center gap-1 text-red-400 text-xs font-semibold">
+            <span className="w-2 h-2 rounded-full bg-red-400"></span> {days}d ago
+        </span>
+    )
+    if (days >= 3) return (
+        <span className="inline-flex items-center gap-1 text-amber-400 text-xs font-semibold">
+            <span className="w-2 h-2 rounded-full bg-amber-400"></span> {days}d ago
+        </span>
+    )
+    return (
+        <span className="inline-flex items-center gap-1 text-slate-400 text-xs">
+            <span className="w-2 h-2 rounded-full bg-slate-500"></span> {days}d ago
+        </span>
+    )
+}
+
+function EvalBadge({ score, grade }) {
+    if (score > 0) return (
+        <div className="flex flex-col gap-0.5">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <span>⭐</span>{score.toFixed(1)}<span className="text-emerald-500/60 font-semibold text-[10px]">/ 100</span>
+            </span>
+            <span className="text-[10px] text-emerald-500/60 font-medium pl-0.5">{grade}</span>
         </div>
     )
-    
-    let color = 'text-teal-400 bg-teal-500/10'
-    let label = 'Normal'
-    
-    if (days >= 5) {
-        color = 'text-red-400 bg-red-500/10'
-        label = 'Danger'
-    } else if (days >= 3) {
-        color = 'text-amber-400 bg-amber-500/10'
-        label = 'Warning'
-    }
-
     return (
-        <div className="flex flex-col items-start">
-            <span className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-widest ${color}`}>
-                {label}
-            </span>
-            <span className="text-[10px] text-slate-400 mt-0.5 font-medium">
-                {days} {days === 1 ? 'day' : 'days'} inactive
-            </span>
-        </div>
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-800 text-slate-500 border border-slate-700/50">
+            <span className="w-1.5 h-1.5 rounded-full bg-slate-600"></span> Pending
+        </span>
     )
 }
 
 const IconSearch = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
 
+const STAT_CARDS = [
+    { key: 'total_students',   label: 'Total Students', color: 'text-white',        icon: '👥', bg: 'bg-slate-800/60',      border: 'border-slate-700/50' },
+    { key: 'completed_ojt',    label: 'Completed OJT',  color: 'text-emerald-400',  icon: '🎓', bg: 'bg-emerald-900/10',    border: 'border-emerald-800/30' },
+    { key: 'behind_schedule',  label: 'Behind',         color: 'text-amber-400',    icon: '⚠️', bg: 'bg-amber-900/10',      border: 'border-amber-800/30' },
+    { key: 'at_risk_students', label: 'Attendance Risk',color: 'text-red-400',      icon: '🔴', bg: 'bg-red-900/10',        border: 'border-red-800/30' },
+]
+
 export default function CoordinatorStudents() {
-  const navigate = useNavigate()
-  const [students, setStudents] = useState([])
-  const [summary, setSummary] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+    const navigate = useNavigate()
+    const [students, setStudents]   = useState([])
+    const [summary, setSummary]     = useState(null)
+    const [loading, setLoading]     = useState(true)
+    const [error, setError]         = useState(null)
+    const [searchQuery, setSearchQuery]       = useState('')
+    const [selectedDept, setSelectedDept]     = useState('')
+    const [selectedCompany, setSelectedCompany] = useState('')
+    const [evalFilter, setEvalFilter]         = useState('')
+    const [departments, setDepartments]       = useState([])
+    const [companies, setCompanies]           = useState([])
 
-  // Filter state
-  const [searchQuery, setSearchQuery] = useState('')
-  const [selectedDept, setSelectedDept] = useState('')
-  const [selectedCompany, setSelectedCompany] = useState('')
-  const [departments, setDepartments] = useState([])
-  const [companies, setCompanies] = useState([])
+    const fetchStudents = () => {
+        setLoading(true)
+        const params = {}
+        if (selectedDept) params.department_id = selectedDept
+        if (selectedCompany) params.company_name = selectedCompany
+        api.get('/coordinator/students', { params })
+            .then(res => { setStudents(res.data?.students || []); setSummary(res.data?.summary || null) })
+            .catch(() => setError('Failed to fetch students.'))
+            .finally(() => setLoading(false))
+    }
 
-  const fetchStudents = () => {
-    setLoading(true)
-    const params = {}
-    if (selectedDept) params.department_id = selectedDept
-    if (selectedCompany) params.company_name = selectedCompany
+    useEffect(() => { fetchStudents() }, [selectedDept, selectedCompany])
+    useEffect(() => {
+        api.get('/departments').then(res => setDepartments(res.data?.departments || []))
+        api.get('/companies').then(res => setCompanies(res.data?.companies || []))
+    }, [])
 
-    api.get('/coordinator/students', { params })
-      .then(res => {
-         setStudents(res.data?.students || [])
-         setSummary(res.data?.summary || null)
-      })
-      .catch(err => {
-        console.error(err)
-        setError('Failed to fetch students.')
-      })
-      .finally(() => setLoading(false))
-  }
+    const evaluatedCount  = students.filter(s => s.latest_score > 0).length
+    const pendingEvalCount = students.filter(s => !s.latest_score || s.latest_score === 0).length
 
-  // Initial load and filter change
-  useEffect(() => {
-    fetchStudents()
-  }, [selectedDept, selectedCompany])
+    const filteredStudents = students.filter(s => {
+        const q = searchQuery.toLowerCase()
+        const matchSearch = s.student_name.toLowerCase().includes(q) ||
+            s.company_name.toLowerCase().includes(q) ||
+            (s.department_name && s.department_name.toLowerCase().includes(q)) ||
+            (s.supervisor_name && s.supervisor_name.toLowerCase().includes(q))
+        const matchEval = evalFilter === '' ? true
+            : evalFilter === 'evaluated' ? s.latest_score > 0
+            : !s.latest_score || s.latest_score === 0
+        return matchSearch && matchEval
+    })
 
-  // Fetch filter options
-  useEffect(() => {
-    api.get('/departments').then(res => setDepartments(res.data?.departments || []))
-    api.get('/companies').then(res => setCompanies(res.data?.companies || []))
-  }, [])
+    return (
+        <div className="fade-in space-y-6 max-w-7xl pb-10">
 
-  const filteredStudents = students.filter(s => 
-    s.student_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    s.company_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (s.department_name && s.department_name.toLowerCase().includes(searchQuery.toLowerCase())) ||
-    (s.supervisor_name && s.supervisor_name.toLowerCase().includes(searchQuery.toLowerCase()))
-  )
-
-  return (
-    <div className="fade-in space-y-6 max-w-7xl pb-10">
-      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
-        <div className="shrink-0">
-          <h1 className="page-title">Manage Students</h1>
-          <p className="page-sub mt-1">Directory of all active OJT student assignments across the system.</p>
-        </div>
-        
-        {/* Search & Filters */}
-        <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
-            {/* Department Filter */}
-            <select 
-              value={selectedDept} 
-              onChange={(e) => setSelectedDept(e.target.value)}
-              className="input text-xs font-bold bg-slate-900 border-slate-800 w-full sm:w-[180px] h-[42px] shrink-0"
-            >
-              <option value="">All Departments</option>
-              {departments.map(d => (
-                <option key={d.id} value={d.id}>{d.name}</option>
-              ))}
-            </select>
-
-            {/* Company Filter */}
-            <select 
-              value={selectedCompany} 
-              onChange={(e) => setSelectedCompany(e.target.value)}
-              className="input text-xs font-bold bg-slate-900 border-slate-800 w-full sm:w-[180px] h-[42px] shrink-0"
-            >
-              <option value="">All Companies</option>
-              {companies.map(c => (
-                <option key={c.id} value={c.name}>{c.name}</option>
-              ))}
-            </select>
-
-          {/* Search Bar */}
-          <div className="relative flex-1 min-w-[240px]">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
-               <IconSearch />
+            {/* ── Header ──────────────────────────────────────────── */}
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                <div>
+                    <h1 className="page-title">Student Directory</h1>
+                    <p className="page-sub mt-1">All active OJT student assignments across the system.</p>
+                </div>
+                {/* Search */}
+                <div className="relative w-full sm:w-72">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                        <IconSearch />
+                    </div>
+                    <input
+                        type="text"
+                        placeholder="Search students, company, dept…"
+                        value={searchQuery}
+                        onChange={e => setSearchQuery(e.target.value)}
+                        className="input w-full pl-10 h-[42px] text-sm"
+                    />
+                </div>
             </div>
-            <input 
-              type="text"
-              placeholder="Search by student name..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="input w-full pl-10 h-[42px]"
-            />
-          </div>
-        </div>
-      </div>
 
-      {summary && (
-         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <div className="card py-4 bg-slate-900 shadow-none border border-slate-800">
-               <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Total Active</p>
-               <p className="text-2xl font-black text-white">{summary.total_students}</p>
-            </div>
-            <div className="card py-4 bg-emerald-900/10 shadow-none border border-emerald-900/30">
-               <p className="text-[10px] uppercase tracking-wider text-emerald-500 font-bold mb-1">Completed OJT</p>
-               <p className="text-2xl font-black text-emerald-400">{summary.completed_ojt}</p>
-            </div>
-            <div className="card py-4 bg-amber-900/10 shadow-none border border-amber-900/30">
-               <p className="text-[10px] uppercase tracking-wider text-amber-500 font-bold mb-1">Behind Schedule</p>
-               <p className="text-2xl font-black text-amber-400">{summary.behind_schedule}</p>
-            </div>
-            <div className="card py-4 bg-red-900/10 shadow-none border border-red-900/30">
-               <p className="text-[10px] uppercase tracking-wider text-red-500 font-bold mb-1">Attendance Risk</p>
-               <p className="text-2xl font-black text-red-400">{summary.at_risk_students}</p>
-            </div>
-         </div>
-      )}
+            {/* ── Summary Stat Cards ───────────────────────────────── */}
+            {summary && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                    {STAT_CARDS.map(({ key, label, color, icon, bg, border }) => (
+                        <div key={key} className={`rounded-2xl px-4 py-3.5 border ${bg} ${border}`}>
+                            <p className="text-lg mb-0.5">{icon}</p>
+                            <p className={`text-2xl font-black leading-none ${color}`}>{summary[key]}</p>
+                            <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mt-1">{label}</p>
+                        </div>
+                    ))}
 
-      {error ? (
-         <div className="card text-red-400 bg-red-900/10 border-red-900/50">⚠️ {error}</div>
-      ) : loading ? (
-         <div className="card">
-             <div className="animate-pulse space-y-4">
-                 {[1,2,3,4].map(i => (
-                     <div key={i} className="skeleton h-12 w-full rounded" />
-                 ))}
-             </div>
-         </div>
-      ) : students.length === 0 ? (
-         <div className="card text-center py-16">
-            <p className="text-4xl mb-3">👥</p>
-            <p className="text-lg font-semibold text-white">No active students found</p>
-            <p className="text-sm text-slate-500 mt-1">Once assignments are created, they will appear here.</p>
-        </div>
-      ) : (
-        <div className="card p-0 overflow-hidden">
-          <div className="table-wrap border-0 rounded-none">
-            <table className="w-full min-w-[1000px]">
-              <thead>
-                <tr>
-                  <th className="table-head">Student Information</th>
-                  <th className="table-head">Assignment Details</th>
-                  <th className="table-head">Attendance</th>
-                  <th className="table-head">Progress</th>
-                  <th className="table-head">Status</th>
-                  <th className="table-head text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800">
-                {filteredStudents.length === 0 ? (
-                    <tr>
-                        <td colSpan="5" className="table-cell text-center py-8 text-slate-500">
-                            No students match your search.
-                        </td>
-                    </tr>
-                ) : (
-                    filteredStudents.map(student => {
-                        const progressColor = student.progress_pct >= 80 
-                            ? 'from-emerald-500 to-teal-400' 
-                            : student.progress_pct >= 40 
-                                ? 'from-teal-500 to-cyan-400' 
-                                : 'from-amber-500 to-orange-400'
+                    {/* Evaluation stat cards — clickable filter */}
+                    <div
+                        className={`rounded-2xl px-4 py-3.5 border cursor-pointer transition-all select-none ${
+                            evalFilter === 'evaluated'
+                                ? 'bg-indigo-500/20 border-indigo-500/50 ring-1 ring-indigo-400/30 shadow-lg shadow-indigo-900/20'
+                                : 'bg-indigo-900/10 border-indigo-900/30 hover:border-indigo-500/40'
+                        }`}
+                        onClick={() => setEvalFilter(prev => prev === 'evaluated' ? '' : 'evaluated')}
+                        title="Click to filter evaluated students"
+                    >
+                        <p className="text-lg mb-0.5">⭐</p>
+                        <p className="text-2xl font-black leading-none text-indigo-300">{evaluatedCount}</p>
+                        <p className="text-[10px] uppercase tracking-wider text-indigo-400 font-bold mt-1">Evaluated</p>
+                    </div>
+                    <div
+                        className={`rounded-2xl px-4 py-3.5 border cursor-pointer transition-all select-none ${
+                            evalFilter === 'pending'
+                                ? 'bg-orange-500/20 border-orange-500/50 ring-1 ring-orange-400/30 shadow-lg shadow-orange-900/20'
+                                : 'bg-orange-900/10 border-orange-900/30 hover:border-orange-500/40'
+                        }`}
+                        onClick={() => setEvalFilter(prev => prev === 'pending' ? '' : 'pending')}
+                        title="Click to filter students not yet evaluated"
+                    >
+                        <p className="text-lg mb-0.5">○</p>
+                        <p className="text-2xl font-black leading-none text-orange-300">{pendingEvalCount}</p>
+                        <p className="text-[10px] uppercase tracking-wider text-orange-400 font-bold mt-1">Not Evaluated</p>
+                    </div>
+                </div>
+            )}
 
-                        return (
-                        <tr key={student.student_id} className="table-row">
-                            <td className="table-cell">
-                                <div className="flex items-center gap-3">
-                                    {student.profile_photo ? (
-                                        <img 
-                                            src={student.profile_photo} 
-                                            alt="Avatar" 
-                                            className="w-10 h-10 rounded-full object-cover flex-shrink-0 border border-slate-700/50"
-                                        />
-                                    ) : (
-                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600
-                                                flex items-center justify-center flex-shrink-0">
-                                            <span className="text-white text-sm font-bold">
-                                                {student.student_name?.charAt(0).toUpperCase()}
-                                            </span>
-                                        </div>
-                                    )}
-                                    <div>
-                                        <p className="font-semibold text-white">{student.student_name}</p>
-                                        <p className="text-xs text-slate-500">{student.student_email}</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td className="table-cell">
-                                <p className="text-sm text-slate-300 font-medium">{student.company_name}</p>
-                                <p className="text-[10px] text-slate-500 mt-0.5 mb-0.5">
-                                   Dept: <span className="text-slate-400 font-semibold">{student.department_name || 'N/A'}</span>
-                                </p>
-                                <p className="text-[10px] text-slate-500">
-                                   Supervisor: <span className="text-slate-400">{student.supervisor_name || 'Unassigned'}</span>
-                                </p>
-                            </td>
-                            <td className="table-cell">
-                                <AttendanceBadge days={student.days_inactive} />
-                            </td>
-                            <td className="table-cell">
-                                <div className="w-48">
-                                    <div className="flex justify-between text-xs mb-1">
-                                        <span className="text-teal-400 font-medium">{student.completed_hours}h</span>
-                                        <span className="text-slate-500">{student.required_hours}h</span>
-                                    </div>
-                                    <div className="relative h-2 bg-slate-800 rounded-full overflow-hidden">
-                                        {student.pending_hours > 0 && (
-                                            <div 
-                                                className="absolute top-0 left-0 h-full bg-amber-500/30 rounded-full" 
-                                                style={{ width: `${Math.min(100, ((student.completed_hours + student.pending_hours) / student.required_hours) * 100)}%` }}
-                                            />
-                                        )}
-                                        <div 
-                                            className={`h-full rounded-full bg-gradient-to-r ${progressColor}`} 
-                                            style={{ width: `${student.progress_pct}%` }} 
-                                        />
-                                    </div>
-                                    {student.pending_logs > 0 && (
-                                        <p className="text-[10px] text-amber-400 mt-1 font-medium animate-pulse">
-                                            {student.pending_logs} log{student.pending_logs > 1 ? 's' : ''} pending
-                                        </p>
-                                    )}
-                                </div>
-                            </td>
-                            <td className="table-cell">
-                                <div className="flex flex-col gap-1 items-start">
-                                    <StatusBadge status={student.status} />
-                                    {student.latest_grade && (
-                                       <span className="text-[10px] text-slate-400 font-semibold px-2">Grade: {student.latest_grade}</span>
-                                    )}
-                                </div>
-                            </td>
-                            <td className="table-cell text-right">
-                                <div className="flex items-center justify-end gap-2">
-                                    <button 
-                                        onClick={() => navigate(`/coordinator/timelogs?student=${student.student_id}`)}
-                                        className="btn btn-sm btn-ghost"
-                                    >
-                                        Logs
-                                    </button>
-                                    <button 
-                                        onClick={() => navigate(`/coordinator/evaluations?student=${student.student_id}`)}
-                                        className="btn btn-sm bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20"
-                                    >
-                                        Eval
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        )
-                    })
+            {/* ── Filters Row ──────────────────────────────────────── */}
+            <div className="flex flex-wrap items-center gap-3">
+                {/* Dept */}
+                <select
+                    value={selectedDept}
+                    onChange={e => setSelectedDept(e.target.value)}
+                    className="input text-xs bg-slate-900 border-slate-800 h-[38px] w-[170px]"
+                >
+                    <option value="">All Departments</option>
+                    {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                </select>
+
+                {/* Company */}
+                <select
+                    value={selectedCompany}
+                    onChange={e => setSelectedCompany(e.target.value)}
+                    className="input text-xs bg-slate-900 border-slate-800 h-[38px] w-[170px]"
+                >
+                    <option value="">All Companies</option>
+                    {companies.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                </select>
+
+                {/* Evaluation pill-tabs */}
+                <div className="flex items-center gap-1 bg-slate-900 border border-slate-800 rounded-lg p-1 h-[38px]">
+                    {[
+                        { v: '',          label: 'All' },
+                        { v: 'evaluated', label: '⭐ Evaluated' },
+                        { v: 'pending',   label: '○ Pending' },
+                    ].map(({ v, label }) => (
+                        <button
+                            key={v}
+                            onClick={() => setEvalFilter(v)}
+                            className={`px-3 py-1 rounded-md text-xs font-semibold transition-all whitespace-nowrap ${
+                                evalFilter === v
+                                    ? 'bg-indigo-600 text-white shadow-sm'
+                                    : 'text-slate-400 hover:text-white'
+                            }`}
+                        >
+                            {label}
+                        </button>
+                    ))}
+                </div>
+
+                {filteredStudents.length !== students.length && (
+                    <span className="text-xs text-slate-500 italic">
+                        Showing {filteredStudents.length} of {students.length}
+                    </span>
                 )}
-              </tbody>
-            </table>
-          </div>
+            </div>
+
+            {/* ── Table ────────────────────────────────────────────── */}
+            {error ? (
+                <div className="card text-red-400 bg-red-900/10 border-red-900/50">⚠️ {error}</div>
+            ) : loading ? (
+                <div className="card space-y-3">
+                    {[1,2,3,4].map(i => <div key={i} className="animate-pulse skeleton h-14 w-full rounded-xl" />)}
+                </div>
+            ) : students.length === 0 ? (
+                <div className="card text-center py-20">
+                    <p className="text-5xl mb-4">👥</p>
+                    <p className="text-lg font-semibold text-white">No active students found</p>
+                    <p className="text-sm text-slate-500 mt-1">Once assignments are created, they will appear here.</p>
+                </div>
+            ) : (
+                <div className="card p-0 overflow-hidden">
+                    <div className="table-wrap border-0 rounded-none">
+                        <table className="w-full min-w-[900px]">
+                            <thead>
+                                <tr>
+                                    <th className="table-head">Student</th>
+                                    <th className="table-head">Company & Dept</th>
+                                    <th className="table-head">Progress</th>
+                                    <th className="table-head">Activity</th>
+                                    <th className="table-head">OJT Status</th>
+                                    <th className="table-head">Evaluation</th>
+                                    <th className="table-head text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-800/60">
+                                {filteredStudents.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="7" className="table-cell text-center py-10 text-slate-500">
+                                            No students match your filters.
+                                        </td>
+                                    </tr>
+                                ) : filteredStudents.map(student => {
+                                    const pct = student.progress_pct || 0
+                                    const barColor = pct >= 80
+                                        ? 'from-emerald-500 to-teal-400'
+                                        : pct >= 40 ? 'from-teal-500 to-cyan-400' : 'from-amber-500 to-orange-400'
+
+                                    return (
+                                        <tr key={student.student_id} className="table-row group">
+
+                                            {/* Student */}
+                                            <td className="table-cell">
+                                                <div className="flex items-center gap-3">
+                                                    {student.profile_photo ? (
+                                                        <img src={student.profile_photo} alt="" className="w-10 h-10 rounded-full object-cover flex-shrink-0 border-2 border-slate-700/50 group-hover:border-indigo-500/50 transition-colors" />
+                                                    ) : (
+                                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center flex-shrink-0 border-2 border-transparent group-hover:border-indigo-500/50 transition-colors">
+                                                            <span className="text-white text-sm font-bold">{student.student_name?.charAt(0).toUpperCase()}</span>
+                                                        </div>
+                                                    )}
+                                                    <div className="min-w-0">
+                                                        <p className="font-semibold text-white text-sm truncate">{student.student_name}</p>
+                                                        <p className="text-xs text-slate-500 truncate">{student.student_email}</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+
+                                            {/* Company & Dept */}
+                                            <td className="table-cell">
+                                                <p className="text-sm font-semibold text-white truncate max-w-[160px]">{student.company_name}</p>
+                                                <p className="text-[11px] text-slate-500 mt-0.5">
+                                                    <span className="text-slate-400">{student.department_name || '—'}</span>
+                                                    {student.supervisor_name && <span className="text-slate-600"> · {student.supervisor_name}</span>}
+                                                </p>
+                                            </td>
+
+                                            {/* Progress */}
+                                            <td className="table-cell">
+                                                <div className="w-44">
+                                                    <div className="flex justify-between items-center text-xs mb-1.5">
+                                                        <span className="font-bold text-white">{student.completed_hours}h</span>
+                                                        <span className="text-slate-600 text-[10px]">/ {student.required_hours}h</span>
+                                                    </div>
+                                                    <div className="relative h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                                                        {student.pending_hours > 0 && (
+                                                            <div
+                                                                className="absolute inset-y-0 left-0 bg-amber-500/30 rounded-full"
+                                                                style={{ width: `${Math.min(100, ((student.completed_hours + student.pending_hours) / student.required_hours) * 100)}%` }}
+                                                            />
+                                                        )}
+                                                        <div
+                                                            className={`h-full rounded-full bg-gradient-to-r ${barColor}`}
+                                                            style={{ width: `${pct}%` }}
+                                                        />
+                                                    </div>
+                                                    <div className="flex justify-between items-center mt-1">
+                                                        <span className="text-[10px] text-slate-600">{pct}%</span>
+                                                        {student.pending_logs > 0 && (
+                                                            <span className="text-[10px] text-amber-400 font-medium animate-pulse">
+                                                                {student.pending_logs} pending
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </td>
+
+                                            {/* Activity */}
+                                            <td className="table-cell">
+                                                <ActivityDot days={student.days_inactive} />
+                                                <p className="text-[10px] text-slate-600 mt-0.5">{student.last_active || 'Never'}</p>
+                                            </td>
+
+                                            {/* OJT Status */}
+                                            <td className="table-cell">
+                                                <StatusBadge status={student.status} />
+                                            </td>
+
+                                            {/* Evaluation */}
+                                            <td className="table-cell">
+                                                <EvalBadge score={student.latest_score} grade={student.latest_grade} />
+                                            </td>
+
+                                            {/* Actions */}
+                                            <td className="table-cell text-right">
+                                                <div className="flex items-center justify-end gap-2">
+                                                    <button
+                                                        onClick={() => navigate(`/coordinator/timelogs?student=${student.student_id}`)}
+                                                        className="btn btn-sm btn-ghost text-xs"
+                                                    >
+                                                        Logs
+                                                    </button>
+                                                    <button
+                                                        onClick={() => navigate(`/coordinator/evaluations?student=${student.student_id}`)}
+                                                        className={`btn btn-sm text-xs ${
+                                                            student.latest_score > 0
+                                                                ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'
+                                                                : 'bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20'
+                                                        }`}
+                                                    >
+                                                        {student.latest_score > 0 ? '✓ Eval' : 'Eval'}
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
         </div>
-      )}
-    </div>
-  )
+    )
 }
