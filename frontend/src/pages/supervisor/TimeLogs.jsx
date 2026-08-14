@@ -4,8 +4,10 @@ import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 import api from '../../services/api'
 import useAuthStore from '../../store/authStore'
+import useBadgeStore from '../../store/badgeStore'
 
 export default function SupervisorTimeLogs() {
+  const { setBadge, decrement } = useBadgeStore()
   const [searchParams, setSearchParams] = useSearchParams()
   const initialStudentId = searchParams.get('student')
 
@@ -24,15 +26,18 @@ export default function SupervisorTimeLogs() {
   useEffect(() => {
     api.get('/supervisor/students')
       .then(res => {
-        setStudents(res.data?.students || [])
+        const studentList = res.data?.students || []
+        setStudents(studentList)
+        const pendingCount = res.data?.total_pending_approvals || 0
+        setBadge('pendingApprovals', pendingCount)
         // optionally select first student with pending logs if none selected
-        if (!initialStudentId && res.data?.students?.length > 0) {
-          const pendingStd = res.data.students.find(s => s.pending_logs > 0)
-          setSelectedStudent(pendingStd ? pendingStd.student_id : res.data.students[0].student_id)
+        if (!initialStudentId && studentList.length > 0) {
+          const pendingStd = studentList.find(s => s.pending_logs > 0)
+          setSelectedStudent(pendingStd ? pendingStd.student_id : studentList[0].student_id)
         }
       })
       .catch(console.error)
-  }, [initialStudentId])
+  }, [initialStudentId, setBadge])
 
   // Load logs when student changes
   useEffect(() => {
@@ -57,6 +62,7 @@ export default function SupervisorTimeLogs() {
       await api.patch(`/timelogs/${logId}/approve`)
       toast.success('Time log approved')
       setLogs(prev => prev.map(l => l.ID === logId ? { ...l, status: 'approved' } : l))
+      decrement('pendingApprovals')
     } catch (error) {
       toast.error(error.response?.data?.error || 'Failed to approve log')
     }
@@ -73,6 +79,7 @@ export default function SupervisorTimeLogs() {
       setLogs(prev => prev.map(l => l.ID === logId ? { ...l, status: 'rejected', remarks: rejectRemarks } : l))
       setRejectingLogId(null)
       setRejectRemarks('')
+      decrement('pendingApprovals')
     } catch (error) {
       toast.error(error.response?.data?.error || 'Failed to reject log')
     }

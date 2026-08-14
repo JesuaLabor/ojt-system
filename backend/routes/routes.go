@@ -103,6 +103,10 @@ func RegisterRoutes(r *gin.Engine) {
 				middleware.RoleMiddleware("supervisor", "coordinator", "admin"),
 				controllers.GetSupervisorJournals,
 			)
+			journals.GET("/supervisor/pending-count",
+				middleware.RoleMiddleware("supervisor"),
+				controllers.GetPendingJournalsCount,
+			)
 			journals.PATCH("/:id/review",
 				middleware.RoleMiddleware("supervisor"),
 				controllers.ReviewJournal,

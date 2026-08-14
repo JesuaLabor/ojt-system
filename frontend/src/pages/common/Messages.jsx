@@ -3,10 +3,12 @@ import { format, formatDistanceToNow } from 'date-fns'
 import toast from 'react-hot-toast'
 import api from '../../services/api'
 import useAuthStore from '../../store/authStore'
+import useBadgeStore from '../../store/badgeStore'
 import { useSocket } from '../../context/SocketContext'
 
 export default function Messages() {
     const { user } = useAuthStore()
+    const { clear, setBadge } = useBadgeStore()
     const [contacts, setContacts] = useState([])
     const [activeContact, setActiveContact] = useState(null)
     const [messages, setMessages] = useState([])
@@ -109,6 +111,8 @@ export default function Messages() {
 
     useEffect(() => {
         fetchContacts()
+        // Clear badge immediately when user opens the Messages page
+        clear('unreadMessages')
     }, [])
 
     useEffect(() => {
@@ -129,6 +133,10 @@ export default function Messages() {
             const res = await api.get(`/messages/conversation/${contactId}`)
             setMessages(res.data.messages || [])
             fetchContacts(true)
+            // Re-sync unread count after opening a conversation (backend marks as read)
+            api.get('/messages/unread')
+                .then(r => setBadge('unreadMessages', r.data?.unread_count || 0))
+                .catch(() => {})
         } catch (err) {
             toast.error('Failed to load conversation')
         } finally {

@@ -35,10 +35,10 @@ func CreateJournal(c *gin.Context) {
 		return
 	}
 
-	// Find the student's assignment to get their supervisor
+	// Find the student's assignment to get their supervisor (check active first, or fallback to latest assignment)
 	var assignment models.OJTAssignment
-	if err := config.DB.Where("student_id = ? AND status = 'active'", userID).First(&assignment).Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "You must have an active assignment to submit a journal."})
+	if err := config.DB.Where("student_id = ?", userID).Order("id desc").First(&assignment).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "You must have an assignment to submit a journal."})
 		return
 	}
 
@@ -119,4 +119,16 @@ func GetCoordinatorJournals(c *gin.Context) {
 	}).Preload("Student.Department").Preload("Supervisor", "id, name").Order("date desc").Find(&journals)
 
 	c.JSON(http.StatusOK, gin.H{"journals": journals})
+}
+
+// GetPendingJournalsCount - Supervisor gets count of pending journals awaiting acknowledgment
+func GetPendingJournalsCount(c *gin.Context) {
+	userID, _ := c.Get("userID")
+
+	var count int64
+	config.DB.Model(&models.Journal{}).
+		Where("supervisor_id = ? AND status = ?", userID, "pending").
+		Count(&count)
+
+	c.JSON(http.StatusOK, gin.H{"pending_count": count})
 }

@@ -3,10 +3,12 @@ import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 import api from '../../services/api'
 import useAuthStore from '../../store/authStore'
+import useBadgeStore from '../../store/badgeStore'
 import ConfirmModal from '../../components/ui/ConfirmModal'
 
 export default function StaffJournals() {
     const { user } = useAuthStore()
+    const { setBadge, decrement } = useBadgeStore()
     const [journals, setJournals] = useState([])
     const [loading, setLoading] = useState(true)
 
@@ -20,7 +22,12 @@ export default function StaffJournals() {
         try {
             const endpoint = user?.role === 'supervisor' ? '/journals/supervisor' : '/journals/all'
             const res = await api.get(endpoint)
-            setJournals(res.data.journals || [])
+            const journalList = res.data.journals || []
+            setJournals(journalList)
+            if (user?.role === 'supervisor') {
+                const pendingCount = journalList.filter(j => j.status === 'pending').length
+                setBadge('pendingJournals', pendingCount)
+            }
         } catch (err) {
             toast.error('Failed to load journals')
         } finally {
@@ -38,6 +45,7 @@ export default function StaffJournals() {
             toast.success(`Journal ${status}!`)
             setAckJournal(null)
             setFeedback('')
+            decrement('pendingJournals')
             fetchJournals()
         } catch (err) {
             toast.error(err.response?.data?.error || `Failed to review journal`)

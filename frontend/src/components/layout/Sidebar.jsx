@@ -1,7 +1,8 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import useAuthStore from '../../store/authStore'
-import api from '../../services/api'
+import useBadgeStore from '../../store/badgeStore'
+import { useSocket } from '../../context/SocketContext'
 import ConfirmModal from '../ui/ConfirmModal'
 import logo from '../../assets/ojt_logo.png'
 
@@ -23,7 +24,7 @@ const NAV = {
         { to: '/supervisor/messages', label: 'Messages', icon: IconChat, badgeKey: 'unreadMessages' },
         { to: '/supervisor/students', label: 'Students', icon: IconUsers },
         { to: '/supervisor/timelogs', label: 'Time Logs', icon: IconClock, badgeKey: 'pendingApprovals' },
-        { to: '/supervisor/journals', label: 'Journals', icon: IconBook },
+        { to: '/supervisor/journals', label: 'Journals', icon: IconBook, badgeKey: 'pendingJournals' },
         { to: '/supervisor/evaluations', label: 'Evaluations', icon: IconStar },
         { to: '/supervisor/reports', label: 'Reports', icon: IconChart },
         { to: '/supervisor/profile', label: 'My Profile', icon: IconUser },
@@ -88,47 +89,24 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }) 
     const navigate = useNavigate()
     const links = NAV[user?.role] || []
     const meta = ROLE_META[user?.role] || {}
-    const [badges, setBadges] = useState({})
+    const { badges, fetchAll, clear } = useBadgeStore()
+    const socketData = useSocket()
+    const lastEvent = socketData?.lastEvent
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
 
-    // Fetch badges
+    // Fetch all badge counts on mount, then refresh every 15s as a safety net
     useEffect(() => {
-        if (user?.role === 'supervisor') {
-            api.get('/supervisor/students')
-                .then(res => {
-                    setBadges(prev => ({ ...prev, pendingApprovals: res.data?.total_pending_approvals || 0 }))
-                })
-                .catch(() => { })
-        }
-        if (user?.role === 'coordinator' || user?.role === 'admin') {
-            api.get('/coordinator/users/pending')
-                .then(res => {
-                    setBadges(prev => ({ ...prev, pendingUsers: res.data?.users?.length || 0 }))
-                })
-                .catch(() => { })
-        }
-
-        // Fetch unread messages & announcements
-        const fetchUnread = () => {
-            api.get('/messages/unread')
-                .then(res => {
-                    setBadges(prev => ({ ...prev, unreadMessages: res.data?.unread_count || 0 }))
-                })
-                .catch(() => { })
-
-            api.get('/announcements')
-                .then(res => {
-                    const list = res.data?.announcements || []
-                    const lastRead = localStorage.getItem(`announcements_last_read_${user?.id}`)
-                    const unread = list.filter(a => !lastRead || new Date(a.CreatedAt) > new Date(lastRead)).length
-                    setBadges(prev => ({ ...prev, unreadAnnouncements: unread }))
-                })
-                .catch(() => { })
-        }
-        fetchUnread()
-        const interval = setInterval(fetchUnread, 15000) // Poll every 15s
+        fetchAll(user)
+        const interval = setInterval(() => fetchAll(user), 15000)
         return () => clearInterval(interval)
     }, [user?.role, user?.id])
+
+    // Re-fetch badge counts immediately whenever a real-time WebSocket event arrives
+    useEffect(() => {
+        if (lastEvent) {
+            fetchAll(user)
+        }
+    }, [lastEvent])
 
     const handleLogout = () => {
         setShowLogoutConfirm(true)
@@ -246,7 +224,11 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }) 
                             className={({ isActive }) => `nav-link relative ${isActive ? 'active' : ''} ${
                                 collapsed ? 'md:justify-center md:px-0 md:py-3' : ''
                             }`}
-                            onClick={onClose}
+                            onClick={() => {
+                                onClose()
+                                if (badgeKey === 'unreadAnnouncements') clear('unreadAnnouncements')
+                                if (badgeKey === 'unreadMessages') clear('unreadMessages')
+                            }}
                         >
                             <Icon className="icon" />
                             <span className={`flex-1 ${collapsed ? 'md:hidden' : 'block'}`}>{label}</span>

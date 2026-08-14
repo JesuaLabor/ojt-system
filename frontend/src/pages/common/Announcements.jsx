@@ -4,10 +4,12 @@ import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 import api from '../../services/api'
 import useAuthStore from '../../store/authStore'
+import useBadgeStore from '../../store/badgeStore'
 import ConfirmModal from '../../components/ui/ConfirmModal'
 
 export default function Announcements() {
     const { user } = useAuthStore()
+    const { clear } = useBadgeStore()
     const [announcements, setAnnouncements] = useState([])
     const [loading, setLoading] = useState(true)
 
@@ -25,6 +27,8 @@ export default function Announcements() {
             setAnnouncements(res.data.announcements || [])
             if (user?.id) {
                 localStorage.setItem(`announcements_last_read_${user.id}`, new Date().toISOString())
+                // Instantly clear the sidebar badge — user has now seen all announcements
+                clear('unreadAnnouncements')
             }
         } catch (err) {
             toast.error('Failed to load announcements')
