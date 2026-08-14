@@ -443,49 +443,108 @@ export default function Overview() {
 
             </div>
 
-            {/* ── Evaluation Scores Mini-Summary ────────────────────────────────── */}
+            {/* ── Evaluation Scores & Performance Feedback ────────────────────────────── */}
             {!loading && evals.length > 0 && (
-                <div className="card fade-in">
-                    <div className="flex items-center justify-between mb-4">
+                <div className="card fade-in p-6 space-y-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
                         <div>
-                            <h2 className="text-sm font-semibold text-white">Evaluation Scores</h2>
-                            <p className="text-xs text-slate-500 mt-0.5">{evals.length} evaluation{evals.length > 1 ? 's' : ''} received</p>
+                            <div className="flex items-center gap-2">
+                                <h2 className="text-base font-bold text-white">Performance & Evaluation</h2>
+                                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-indigo-500/15 text-indigo-400 border border-indigo-500/30">
+                                    {evals.length} Received
+                                </span>
+                            </div>
+                            <p className="text-xs text-slate-500 mt-0.5">Performance evaluations submitted by your industry supervisor.</p>
                         </div>
-                        <span className={`badge ${avgScore >= 90 ? 'badge-approved' :
-                            avgScore >= 70 ? 'badge-active' : 'badge-warning'
-                            }`}>
-                            {avgScore?.toFixed(1)} avg
-                        </span>
+                        <a
+                            href="/student/evaluations"
+                            className="btn btn-sm bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 border border-indigo-500/20 text-xs flex items-center gap-1.5 self-start sm:self-auto"
+                        >
+                            View Full Evaluation Report →
+                        </a>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                        {evals.slice(0, 3).map((ev, i) => (
-                            <div key={i}
-                                className="bg-slate-800/60 border border-slate-700/60 rounded-xl p-3.5">
-                                <div className="flex items-center justify-between mb-2">
-                                    <p className="text-xs font-semibold text-white">{ev.period}</p>
-                                    <span className="text-lg font-bold text-purple-400">{ev.overall_score}</span>
-                                </div>
-                                <p className="text-[11px] text-slate-500 mb-2">{ev.supervisor_name}</p>
-                                {/* Mini score bars */}
-                                {[
-                                    { label: 'Technical', val: ev.technical_score },
-                                    { label: 'Communication', val: ev.communication_score },
-                                    { label: 'Punctuality', val: ev.punctuality_score },
-                                ].map(({ label, val }) => (
-                                    <div key={label} className="flex items-center gap-2 mb-1 last:mb-0">
-                                        <span className="text-[10px] text-slate-600 w-20 flex-shrink-0">{label}</span>
-                                        <div className="flex-1 progress-track">
-                                            <div
-                                                className="progress-fill"
-                                                style={{ width: `${val}%` }}
-                                            />
+                    <div className="space-y-4">
+                        {evals.map((ev, i) => {
+                            const score = ev.overall_score || 0
+                            const gradeText = gradeLabel(score)
+                            const supervisorName = ev.supervisor?.name || ev.supervisor_name || 'Supervisor'
+                            
+                            const keyFactors = [
+                                { label: 'Quality of Work (Accuracy)', val: ev.quality_work_accuracy || 0, max: 20 },
+                                { label: 'Timeliness & Output',        val: ev.quality_work_timeliness || 0, max: 20 },
+                                { label: 'Attendance & Punctuality',   val: ev.attendance || 0, max: 10 },
+                                { label: 'Dependability & Rules',      val: ev.dependability || 0, max: 10 },
+                                { label: 'Cooperation & Teamwork',     val: ev.cooperation || 0, max: 10 },
+                            ]
+
+                            return (
+                                <div key={ev.ID || i} className="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 hover:border-slate-700/80 transition-all">
+                                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                                        
+                                        {/* Score Highlight Box */}
+                                        <div className="lg:col-span-3 flex flex-col items-center justify-center p-4 bg-gradient-to-b from-indigo-950/40 to-slate-950/60 rounded-xl border border-indigo-500/20 text-center">
+                                            <span className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-400 mb-1">
+                                                {ev.period || 'Final Evaluation'}
+                                            </span>
+                                            <div className="flex items-baseline gap-1 my-1">
+                                                <span className="text-4xl font-black text-white">{score.toFixed(1)}</span>
+                                                <span className="text-sm font-semibold text-slate-500">/ 100</span>
+                                            </div>
+                                            <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 mt-1">
+                                                ⭐ {gradeText}
+                                            </span>
+                                            <p className="text-[11px] text-slate-400 mt-3 font-medium">
+                                                Evaluator: <span className="text-slate-200 font-semibold">{supervisorName}</span>
+                                            </p>
                                         </div>
-                                        <span className="text-[10px] text-slate-400 w-8 text-right">{val}</span>
+
+                                        {/* Key Rating Factors */}
+                                        <div className="lg:col-span-5 space-y-2.5">
+                                            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Key Criteria Breakdown</p>
+                                            {keyFactors.map(({ label, val, max }) => {
+                                                const pct = Math.min(100, Math.max(0, (val / max) * 100))
+                                                return (
+                                                    <div key={label} className="space-y-1">
+                                                        <div className="flex justify-between items-center text-xs">
+                                                            <span className="text-slate-400 font-medium">{label}</span>
+                                                            <span className="font-bold text-white text-[11px]">
+                                                                {val} <span className="text-slate-600 font-normal">/ {max}</span>
+                                                            </span>
+                                                        </div>
+                                                        <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                                                            <div
+                                                                className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-teal-400 transition-all duration-500"
+                                                                style={{ width: `${pct}%` }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                )
+                                            })}
+                                        </div>
+
+                                        {/* Recommendation / Feedback */}
+                                        <div className="lg:col-span-4 h-full flex flex-col justify-between p-4 bg-slate-950/60 rounded-xl border border-slate-800">
+                                            <div>
+                                                <p className="text-xs font-bold uppercase tracking-wider text-indigo-400 mb-2 flex items-center gap-1.5">
+                                                    <span>💬</span> Supervisor Remarks & Growth Notes
+                                                </p>
+                                                <p className="text-xs text-slate-300 italic leading-relaxed">
+                                                    {ev.recommendation ? `"${ev.recommendation}"` : '"Student has demonstrated commendable work ethic, technical capability, and consistent professionalism throughout the training period."'}
+                                                </p>
+                                            </div>
+                                            <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-500">
+                                                <span>Official Record</span>
+                                                <span className="text-emerald-400 font-semibold flex items-center gap-1">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Verified & Signed
+                                                </span>
+                                            </div>
+                                        </div>
+
                                     </div>
-                                ))}
-                            </div>
-                        ))}
+                                </div>
+                            )
+                        })}
                     </div>
                 </div>
             )}

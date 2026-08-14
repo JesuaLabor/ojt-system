@@ -168,7 +168,7 @@ export default function FacultyEvaluations() {
                                         <FactorScore
                                             key={f.key}
                                             label={f.label}
-                                            score={summary[`avg_${f.key}`] ?? 0}
+                                            score={summary[`avg_${f.key}`] ?? summary.avg_company_rules ?? 0}
                                             max={f.max}
                                         />
                                     ))}
