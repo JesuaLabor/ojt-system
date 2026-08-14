@@ -41,11 +41,11 @@ export default function StudentJournals() {
         }
     }
 
-    // ── Combined PDF Download (all acknowledged journals) ─────────────────────
+    // ── Combined PDF Download ─────────────────────────────────────────────────
     const downloadAllJournalsPDF = async () => {
         const acknowledged = journals
             .filter(j => j.status === 'acknowledged')
-            .sort((a, b) => new Date(a.date) - new Date(b.date)) // oldest first
+            .sort((a, b) => new Date(a.date) - new Date(b.date))
 
         if (acknowledged.length === 0) {
             toast.error('No acknowledged journals to download.')
@@ -57,194 +57,243 @@ export default function StudentJournals() {
             const { jsPDF } = await import('jspdf')
             const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
 
-            const pageW = doc.internal.pageSize.getWidth()
-            const pageH = doc.internal.pageSize.getHeight()
-            const margin = 18
-            const contentW = pageW - margin * 2
+            const pageW  = doc.internal.pageSize.getWidth()
+            const pageH  = doc.internal.pageSize.getHeight()
+            const margin = 20
+            const cW     = pageW - margin * 2   // usable content width
 
-            // ── Helper: draw page header bar ────────────────────────────────
-            const drawHeader = (pageLabel) => {
-                doc.setFillColor(15, 118, 110)
-                doc.rect(0, 0, pageW, 28, 'F')
-                doc.setFont('helvetica', 'bold')
-                doc.setFontSize(13)
-                doc.setTextColor(255, 255, 255)
-                doc.text('OJT Accomplishment Journals', margin, 12)
-                doc.setFont('helvetica', 'normal')
-                doc.setFontSize(7.5)
-                doc.text('On-the-Job Training Management System', margin, 19)
-                // Page label badge (top-right)
-                doc.setFillColor(5, 150, 105)
-                doc.roundedRect(pageW - margin - 42, 5, 42, 11, 2, 2, 'F')
-                doc.setFont('helvetica', 'bold')
-                doc.setFontSize(7.5)
-                doc.setTextColor(255, 255, 255)
-                doc.text(pageLabel, pageW - margin - 39, 12.5)
+            // ── Color palette (named Tailwind-like) ──────────────────────────
+            const C = {
+                teal:       [15, 118, 110],
+                tealMid:    [20, 140, 130],
+                tealLight:  [204, 240, 236],
+                tealDark:   [6,   78,  74],
+                emerald:    [5,  150, 105],
+                indigo:     [99, 102, 241],
+                indigoLight:[224, 231, 255],
+                amber:      [217, 119,   6],
+                amberLight: [254, 243, 199],
+                white:      [255, 255, 255],
+                slate50:    [248, 250, 252],
+                slate200:   [226, 232, 240],
+                slate400:   [148, 163, 184],
+                slate500:   [100, 116, 139],
+                slate700:   [ 51,  65,  85],
+                dark:       [ 15,  23,  42],
+                darkMid:    [ 22,  34,  55],
+                darkDeep:   [ 18,  28,  46],
             }
 
-            // ── Helper: section block ────────────────────────────────────────
-            const addSection = (doc, title, content, r, g, b, yRef) => {
-                let y = yRef
-                doc.setFillColor(r, g, b)
-                doc.setLineWidth(0.4)
-                doc.roundedRect(margin, y, contentW, 7.5, 2, 2, 'F')
-                doc.setFont('helvetica', 'bold')
-                doc.setFontSize(7.5)
-                doc.setTextColor(255, 255, 255)
-                doc.text(title.toUpperCase(), margin + 4, y + 5.2)
-                y += 11
+            const sf = (arr) => doc.setFillColor(...arr)
+            const ss = (arr) => doc.setDrawColor(...arr)
+            const sc = (arr) => doc.setTextColor(...arr)
 
-                doc.setFont('helvetica', 'normal')
-                doc.setFontSize(10)
-                doc.setTextColor(51, 65, 85)
-                const lines = doc.splitTextToSize(content, contentW)
-                lines.forEach(line => {
-                    if (y > pageH - 20) {
+            // ── Page-break-aware text writer, returns new Y ──────────────────
+            const writeText = (text, x, y, maxW, lineH = 5.5) => {
+                doc.splitTextToSize(text, maxW).forEach(line => {
+                    if (y > pageH - 22) {
                         doc.addPage()
-                        drawHeader('continued')
-                        y = 36
+                        drawEntryChromeOnCurrentPage()
+                        y = 38
                     }
-                    doc.text(line, margin, y)
-                    y += 5.5
+                    doc.text(line, x, y)
+                    y += lineH
                 })
-                return y + 5
+                return y
             }
 
-            // ── Helper: page footer ──────────────────────────────────────────
-            const drawFooter = (doc, label) => {
-                const totalPages = doc.internal.getNumberOfPages()
-                for (let i = 1; i <= totalPages; i++) {
+            // ── Left teal accent bar (entry pages only) ──────────────────────
+            const drawAccentBar = () => {
+                sf(C.teal);    doc.rect(0, 0, 6, pageH, 'F')
+                sf(C.tealMid); doc.rect(0, 0, 2, pageH, 'F')
+            }
+
+            // ── Entry-page chrome (called by continuation pages too) ──────────
+            let _entryLabel = ''
+            const drawEntryChromeOnCurrentPage = () => {
+                drawAccentBar()
+                sf(C.dark); doc.rect(6, 0, pageW - 6, 22, 'F')
+                doc.setFont('helvetica', 'bold'); doc.setFontSize(9)
+                sc(C.white); doc.text('OJT Accomplishment Journals', 14, 10)
+                doc.setFont('helvetica', 'normal'); doc.setFontSize(7)
+                sc(C.slate400); doc.text('On-the-Job Training Management System', 14, 16.5)
+                sf(C.teal); doc.roundedRect(pageW - margin - 44, 5, 44, 11, 2, 2, 'F')
+                doc.setFont('helvetica', 'bold'); doc.setFontSize(7)
+                sc(C.white); doc.text(_entryLabel, pageW - margin - 41, 12)
+            }
+
+            // ── Global footer applied after all pages are built ───────────────
+            const applyAllFooters = () => {
+                const n = doc.internal.getNumberOfPages()
+                for (let i = 1; i <= n; i++) {
                     doc.setPage(i)
-                    doc.setDrawColor(203, 213, 225)
-                    doc.setLineWidth(0.3)
-                    doc.line(margin, pageH - 8, pageW - margin, pageH - 8)
-                    doc.setFont('helvetica', 'normal')
-                    doc.setFontSize(7)
-                    doc.setTextColor(148, 163, 184)
-                    doc.text(label, margin, pageH - 4)
-                    doc.text(`Page ${i} of ${totalPages}`, pageW - margin, pageH - 4, { align: 'right' })
+                    ss(C.slate200); doc.setLineWidth(0.25)
+                    doc.line(margin, pageH - 10, pageW - margin, pageH - 10)
+                    doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5)
+                    sc(C.slate400)
+                    doc.text('OJT Performance Monitoring System  •  Accomplishment Journals', margin, pageH - 5.5)
+                    doc.text(`Page ${i} of ${n}`, pageW - margin, pageH - 5.5, { align: 'right' })
+                    sf(C.teal); doc.circle(pageW / 2, pageH - 5.5, 0.8, 'F')
                 }
             }
 
             // ════════════════════════════════════════════════════════════════
-            // PAGE 1 — Cover / Summary
+            // PAGE 1 — COVER
             // ════════════════════════════════════════════════════════════════
-            drawHeader('COVER PAGE')
+            sf(C.dark);     doc.rect(0, 0, pageW, pageH, 'F')   // full dark bg
+            sf(C.teal);     doc.rect(0, 0, pageW, 62, 'F')       // teal header band
+            sf(C.tealDark); doc.triangle(pageW - 55, 0, pageW, 0, pageW, 62, 'F') // corner triangle
+            sf(C.white);    doc.rect(0, 0, 8, 62, 'F')           // white left edge
 
-            let y = 36
+            // System label + titles
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5)
+            sc([204, 240, 236])
+            doc.text('ON-THE-JOB TRAINING MANAGEMENT SYSTEM', 18, 16)
 
-            // Big title block
-            doc.setFillColor(241, 245, 249)
-            doc.roundedRect(margin, y, contentW, 28, 4, 4, 'F')
-            doc.setFont('helvetica', 'bold')
-            doc.setFontSize(20)
-            doc.setTextColor(15, 23, 42)
-            doc.text('Accomplishment Journal', margin + contentW / 2, y + 12, { align: 'center' })
-            doc.setFont('helvetica', 'normal')
-            doc.setFontSize(10)
-            doc.setTextColor(100, 116, 139)
-            doc.text('Compilation of Acknowledged OJT Journal Entries', margin + contentW / 2, y + 21, { align: 'center' })
-            y += 36
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(26); sc(C.white)
+            doc.text('Accomplishment', 18, 33)
+            doc.text('Journal Compilation', 18, 46)
+            ss(C.white); doc.setLineWidth(0.5); doc.line(18, 50, 120, 50)
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(9); sc([204, 240, 236])
+            doc.text('Acknowledged OJT Journal Entries', 18, 57)
 
-            // Stats row
-            const statW = contentW / 3 - 3
-            const stats = [
+            // ── 3 stat cards ────────────────────────────────────────────────
+            const cardY = 76, cardH = 28, cardW = (cW - 8) / 3
+            ;[
                 { label: 'Total Entries', value: String(acknowledged.length) },
-                { label: 'Date From', value: format(new Date(acknowledged[0].date), 'MMM d, yyyy') },
-                { label: 'Date To', value: format(new Date(acknowledged[acknowledged.length - 1].date), 'MMM d, yyyy') },
-            ]
-            stats.forEach((s, i) => {
-                const x = margin + i * (statW + 4.5)
-                doc.setFillColor(15, 118, 110, 0.08)
-                doc.setFillColor(236, 253, 245)
-                doc.roundedRect(x, y, statW, 18, 3, 3, 'F')
-                doc.setFont('helvetica', 'bold')
-                doc.setFontSize(14)
-                doc.setTextColor(15, 118, 110)
-                doc.text(s.value, x + statW / 2, y + 10, { align: 'center' })
-                doc.setFont('helvetica', 'normal')
-                doc.setFontSize(7.5)
-                doc.setTextColor(100, 116, 139)
-                doc.text(s.label.toUpperCase(), x + statW / 2, y + 16, { align: 'center' })
+                { label: 'From',  value: format(new Date(acknowledged[0].date), 'MMM d, yyyy') },
+                { label: 'To',    value: format(new Date(acknowledged[acknowledged.length - 1].date), 'MMM d, yyyy') },
+            ].forEach((s, i) => {
+                const cx = margin + i * (cardW + 4)
+                sf(C.darkMid); doc.roundedRect(cx, cardY, cardW, cardH, 3, 3, 'F')
+                sf(C.teal);    doc.roundedRect(cx, cardY, cardW, 2.5, 1, 1, 'F')
+                doc.setFont('helvetica', 'bold'); doc.setFontSize(13); sc(C.white)
+                doc.text(s.value, cx + cardW / 2, cardY + 14, { align: 'center' })
+                doc.setFont('helvetica', 'normal'); doc.setFontSize(7); sc(C.slate400)
+                doc.text(s.label.toUpperCase(), cx + cardW / 2, cardY + 21, { align: 'center' })
             })
-            y += 26
 
-            // Table of contents
-            doc.setFont('helvetica', 'bold')
-            doc.setFontSize(9)
-            doc.setTextColor(100, 116, 139)
-            doc.text('INDEX OF JOURNAL ENTRIES', margin, y)
-            y += 5
-            doc.setDrawColor(203, 213, 225)
-            doc.setLineWidth(0.3)
-            doc.line(margin, y, pageW - margin, y)
-            y += 6
+            // ── Table of contents ────────────────────────────────────────────
+            const tocY = cardY + cardH + 14
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(8); sc(C.slate400)
+            doc.text('TABLE OF CONTENTS', margin, tocY)
+            ss(C.teal); doc.setLineWidth(0.4); doc.line(margin, tocY + 3, margin + 40, tocY + 3)
 
+            let ty = tocY + 11
             acknowledged.forEach((j, idx) => {
-                if (y > pageH - 20) return // safety
-                const isEven = idx % 2 === 0
-                if (isEven) {
-                    doc.setFillColor(248, 250, 252)
-                    doc.rect(margin, y - 4, contentW, 8, 'F')
-                }
-                doc.setFont('helvetica', 'bold')
-                doc.setFontSize(9)
-                doc.setTextColor(15, 23, 42)
-                doc.text(`${String(idx + 1).padStart(2, '0')}.  ${format(new Date(j.date), 'MMMM d, yyyy')}`, margin + 3, y)
-                doc.setFont('helvetica', 'normal')
-                doc.setTextColor(100, 116, 139)
-                doc.text(j.supervisor?.name || 'Supervisor', pageW - margin - 3, y, { align: 'right' })
-                // Acknowledged badge dot
-                doc.setFillColor(5, 150, 105)
-                doc.circle(margin + contentW / 2, y - 1.2, 1.5, 'F')
-                y += 9
+                if (ty > pageH - 20) return
+                sf(idx % 2 === 0 ? C.darkMid : C.darkDeep)
+                doc.roundedRect(margin, ty - 5, cW, 8.5, 1.5, 1.5, 'F')
+
+                // Number bubble
+                sf(C.teal); doc.circle(margin + 6, ty - 0.8, 3.5, 'F')
+                doc.setFont('helvetica', 'bold'); doc.setFontSize(6.5); sc(C.white)
+                doc.text(String(idx + 1), margin + 6, ty + 0.8, { align: 'center' })
+
+                doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); sc(C.white)
+                doc.text(format(new Date(j.date), 'MMMM d, yyyy'), margin + 14, ty)
+
+                doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); sc(C.slate400)
+                doc.text(j.supervisor?.name || '—', pageW - margin - 4, ty, { align: 'right' })
+
+                // Dotted connector
+                ss([40, 58, 80]); doc.setLineWidth(0.2)
+                doc.setLineDashPattern([0.5, 1.5], 0)
+                doc.line(margin + 72, ty - 1, pageW - margin - 30, ty - 1)
+                doc.setLineDashPattern([], 0)
+                ty += 10
             })
+
+            // ── Cover bottom bar ─────────────────────────────────────────────
+            sf(C.teal);  doc.rect(0, pageH - 14, pageW, 14, 'F')
+            sf(C.white); doc.rect(0, pageH - 14, 8, 14, 'F')
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(7); sc(C.white)
+            doc.text(`Generated: ${format(new Date(), 'MMMM d, yyyy  h:mm a')}`, 18, pageH - 5.5)
+            doc.text('Confidential — For Official Use Only', pageW - margin, pageH - 5.5, { align: 'right' })
 
             // ════════════════════════════════════════════════════════════════
-            // PAGES 2+ — One entry per new page
+            // PAGES 2+ — One entry per page
             // ════════════════════════════════════════════════════════════════
             acknowledged.forEach((j, idx) => {
                 doc.addPage()
-                drawHeader(`ENTRY ${String(idx + 1).padStart(2, '0')} OF ${acknowledged.length}`)
+                _entryLabel = `ENTRY ${String(idx + 1).padStart(2, '0')} / ${acknowledged.length}`
+                drawEntryChromeOnCurrentPage()
 
-                let ey = 36
+                let ey = 30
 
-                // Entry meta card
-                doc.setFillColor(241, 245, 249)
-                doc.roundedRect(margin, ey, contentW, 20, 3, 3, 'F')
+                // ── Date hero card ───────────────────────────────────────────
+                sf(C.slate50); doc.roundedRect(margin, ey, cW, 26, 3, 3, 'F')
+                sf(C.teal);    doc.roundedRect(margin, ey, 3.5, 26, 2, 2, 'F')
 
-                doc.setFont('helvetica', 'bold')
-                doc.setFontSize(8.5)
-                doc.setTextColor(100, 116, 139)
-                doc.text('JOURNAL DATE', margin + 4, ey + 6)
-                doc.text('SUPERVISOR', margin + contentW / 2 + 4, ey + 6)
+                doc.setFont('helvetica', 'bold'); doc.setFontSize(15); sc(C.dark)
+                doc.text(format(new Date(j.date), 'MMMM d, yyyy'), margin + 10, ey + 11)
+                doc.setFont('helvetica', 'normal'); doc.setFontSize(8); sc(C.slate500)
+                doc.text(format(new Date(j.date), 'EEEE'), margin + 10, ey + 19)
 
-                doc.setFont('helvetica', 'bold')
-                doc.setFontSize(12)
-                doc.setTextColor(15, 23, 42)
-                doc.text(format(new Date(j.date), 'MMMM d, yyyy'), margin + 4, ey + 15)
-                doc.text(j.supervisor?.name || 'Supervisor', margin + contentW / 2 + 4, ey + 15)
+                // Supervisor (right side of card)
+                doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); sc(C.slate400)
+                doc.text('REVIEWED BY', pageW - margin - 4, ey + 9, { align: 'right' })
+                doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); sc(C.dark)
+                doc.text(j.supervisor?.name || 'Supervisor', pageW - margin - 4, ey + 17, { align: 'right' })
 
-                // Acknowledged stamp
-                doc.setFillColor(5, 150, 105)
-                doc.roundedRect(pageW - margin - 40, ey + 4, 40, 11, 2, 2, 'F')
-                doc.setFont('helvetica', 'bold')
-                doc.setFontSize(7.5)
-                doc.setTextColor(255, 255, 255)
-                doc.text('✓ ACKNOWLEDGED', pageW - margin - 37, ey + 11)
+                // ✓ ACKNOWLEDGED pill
+                sf(C.emerald); doc.roundedRect(pageW - margin - 38, ey + 20, 38, 4.5, 2, 2, 'F')
+                doc.setFont('helvetica', 'bold'); doc.setFontSize(6); sc(C.white)
+                doc.text('✓  ACKNOWLEDGED', pageW - margin - 36, ey + 23.5)
+                ey += 33
 
-                ey += 28
-
-                ey = addSection(doc, 'Tasks Accomplished', j.tasks, 15, 118, 110, ey)
-                ey = addSection(doc, 'Key Learnings / Challenges', j.learnings, 99, 102, 241, ey)
-
-                if (j.feedback) {
-                    ey = addSection(doc, 'Supervisor Feedback', j.feedback, 245, 158, 11, ey)
+                // ── Section renderer (left bar + title rule + text) ──────────
+                const section = (title, text, color, lightColor, italic = false) => {
+                    // Left accent bar
+                    sf(color); doc.rect(margin, ey, 3, 7, 'F')
+                    // Title
+                    doc.setFont('helvetica', 'bold'); doc.setFontSize(8); sc(color)
+                    doc.text(title, margin + 6, ey + 5.5)
+                    // Thin rule
+                    sf(lightColor); doc.roundedRect(margin, ey + 9, cW, 3, 1.5, 1.5, 'F')
+                    ey += 14
+                    // Body text
+                    doc.setFont('helvetica', italic ? 'italic' : 'normal')
+                    doc.setFontSize(10)
+                    sc(italic ? [146, 64, 14] : C.slate700)
+                    ey = writeText(italic ? `"${text}"` : text, margin, ey, cW)
+                    ey += 6
                 }
+
+                section('TASKS ACCOMPLISHED',        j.tasks,     C.teal,   C.tealLight)
+                section('KEY LEARNINGS & CHALLENGES', j.learnings, C.indigo, C.indigoLight)
+                if (j.feedback) {
+                    if (ey > pageH - 55) {
+                        doc.addPage(); drawEntryChromeOnCurrentPage(); ey = 38
+                    }
+                    section('SUPERVISOR FEEDBACK', j.feedback, C.amber, C.amberLight, true)
+                }
+
+                // ── Signature / verification block ───────────────────────────
+                if (ey > pageH - 38) {
+                    doc.addPage(); drawEntryChromeOnCurrentPage(); ey = 38
+                }
+                const sigY = pageH - 38
+                ss(C.slate200); doc.setLineWidth(0.25)
+                doc.line(margin, sigY, pageW - margin, sigY)
+
+                const bW = cW / 2 - 6
+                ;[
+                    { x: margin,      label: 'STUDENT SIGNATURE',     name: 'Student' },
+                    { x: margin + bW + 12, label: 'SUPERVISOR SIGNATURE', name: j.supervisor?.name || 'Supervisor' },
+                ].forEach(({ x, label, name }) => {
+                    sf(C.slate50); doc.roundedRect(x, sigY + 4, bW, 20, 2, 2, 'F')
+                    doc.setFont('helvetica', 'normal'); doc.setFontSize(7); sc(C.slate400)
+                    doc.text(label, x + bW / 2, sigY + 10, { align: 'center' })
+                    ss(C.slate400); doc.setLineWidth(0.3)
+                    doc.line(x + 8, sigY + 20, x + bW - 8, sigY + 20)
+                    doc.setFontSize(6.5)
+                    doc.text(name, x + bW / 2, sigY + 24, { align: 'center' })
+                })
             })
 
-            // ── Apply footer to all pages ────────────────────────────────────
-            drawFooter(doc, `OJT Journals — ${acknowledged.length} acknowledged entries`)
+            // ── Stamp footers on every page ──────────────────────────────────
+            applyAllFooters()
 
             const fileName = `OJT_Journals_${format(new Date(), 'yyyy-MM-dd')}.pdf`
             doc.save(fileName)
@@ -268,7 +317,6 @@ export default function StudentJournals() {
                     <p className="page-sub">Document your daily progress and learnings.</p>
                 </div>
                 <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-                    {/* Download All button — only shows when there are acknowledged entries */}
                     {acknowledgedCount > 0 && (
                         <button
                             onClick={downloadAllJournalsPDF}
@@ -344,7 +392,6 @@ export default function StudentJournals() {
                                         </p>
                                     </div>
                                 </div>
-                                {/* Status badge only */}
                                 <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shrink-0 ${j.status === 'acknowledged' ? 'bg-emerald-500/10 text-emerald-400' : j.status === 'rejected' ? 'bg-red-500/10 text-red-400' : 'bg-amber-500/10 text-amber-400'}`}>
                                     {j.status}
                                 </span>
