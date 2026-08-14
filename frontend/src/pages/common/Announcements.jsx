@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 import api from '../../services/api'
@@ -131,48 +132,89 @@ export default function Announcements() {
                 )}
             </div>
 
-            {/* Modal */}
-            {showModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-                    <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl">
-                        <div className="p-5 border-b border-slate-800 flex justify-between items-center">
-                            <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                                📢 Post Announcement
-                            </h3>
-                            <button onClick={() => setShowModal(false)} className="text-slate-500 hover:text-white">
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                            </button>
+            {/* Modal — rendered in a portal so it covers the full viewport */}
+            {showModal && createPortal(
+                <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+                    {/* Click-outside to close */}
+                    <div className="absolute inset-0" onClick={() => setShowModal(false)} />
+                    <div className="flex min-h-full items-center justify-center p-4 sm:p-6">
+                        <div className="relative bg-slate-900 border border-slate-700/80 rounded-2xl w-full max-w-lg shadow-2xl animate-in zoom-in-95 duration-200 my-4 overflow-hidden">
+                            {/* Header */}
+                            <div className="px-5 py-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/60">
+                                <h3 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                                    📢 Post Announcement
+                                </h3>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowModal(false)}
+                                    className="text-slate-500 hover:text-white transition p-1 rounded-lg hover:bg-slate-800"
+                                    aria-label="Close"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            {/* Form */}
+                            <form onSubmit={handleSubmit}>
+                                <div className="p-5 space-y-4">
+                                    <div>
+                                        <label className="text-xs font-bold text-slate-500 uppercase mb-1.5 block tracking-wider">Target Audience</label>
+                                        <select
+                                            value={form.target}
+                                            onChange={e => setForm({ ...form, target: e.target.value })}
+                                            className="input w-full"
+                                        >
+                                            <option value="all">Everyone (Students &amp; Staff)</option>
+                                            <option value="students">Students Only</option>
+                                            <option value="supervisors">Supervisors Only</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-bold text-slate-500 uppercase mb-1.5 block tracking-wider">Title</label>
+                                        <input
+                                            type="text"
+                                            required
+                                            placeholder="e.g., Upcoming Seminar on UI/UX"
+                                            value={form.title}
+                                            onChange={e => setForm({ ...form, title: e.target.value })}
+                                            className="input w-full"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-bold text-slate-500 uppercase mb-1.5 block tracking-wider">Content</label>
+                                        <textarea
+                                            required
+                                            rows="5"
+                                            placeholder="Write your announcement here..."
+                                            value={form.content}
+                                            onChange={e => setForm({ ...form, content: e.target.value })}
+                                            className="input w-full py-2 resize-none"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="px-5 py-4 bg-slate-800/50 border-t border-slate-800 flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowModal(false)}
+                                        className="btn bg-transparent hover:bg-slate-800 text-slate-300 w-full sm:w-auto"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={submitting}
+                                        className="btn btn-primary w-full sm:w-auto"
+                                    >
+                                        {submitting ? 'Posting...' : 'Post Announcement'}
+                                    </button>
+                                </div>
+                            </form>
                         </div>
-                        <form onSubmit={handleSubmit}>
-                            <div className="p-5 space-y-4">
-                                <div>
-                                    <label className="text-xs font-bold text-slate-500 uppercase mb-1 block">Target Audience</label>
-                                    <select value={form.target} onChange={e => setForm({...form, target: e.target.value})} className="input w-full">
-                                        <option value="all">Everyone (Students & Staff)</option>
-                                        <option value="students">Students Only</option>
-                                        <option value="supervisors">Supervisors Only</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="text-xs font-bold text-slate-500 uppercase mb-1 block">Title</label>
-                                    <input type="text" required placeholder="e.g., Upcoming Seminar on UI/UX" value={form.title} onChange={e => setForm({...form, title: e.target.value})} className="input w-full" />
-                                </div>
-                                <div>
-                                    <label className="text-xs font-bold text-slate-500 uppercase mb-1 block">Content</label>
-                                    <textarea required rows="5" placeholder="Write your announcement here..." value={form.content} onChange={e => setForm({...form, content: e.target.value})} className="input w-full py-2" />
-                                </div>
-                            </div>
-                            <div className="p-5 bg-slate-800/50 flex justify-end gap-3 border-t border-slate-800">
-                                <button type="button" onClick={() => setShowModal(false)} className="btn bg-transparent hover:bg-slate-800 text-slate-300">
-                                    Cancel
-                                </button>
-                                <button type="submit" disabled={submitting} className="btn btn-primary">
-                                    {submitting ? 'Posting...' : 'Post Announcement'}
-                                </button>
-                            </div>
-                        </form>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     )
