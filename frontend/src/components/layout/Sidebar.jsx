@@ -233,12 +233,12 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }) 
                             <Icon className="icon" />
                             <span className={`flex-1 ${collapsed ? 'md:hidden' : 'block'}`}>{label}</span>
                             {badgeKey && badges[badgeKey] > 0 && (
-                                <span className={`min-w-[20px] h-5 px-1.5 rounded-full bg-amber-500
+                                <span className={`min-w-[18px] h-4.5 px-1.5 rounded-full bg-amber-500
                                     text-white text-[10px] font-bold flex items-center justify-center
                                     shadow-lg shadow-amber-900/50 animate-pulse ${
-                                        collapsed ? 'ml-auto md:absolute md:top-1 md:right-1 md:w-2.5 md:h-2.5 md:min-w-0 md:p-0 md:rounded-full' : 'ml-auto'
+                                        collapsed ? 'ml-auto md:absolute md:top-1 md:right-1.5' : 'ml-auto'
                                     }`}>
-                                    <span className={collapsed ? 'md:hidden' : 'block'}>{badges[badgeKey]}</span>
+                                    <span>{badges[badgeKey]}</span>
                                 </span>
                             )}
                         </NavLink>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 import api from '../../services/api'
@@ -131,41 +132,56 @@ export default function StaffJournals() {
                 )}
             </div>
 
-            {/* Acknowledge Modal */}
-            {ackJournal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-                    <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
-                        <div className="p-5 border-b border-slate-800">
-                            <h3 className="text-lg font-bold text-white">Review Journal</h3>
-                            <p className="text-sm text-slate-400 mt-1">Provide optional feedback for {ackJournal.student?.name}</p>
-                        </div>
-                        <div className="p-5 space-y-4">
-                            <div>
-                                <label className="text-xs font-bold text-slate-500 uppercase mb-1 block">Feedback (Optional)</label>
-                                <textarea
-                                    rows="4"
-                                    placeholder="Great job this week! Keep it up..."
-                                    value={feedback}
-                                    onChange={e => setFeedback(e.target.value)}
-                                    className="input w-full py-2"
-                                />
+            {/* Acknowledge Modal — rendered in Portal for perfect centering & responsiveness */}
+            {ackJournal && createPortal(
+                <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="absolute inset-0" onClick={() => setAckJournal(null)} />
+                    <div className="flex min-h-full items-center justify-center p-4 sm:p-6">
+                        <div className="relative bg-slate-900 border border-slate-700/80 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden my-auto animate-in zoom-in-95 duration-200">
+                            <div className="p-5 border-b border-slate-800 flex justify-between items-center bg-slate-900/60">
+                                <div>
+                                    <h3 className="text-lg font-bold text-white">Review Journal</h3>
+                                    <p className="text-sm text-slate-400 mt-1">Provide optional feedback for <span className="text-teal-400 font-semibold">{ackJournal.student?.name}</span></p>
+                                </div>
+                                <button
+                                    onClick={() => setAckJournal(null)}
+                                    className="text-slate-500 hover:text-white transition p-1 rounded-lg hover:bg-slate-800"
+                                    aria-label="Close"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
                             </div>
-                        </div>
-                        <div className="p-5 bg-slate-800/50 flex flex-col sm:flex-row justify-end gap-3">
-                            <button onClick={() => setAckJournal(null)} className="btn bg-transparent hover:bg-slate-800 text-slate-300">
-                                Cancel
-                            </button>
-                            <div className="flex gap-2 w-full sm:w-auto">
-                                <button onClick={() => handleReview('rejected')} disabled={submitting} className="btn bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white flex-1 sm:flex-none">
-                                    Decline
+                            <div className="p-5 space-y-4">
+                                <div>
+                                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5 block">Feedback (Optional)</label>
+                                    <textarea
+                                        rows="4"
+                                        placeholder="Great job this week! Keep it up..."
+                                        value={feedback}
+                                        onChange={e => setFeedback(e.target.value)}
+                                        className="input w-full py-2 bg-slate-950/60 border-slate-800 focus:border-teal-500 text-white resize-none"
+                                    />
+                                </div>
+                            </div>
+                            <div className="p-5 bg-slate-800/50 border-t border-slate-800 flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3">
+                                <button onClick={() => setAckJournal(null)} className="btn bg-transparent hover:bg-slate-800 text-slate-300 w-full sm:w-auto">
+                                    Cancel
                                 </button>
-                                <button onClick={() => handleReview('acknowledged')} disabled={submitting} className="btn btn-primary flex-1 sm:flex-none">
-                                    {submitting ? 'Saving...' : 'Acknowledge'}
-                                </button>
+                                <div className="flex gap-2 w-full sm:w-auto">
+                                    <button onClick={() => handleReview('rejected')} disabled={submitting} className="btn bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white border border-red-500/30 flex-1 sm:flex-none">
+                                        Decline
+                                    </button>
+                                    <button onClick={() => handleReview('acknowledged')} disabled={submitting} className="btn btn-primary flex-1 sm:flex-none">
+                                        {submitting ? 'Saving...' : 'Acknowledge'}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     )

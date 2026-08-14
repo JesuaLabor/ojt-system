@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { formatDistanceToNow } from 'date-fns'
 import api from '../../services/api'
 import toast from 'react-hot-toast'
+import { useSocket } from '../../context/SocketContext'
 
 const IconBell = ({ unreadCount }) => (
     <div className="relative">
@@ -23,6 +24,9 @@ export default function NotificationsDropdown() {
     const [unreadCount, setUnreadCount] = useState(0)
     const dropdownRef = useRef(null)
     const navigate = useNavigate()
+    const location = useLocation()
+    const socketData = useSocket()
+    const lastEvent = socketData?.lastEvent
 
     const fetchNotifications = async () => {
         try {
@@ -34,12 +38,17 @@ export default function NotificationsDropdown() {
         }
     }
 
-    // Polling every 30 seconds
+    // Polling every 15 seconds & re-fetch on route change
     useEffect(() => {
-        fetchNotifications() // Initial fetch
-        const intervalId = setInterval(fetchNotifications, 30000)
+        fetchNotifications() // Initial & route-change fetch
+        const intervalId = setInterval(fetchNotifications, 15000)
         return () => clearInterval(intervalId)
-    }, [])
+    }, [location.pathname])
+
+    // Re-fetch notifications whenever a real-time WebSocket event arrives or dropdown opens
+    useEffect(() => {
+        fetchNotifications()
+    }, [lastEvent, isOpen])
 
     // Click outside to close
     useEffect(() => {

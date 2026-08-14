@@ -12,6 +12,7 @@ import (
 
 // GetAnnouncements returns announcements relevant to the user
 func GetAnnouncements(c *gin.Context) {
+	userID, _ := c.Get("userID")
 	userRole, _ := c.Get("userRole")
 
 	var announcements []models.Announcement
@@ -27,6 +28,20 @@ func GetAnnouncements(c *gin.Context) {
 	if err := query.Order("created_at desc").Find(&announcements).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch announcements"})
 		return
+	}
+
+	// Auto-mark announcement notifications as read when user views announcements
+	res := config.DB.Model(&models.Notification{}).
+		Where("user_id = ? AND is_read = ? AND (link LIKE '%/announcements' OR message LIKE '📢 Announcement%')", userID, false).
+		Update("is_read", true)
+
+	if res.RowsAffected > 0 {
+		if uID, ok := userID.(uint); ok {
+			notifJSON, _ := json.Marshal(map[string]interface{}{
+				"type": "notifications_updated",
+			})
+			MainHub.BroadcastToUser(uID, notifJSON)
+		}
 	}
 
 	c.JSON(http.StatusOK, gin.H{"announcements": announcements})

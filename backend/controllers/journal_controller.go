@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"ojt-system/config"
 	"ojt-system/models"
@@ -16,6 +18,20 @@ func GetStudentJournals(c *gin.Context) {
 
 	var journals []models.Journal
 	config.DB.Where("student_id = ?", userID).Preload("Supervisor", "id, name").Order("date desc").Find(&journals)
+
+	// Auto-mark journal review notifications as read when student views their journals
+	res := config.DB.Model(&models.Notification{}).
+		Where("user_id = ? AND is_read = ? AND (link LIKE '%/student/journals' OR message LIKE '📝 Your journal%')", userID, false).
+		Update("is_read", true)
+
+	if res.RowsAffected > 0 {
+		if uID, ok := userID.(uint); ok {
+			notifJSON, _ := json.Marshal(map[string]interface{}{
+				"type": "notifications_updated",
+			})
+			MainHub.BroadcastToUser(uID, notifJSON)
+		}
+	}
 
 	c.JSON(http.StatusOK, gin.H{"journals": journals})
 }
@@ -43,7 +59,6 @@ func CreateJournal(c *gin.Context) {
 	}
 
 	// Parse date string to time.Time
-	// Usually date comes as YYYY-MM-DD string
 	date, err := time.Parse("2006-01-02", req.Date)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format."})
@@ -64,6 +79,27 @@ func CreateJournal(c *gin.Context) {
 		return
 	}
 
+	// Create persistent notification & real-time WS alert for supervisor
+	if assignment.SupervisorID > 0 {
+		var studentUser models.User
+		config.DB.Select("id, name").First(&studentUser, userID)
+
+		notif := models.Notification{
+			UserID:  assignment.SupervisorID,
+			Message: fmt.Sprintf("📝 New journal entry submitted by %s for %s", studentUser.Name, date.Format("Jan 2, 2006")),
+			Link:    "/supervisor/journals",
+		}
+		config.DB.Create(&notif)
+
+		// Broadcast real-time WS event to supervisor
+		notifJSON, _ := json.Marshal(map[string]interface{}{
+			"type":         "new_notification",
+			"notification": notif,
+			"journal":      journal,
+		})
+		MainHub.BroadcastToUser(assignment.SupervisorID, notifJSON)
+	}
+
 	c.JSON(http.StatusOK, gin.H{"message": "Journal submitted successfully!", "journal": journal})
 }
 
@@ -75,6 +111,20 @@ func GetSupervisorJournals(c *gin.Context) {
 	config.DB.Where("supervisor_id = ?", userID).Preload("Student", func(db *gorm.DB) *gorm.DB {
 		return db.Select("id, name, profile_photo, department_id")
 	}).Preload("Student.Department").Order("date desc").Find(&journals)
+
+	// Auto-mark journal notifications as read for this supervisor
+	res := config.DB.Model(&models.Notification{}).
+		Where("user_id = ? AND is_read = ? AND (link LIKE '%/journals' OR message LIKE '📝 New journal%')", userID, false).
+		Update("is_read", true)
+
+	if res.RowsAffected > 0 {
+		if uID, ok := userID.(uint); ok {
+			notifJSON, _ := json.Marshal(map[string]interface{}{
+				"type": "notifications_updated",
+			})
+			MainHub.BroadcastToUser(uID, notifJSON)
+		}
+	}
 
 	c.JSON(http.StatusOK, gin.H{"journals": journals})
 }
@@ -107,6 +157,28 @@ func ReviewJournal(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to review journal."})
 		return
 	}
+
+	// Create persistent notification for student regarding review status
+	var supervisorUser models.User
+	config.DB.Select("id, name").First(&supervisorUser, userID)
+
+	statusLabel := "acknowledged"
+	if req.Status == "rejected" {
+		statusLabel = "declined"
+	}
+
+	notif := models.Notification{
+		UserID:  journal.StudentID,
+		Message: fmt.Sprintf("📝 Your journal for %s was %s by %s", journal.Date.Format("Jan 2, 2006"), statusLabel, supervisorUser.Name),
+		Link:    "/student/journals",
+	}
+	config.DB.Create(&notif)
+
+	notifJSON, _ := json.Marshal(map[string]interface{}{
+		"type":         "new_notification",
+		"notification": notif,
+	})
+	MainHub.BroadcastToUser(journal.StudentID, notifJSON)
 
 	c.JSON(http.StatusOK, gin.H{"message": "Journal " + req.Status + " successfully!", "journal": journal})
 }

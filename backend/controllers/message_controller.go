@@ -112,6 +112,26 @@ func GetConversation(c *gin.Context) {
 		Where("sender_id = ? AND receiver_id = ? AND is_read = ?", contactID, userID, false).
 		Update("is_read", true)
 
+	// Auto-mark message notifications for this user as read
+	var contactUser models.User
+	if config.DB.Select("id, name").First(&contactUser, contactID).Error == nil {
+		config.DB.Model(&models.Notification{}).
+			Where("user_id = ? AND is_read = ? AND (link LIKE '%/messages' OR message LIKE ?)",
+				userID, false, "%"+contactUser.Name+"%").
+			Update("is_read", true)
+	} else {
+		config.DB.Model(&models.Notification{}).
+			Where("user_id = ? AND is_read = ? AND link LIKE '%/messages'", userID, false).
+			Update("is_read", true)
+	}
+
+	if uID, ok := userID.(uint); ok {
+		notifJSON, _ := json.Marshal(map[string]interface{}{
+			"type": "notifications_updated",
+		})
+		MainHub.BroadcastToUser(uID, notifJSON)
+	}
+
 	if result.RowsAffected > 0 {
 		var contactIDUint uint
 		fmt.Sscanf(contactID, "%d", &contactIDUint)
@@ -139,7 +159,10 @@ func SendMessage(c *gin.Context) {
 	}
 
 	var receiverID uint
-	fmt.Sscanf(receiverIDStr, "%d", &receiverID)
+	if _, err := fmt.Sscanf(receiverIDStr, "%d", &receiverID); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid receiver ID"})
+		return
+	}
 
 	var fileURL, fileType string
 	file, header, err := c.Request.FormFile("file")
@@ -181,16 +204,10 @@ func SendMessage(c *gin.Context) {
 	// Fetch back with sender info for UI
 	config.DB.Preload("Sender", "id, name, profile_photo").First(&message, message.ID)
 
-	// Broadcast via WS
-	msgJSON, _ := json.Marshal(map[string]interface{}{
-		"type":    "new_message",
-		"message": message,
-	})
-	MainHub.BroadcastToUser(message.ReceiverID, msgJSON)
-
 	// Create persistent notification for receiver
 	var receiverUser models.User
 	var senderUser models.User
+	var createdNotif models.Notification
 	config.DB.First(&senderUser, message.SenderID)
 	if err := config.DB.First(&receiverUser, message.ReceiverID).Error; err == nil {
 		snippet := content
@@ -206,12 +223,21 @@ func SendMessage(c *gin.Context) {
 
 		link := fmt.Sprintf("/%s/messages", receiverUser.Role)
 
-		config.DB.Create(&models.Notification{
+		createdNotif = models.Notification{
 			UserID:  message.ReceiverID,
 			Message: fmt.Sprintf("💬 New message from %s: \"%s\"", senderUser.Name, snippet),
 			Link:    link,
-		})
+		}
+		config.DB.Create(&createdNotif)
 	}
+
+	// Broadcast via WS including notification update
+	msgJSON, _ := json.Marshal(map[string]interface{}{
+		"type":         "new_message",
+		"message":      message,
+		"notification": createdNotif,
+	})
+	MainHub.BroadcastToUser(message.ReceiverID, msgJSON)
 
 	c.JSON(http.StatusCreated, gin.H{"message": message})
 }
