@@ -80,6 +80,8 @@ type TimeLog struct {
 	TotalBreakMinutes int        `gorm:"default:0" json:"total_break_minutes"`
 	ClockInLat        float64    `json:"clock_in_lat"`  // GPS latitude at clock-in (0 = not captured)
 	ClockInLng        float64    `json:"clock_in_lng"`  // GPS longitude at clock-in
+	ClockOutLat       float64    `json:"clock_out_lat"` // GPS latitude at clock-out (0 = not captured)
+	ClockOutLng       float64    `json:"clock_out_lng"` // GPS longitude at clock-out
 
 	Student User `gorm:"foreignKey:StudentID" json:"student,omitempty"`
 }

@@ -265,8 +265,18 @@ func ClockOut(c *gin.Context) {
 		entry.BreakStartedAt = nil
 	}
 
+	var clockOutLat, clockOutLng float64
+	latStr := c.PostForm("latitude")
+	lngStr := c.PostForm("longitude")
+	if latStr != "" && lngStr != "" {
+		clockOutLat, _ = strconv.ParseFloat(latStr, 64)
+		clockOutLng, _ = strconv.ParseFloat(lngStr, 64)
+	}
+
 	entry.ClockOut = &now
 	entry.ClockOutPhoto = photoURL
+	entry.ClockOutLat = clockOutLat
+	entry.ClockOutLng = clockOutLng
 	entry.TotalHours = calcHours(entry.ClockIn, now, entry.TotalBreakMinutes)
 	config.DB.Save(&entry)
 

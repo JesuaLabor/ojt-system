@@ -18,6 +18,15 @@ L.Icon.Default.mergeOptions({
     shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 })
 
+const redIcon = L.icon({
+    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
+})
+
 function getDistanceMetres(lat1, lon1, lat2, lon2) {
     if (!lat1 || !lon1 || !lat2 || !lon2) return null
     const R = 6371000
@@ -206,7 +215,7 @@ export default function SupervisorTimeLogs() {
                   logs.map(log => {
                     const clockIn = log.clock_in ? new Date(log.clock_in) : null;
                     const clockOut = log.clock_out ? new Date(log.clock_out) : null;
-                    const hasGPS = log.clock_in_lat && log.clock_in_lng;
+                    const hasGPS = (log.clock_in_lat && log.clock_in_lng) || (log.clock_out_lat && log.clock_out_lng);
                     return (
                       <tr key={log.ID} className="table-row">
                         <td className="table-cell font-medium text-white">
@@ -243,13 +252,16 @@ export default function SupervisorTimeLogs() {
                                 clockInLat: log.clock_in_lat,
                                 clockInLng: log.clock_in_lng,
                                 clockInTime: log.clock_in,
+                                clockOutLat: log.clock_out_lat,
+                                clockOutLng: log.clock_out_lng,
+                                clockOutTime: log.clock_out,
                                 companyLat: company?.latitude,
                                 companyLng: company?.longitude,
                                 companyRadius: company?.geo_radius || 200,
                                 companyName: company?.name
                               })}
                               className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-teal-400 bg-teal-500/10 hover:bg-teal-500/20 border border-teal-500/30 rounded-lg transition shadow-sm"
-                              title="View student clock-in location on map"
+                              title="View student clock-in & clock-out locations on map"
                             >
                               <span>📍</span>
                               <span>View Map</span>
@@ -355,10 +367,11 @@ export default function SupervisorTimeLogs() {
             <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900">
               <div>
                 <h3 className="text-white font-semibold flex items-center gap-2 text-base sm:text-lg">
-                  <span>📍 Student Clock-In Location Map</span>
+                  <span>📍 Student Clock-In & Clock-Out Location Map</span>
                 </h3>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Clock-in time: {previewMap.clockInTime ? format(new Date(previewMap.clockInTime), 'MMM d, yyyy · h:mm a') : '—'}
+                  {previewMap.clockInTime ? `Clock-In: ${format(new Date(previewMap.clockInTime), 'MMM d, yyyy · h:mm a')}` : ''}
+                  {previewMap.clockOutTime ? `  |  Clock-Out: ${format(new Date(previewMap.clockOutTime), 'h:mm a')}` : ''}
                 </p>
               </div>
               <button 
@@ -372,7 +385,11 @@ export default function SupervisorTimeLogs() {
             {/* Map Container */}
             <div className="h-[300px] sm:h-[400px] w-full relative z-0">
               <MapContainer 
-                center={[previewMap.clockInLat, previewMap.clockInLng]} 
+                center={
+                  previewMap.clockInLat && previewMap.clockInLng ? [previewMap.clockInLat, previewMap.clockInLng] :
+                  previewMap.clockOutLat && previewMap.clockOutLng ? [previewMap.clockOutLat, previewMap.clockOutLng] :
+                  [previewMap.companyLat || 14.5995, previewMap.companyLng || 120.9842]
+                } 
                 zoom={16} 
                 style={{ height: '100%', width: '100%' }}
               >
@@ -381,15 +398,35 @@ export default function SupervisorTimeLogs() {
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" 
                 />
                 
-                {/* Student Clock In Marker */}
-                <Marker position={[previewMap.clockInLat, previewMap.clockInLng]}>
-                  <Popup>
-                    <div className="text-xs font-sans">
-                      <strong className="text-slate-900 block mb-1">🎓 Student Clock-In Location</strong>
-                      <span className="text-slate-600">GPS: {previewMap.clockInLat.toFixed(5)}, {previewMap.clockInLng.toFixed(5)}</span>
-                    </div>
-                  </Popup>
-                </Marker>
+                {/* 🟢 Student Clock In Marker */}
+                {previewMap.clockInLat && previewMap.clockInLng && previewMap.clockInLat !== 0 && (
+                  <Marker position={[previewMap.clockInLat, previewMap.clockInLng]}>
+                    <Popup>
+                      <div className="text-xs font-sans">
+                        <strong className="text-emerald-700 block mb-1">🟢 Student Clock-In Location</strong>
+                        <span className="text-slate-600 block">GPS: {previewMap.clockInLat.toFixed(5)}, {previewMap.clockInLng.toFixed(5)}</span>
+                        {previewMap.clockInTime && (
+                          <span className="text-slate-500 text-[10px] block mt-0.5">{format(new Date(previewMap.clockInTime), 'MMM d, yyyy · h:mm a')}</span>
+                        )}
+                      </div>
+                    </Popup>
+                  </Marker>
+                )}
+
+                {/* 🔴 Student Clock Out Marker */}
+                {previewMap.clockOutLat && previewMap.clockOutLng && previewMap.clockOutLat !== 0 && (
+                  <Marker position={[previewMap.clockOutLat, previewMap.clockOutLng]} icon={redIcon}>
+                    <Popup>
+                      <div className="text-xs font-sans">
+                        <strong className="text-rose-700 block mb-1">🔴 Student Clock-Out Location</strong>
+                        <span className="text-slate-600 block">GPS: {previewMap.clockOutLat.toFixed(5)}, {previewMap.clockOutLng.toFixed(5)}</span>
+                        {previewMap.clockOutTime && (
+                          <span className="text-slate-500 text-[10px] block mt-0.5">{format(new Date(previewMap.clockOutTime), 'MMM d, yyyy · h:mm a')}</span>
+                        )}
+                      </div>
+                    </Popup>
+                  </Marker>
+                )}
 
                 {/* Company Geofence Marker & Boundary Circle */}
                 {previewMap.companyLat && previewMap.companyLng && previewMap.companyLat !== 0 && (
@@ -413,32 +450,64 @@ export default function SupervisorTimeLogs() {
             </div>
 
             {/* Location & Geofence Details Footer */}
-            <div className="p-4 bg-slate-900/95 border-t border-slate-800 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-slate-400">
-                <div>
-                  <span className="text-slate-500">Student GPS: </span>
-                  <span className="font-mono text-emerald-400 font-medium">
-                    {previewMap.clockInLat.toFixed(5)}, {previewMap.clockInLng.toFixed(5)}
-                  </span>
-                </div>
-                {previewMap.companyLat && previewMap.companyLng && previewMap.companyLat !== 0 && (
-                  <div>
-                    <span className="text-slate-500">Company Geofence: </span>
-                    <span className="font-mono text-teal-400 font-medium">
-                      {previewMap.companyName} ({previewMap.companyRadius}m radius)
-                    </span>
+            <div className="p-4 bg-slate-900/95 border-t border-slate-800 text-xs space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-3 text-slate-300">
+                {/* Clock In Info */}
+                {previewMap.clockInLat && previewMap.clockInLng && previewMap.clockInLat !== 0 ? (() => {
+                  const hasCompany = previewMap.companyLat && previewMap.companyLng && previewMap.companyLat !== 0
+                  const distIn = hasCompany ? getDistanceMetres(previewMap.clockInLat, previewMap.clockInLng, previewMap.companyLat, previewMap.companyLng) : null
+                  const isInsideIn = distIn !== null ? distIn <= previewMap.companyRadius : null
+                  return (
+                    <div className="flex items-center gap-2">
+                      <span className="text-emerald-400 font-medium">🟢 Clock-In:</span>
+                      <span className="font-mono text-slate-300">{previewMap.clockInLat.toFixed(5)}, {previewMap.clockInLng.toFixed(5)}</span>
+                      {hasCompany && (
+                        <span className={`px-2 py-0.5 rounded border text-[11px] font-medium ${
+                          isInsideIn ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-rose-500/10 border-rose-500/30 text-rose-400'
+                        }`}>
+                          {distIn}m ({isInsideIn ? 'Inside ✅' : 'Outside ⚠️'})
+                        </span>
+                      )}
+                    </div>
+                  )
+                })() : (
+                  <div className="text-slate-500 italic">🟢 Clock-In: No GPS</div>
+                )}
+
+                {/* Clock Out Info */}
+                {previewMap.clockOutLat && previewMap.clockOutLng && previewMap.clockOutLat !== 0 ? (() => {
+                  const hasCompany = previewMap.companyLat && previewMap.companyLng && previewMap.companyLat !== 0
+                  const distOut = hasCompany ? getDistanceMetres(previewMap.clockOutLat, previewMap.clockOutLng, previewMap.companyLat, previewMap.companyLng) : null
+                  const isInsideOut = distOut !== null ? distOut <= previewMap.companyRadius : null
+                  return (
+                    <div className="flex items-center gap-2">
+                      <span className="text-rose-400 font-medium">🔴 Clock-Out:</span>
+                      <span className="font-mono text-slate-300">{previewMap.clockOutLat.toFixed(5)}, {previewMap.clockOutLng.toFixed(5)}</span>
+                      {hasCompany && (
+                        <span className={`px-2 py-0.5 rounded border text-[11px] font-medium ${
+                          isInsideOut ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-rose-500/10 border-rose-500/30 text-rose-400'
+                        }`}>
+                          {distOut}m ({isInsideOut ? 'Inside ✅' : 'Outside ⚠️'})
+                        </span>
+                      )}
+                    </div>
+                  )
+                })() : (
+                  <div className="text-slate-500 italic">
+                    🔴 Clock-Out: {previewMap.clockOutTime ? 'No GPS Captured' : 'Session Ongoing'}
                   </div>
                 )}
               </div>
 
-              {previewMap.companyLat && previewMap.companyLng && previewMap.companyLat !== 0 && (() => {
-                const dist = getDistanceMetres(previewMap.clockInLat, previewMap.clockInLng, previewMap.companyLat, previewMap.companyLng)
-                const isInside = dist <= previewMap.companyRadius
+              {/* Distance between In & Out if both captured */}
+              {previewMap.clockInLat && previewMap.clockInLng && previewMap.clockOutLat && previewMap.clockOutLng && previewMap.clockInLat !== 0 && previewMap.clockOutLat !== 0 && (() => {
+                const shiftDist = getDistanceMetres(previewMap.clockInLat, previewMap.clockInLng, previewMap.clockOutLat, previewMap.clockOutLng)
                 return (
-                  <div className={`px-3 py-1 rounded-lg border text-xs font-medium whitespace-nowrap ${
-                    isInside ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-rose-500/10 border-rose-500/30 text-rose-400'
-                  }`}>
-                    {dist}m from company center ({isInside ? 'Inside Geofence ✅' : 'Outside Geofence ⚠️'})
+                  <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
+                    <span className="text-slate-400">↔️ Distance between Clock-In and Clock-Out:</span>
+                    <span className={`font-semibold font-mono ${shiftDist > 200 ? 'text-amber-400' : 'text-teal-400'}`}>
+                      {shiftDist} meters
+                    </span>
                   </div>
                 )
               })()}

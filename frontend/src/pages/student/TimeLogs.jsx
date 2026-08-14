@@ -165,6 +165,14 @@ export default function TimeLogs() {
         try {
             const formData = new FormData()
             if (photoData) formData.append('photo', dataURLtoFile(photoData, 'clockout.jpg'))
+
+            // GPS capture for clock-out
+            const gps = await getGPS().catch(() => null)
+            if (gps) {
+                formData.append('latitude', gps.lat)
+                formData.append('longitude', gps.lng)
+            }
+
             const res = await api.patch('/timelogs/clockout', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
             const hours = res.data?.log?.total_hours ?? res.data?.total_hours
             toast.success(`Session ended! ${hours ? `${hours}h logged` : 'Log saved'} ✅`)
