@@ -31,6 +31,31 @@ func UploadCertificate(c *gin.Context) {
 		return
 	}
 
+	// ── OJT Hours Completion Gate ─────────────────────────────────────────────
+	// A certificate may only be issued once the student has rendered all required hours.
+	requiredHours := 600.0
+	if assignment.RequiredHours > 0 {
+		requiredHours = assignment.RequiredHours
+	}
+
+	var approvedLogs []models.TimeLog
+	config.DB.Where("student_id = ? AND status = 'approved'", studentIDStr).Find(&approvedLogs)
+	var approvedHours float64
+	for _, l := range approvedLogs {
+		approvedHours += l.TotalHours
+	}
+
+	if approvedHours < requiredHours {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": fmt.Sprintf(
+				"Cannot issue certificate: student has only completed %.1f of %.1f required OJT hours.",
+				approvedHours, requiredHours,
+			),
+		})
+		return
+	}
+	// ─────────────────────────────────────────────────────────────────────────
+
 	fileHeader, err := c.FormFile("pdf")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "PDF file is required"})

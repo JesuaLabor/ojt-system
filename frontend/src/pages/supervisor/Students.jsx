@@ -245,9 +245,20 @@ export default function SupervisorStudents() {
                                         {student.has_evaluation ? '✓ Evaluated' : 'Evaluate'}
                                     </button>
                                     <button
-                                        onClick={() => { setCertModalStudent(student); setCertFile(null) }}
-                                        className={`btn btn-sm ${student.has_certificate ? 'bg-amber-500/10 text-amber-400 hover:bg-amber-500/20' : 'bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20'}`}
-                                        title={student.has_certificate ? "Update Certificate" : "Upload Certificate of Completion"}
+                                        onClick={() => { if (student.status === 'Completed') { setCertModalStudent(student); setCertFile(null) } }}
+                                        disabled={student.status !== 'Completed'}
+                                        className={`btn btn-sm ${
+                                            student.status !== 'Completed'
+                                                ? 'opacity-40 cursor-not-allowed bg-slate-700/50 text-slate-500'
+                                                : student.has_certificate
+                                                    ? 'bg-amber-500/10 text-amber-400 hover:bg-amber-500/20'
+                                                    : 'bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20'
+                                        }`}
+                                        title={
+                                            student.status !== 'Completed'
+                                                ? `Cannot issue certificate — student has only completed ${student.completed_hours}h of ${student.required_hours}h required.`
+                                                : student.has_certificate ? 'Update Certificate' : 'Upload Certificate of Completion'
+                                        }
                                     >
                                         📜 {student.has_certificate ? 'Cert' : 'Upload Cert'}
                                     </button>
@@ -282,7 +293,30 @@ export default function SupervisorStudents() {
                   Select your company's official Certificate of Completion (PDF format). The student will be notified and can download it directly from their dashboard.
                 </p>
 
-                {certModalStudent.has_certificate && (
+                {/* ── OJT Hours Completion Gate ── */}
+                {certModalStudent.status !== 'Completed' && (
+                  <div className="p-4 bg-red-500/10 border border-red-500/25 rounded-xl flex items-start gap-3">
+                    <span className="text-lg mt-0.5">🚫</span>
+                    <div>
+                      <p className="text-sm font-semibold text-red-400">OJT Hours Not Yet Complete</p>
+                      <p className="text-xs text-red-400/80 mt-0.5">
+                        <strong>{certModalStudent.student_name}</strong> has only completed{' '}
+                        <span className="font-bold text-red-300">{certModalStudent.completed_hours}h</span> out of{' '}
+                        <span className="font-bold text-red-300">{certModalStudent.required_hours}h</span> required.
+                        A certificate can only be issued once all OJT hours are fulfilled.
+                      </p>
+                      <div className="mt-2 h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-red-600 to-red-400"
+                          style={{ width: `${certModalStudent.progress_pct}%` }}
+                        />
+                      </div>
+                      <p className="text-[10px] text-red-400/60 mt-1">{certModalStudent.progress_pct.toFixed(1)}% completed</p>
+                    </div>
+                  </div>
+                )}
+
+                {certModalStudent.has_certificate && certModalStudent.status === 'Completed' && (
                   <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-xs text-amber-400 flex items-center justify-between">
                     <span>⚠️ Certificate already issued for this student. Uploading a new PDF will replace it.</span>
                     <a href={certModalStudent.certificate_url} target="_blank" rel="noopener noreferrer" className="underline font-bold whitespace-nowrap ml-2">View Existing</a>
@@ -295,8 +329,11 @@ export default function SupervisorStudents() {
                     type="file"
                     accept=".pdf,application/pdf"
                     required
+                    disabled={certModalStudent.status !== 'Completed'}
                     onChange={(e) => setCertFile(e.target.files[0] || null)}
-                    className="input text-sm text-slate-300 file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-500/10 file:text-amber-400 hover:file:bg-amber-500/20"
+                    className={`input text-sm text-slate-300 file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-500/10 file:text-amber-400 hover:file:bg-amber-500/20 ${
+                      certModalStudent.status !== 'Completed' ? 'opacity-40 cursor-not-allowed' : ''
+                    }`}
                   />
                   {certFile && (
                     <p className="text-[11px] text-emerald-400 mt-1">✓ Selected: {certFile.name} ({(certFile.size / 1024 / 1024).toFixed(2)} MB)</p>
@@ -306,7 +343,12 @@ export default function SupervisorStudents() {
 
               <div className="px-6 py-4 border-t border-slate-800 bg-slate-900/50 flex justify-end gap-3">
                 <button type="button" onClick={() => setCertModalStudent(null)} className="btn btn-ghost text-sm">Cancel</button>
-                <button type="submit" disabled={uploadingCert || !certFile} className="btn bg-amber-600 hover:bg-amber-500 text-white text-sm font-semibold">
+                <button
+                  type="submit"
+                  disabled={uploadingCert || !certFile || certModalStudent.status !== 'Completed'}
+                  className="btn bg-amber-600 hover:bg-amber-500 text-white text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
+                  title={certModalStudent.status !== 'Completed' ? 'Student must complete all OJT hours first' : ''}
+                >
                   {uploadingCert ? <span className="spinner w-4 h-4 mr-2" /> : null}
                   {uploadingCert ? 'Uploading...' : 'Upload & Issue'}
                 </button>
