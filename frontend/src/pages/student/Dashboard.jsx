@@ -16,6 +16,7 @@ export default function StudentDashboard() {
     <Layout>
       <Routes>
         <Route index element={<Overview />} />
+        <Route path="overview" element={<Overview />} />
         <Route path="timelogs" element={<TimeLogs />} />
         <Route path="announcements" element={<Announcements />} />
         <Route path="messages" element={<Messages />} />
@@ -23,6 +24,7 @@ export default function StudentDashboard() {
         <Route path="evaluations" element={<StudentEvaluations />} />
         <Route path="documents" element={<StudentDocuments />} />
         <Route path="profile" element={<Profile />} />
+        <Route path="*" element={<Overview />} />
       </Routes>
     </Layout>
   )

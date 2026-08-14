@@ -24,6 +24,7 @@ export default function SupervisorDashboard() {
     <Layout>
       <Routes>
         <Route index element={<Overview />} />
+        <Route path="overview" element={<Overview />} />
         <Route path="students" element={<SupervisorStudents />} />
         <Route path="announcements" element={<Announcements />} />
         <Route path="messages" element={<Messages />} />
@@ -32,6 +33,7 @@ export default function SupervisorDashboard() {
         <Route path="evaluations" element={<Evaluations />} />
         <Route path="reports" element={<SupervisorReports />} />
         <Route path="profile" element={<Profile />} />
+        <Route path="*" element={<Overview />} />
       </Routes>
     </Layout>
   )

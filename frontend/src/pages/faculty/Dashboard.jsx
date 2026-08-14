@@ -14,6 +14,7 @@ export default function FacultyDashboard() {
     <Layout>
       <Routes>
         <Route index element={<Overview />} />
+        <Route path="overview" element={<Overview />} />
         <Route path="announcements" element={<Announcements />} />
         <Route path="messages" element={<Messages />} />
         <Route path="students" element={<FacultyStudents />} />
@@ -21,6 +22,7 @@ export default function FacultyDashboard() {
         <Route path="evaluations" element={<FacultyEvaluations />} />
         <Route path="reports" element={<FacultyReports />} />
         <Route path="profile" element={<Profile />} />
+        <Route path="*" element={<Overview />} />
       </Routes>
     </Layout>
   )

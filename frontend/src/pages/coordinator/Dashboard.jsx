@@ -30,6 +30,7 @@ export default function CoordinatorDashboard() {
     <Layout>
       <Routes>
         <Route index element={<Overview />} />
+        <Route path="overview" element={<Overview />} />
         <Route path="announcements" element={<Announcements />} />
         <Route path="messages" element={<Messages />} />
         <Route path="students" element={<CoordinatorStudents />} />
@@ -44,6 +45,7 @@ export default function CoordinatorDashboard() {
         <Route path="evaluations" element={<CoordinatorEvaluations />} />
         <Route path="reports" element={<Reports />} />
         <Route path="profile" element={<Profile />} />
+        <Route path="*" element={<Overview />} />
       </Routes>
     </Layout>
   )
