@@ -22,6 +22,9 @@ export default function Announcements() {
         try {
             const res = await api.get('/announcements')
             setAnnouncements(res.data.announcements || [])
+            if (user?.id) {
+                localStorage.setItem(`announcements_last_read_${user.id}`, new Date().toISOString())
+            }
         } catch (err) {
             toast.error('Failed to load announcements')
         } finally {

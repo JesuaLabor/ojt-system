@@ -9,7 +9,7 @@ import logo from '../../assets/ojt_logo.png'
 const NAV = {
     student: [
         { to: '/student', label: 'Dashboard', icon: IconGrid },
-        { to: '/student/announcements', label: 'Announcements', icon: IconSpeakerphone },
+        { to: '/student/announcements', label: 'Announcements', icon: IconSpeakerphone, badgeKey: 'unreadAnnouncements' },
         { to: '/student/messages', label: 'Messages', icon: IconChat, badgeKey: 'unreadMessages' },
         { to: '/student/timelogs', label: 'Time Logs', icon: IconClock },
         { to: '/student/journals', label: 'Journals', icon: IconBook },
@@ -19,7 +19,7 @@ const NAV = {
     ],
     supervisor: [
         { to: '/supervisor', label: 'Dashboard', icon: IconGrid },
-        { to: '/supervisor/announcements', label: 'Announcements', icon: IconSpeakerphone },
+        { to: '/supervisor/announcements', label: 'Announcements', icon: IconSpeakerphone, badgeKey: 'unreadAnnouncements' },
         { to: '/supervisor/messages', label: 'Messages', icon: IconChat, badgeKey: 'unreadMessages' },
         { to: '/supervisor/students', label: 'Students', icon: IconUsers },
         { to: '/supervisor/timelogs', label: 'Time Logs', icon: IconClock, badgeKey: 'pendingApprovals' },
@@ -30,7 +30,7 @@ const NAV = {
     ],
     coordinator: [
         { to: '/coordinator', label: 'Dashboard', icon: IconGrid },
-        { to: '/coordinator/announcements', label: 'Announcements', icon: IconSpeakerphone },
+        { to: '/coordinator/announcements', label: 'Announcements', icon: IconSpeakerphone, badgeKey: 'unreadAnnouncements' },
         { to: '/coordinator/messages', label: 'Messages', icon: IconChat, badgeKey: 'unreadMessages' },
         { to: '/coordinator/approvals', label: 'Approvals', icon: IconShieldCheck, badgeKey: 'pendingUsers' },
         { to: '/coordinator/students', label: 'Students', icon: IconUsers },
@@ -47,7 +47,7 @@ const NAV = {
     ],
     faculty: [
         { to: '/faculty', label: 'Dashboard', icon: IconGrid },
-        { to: '/faculty/announcements', label: 'Announcements', icon: IconSpeakerphone },
+        { to: '/faculty/announcements', label: 'Announcements', icon: IconSpeakerphone, badgeKey: 'unreadAnnouncements' },
         { to: '/faculty/messages', label: 'Messages', icon: IconChat, badgeKey: 'unreadMessages' },
         { to: '/faculty/students', label: 'Students', icon: IconUsers },
         { to: '/faculty/journals', label: 'Journals', icon: IconBook },
@@ -57,7 +57,7 @@ const NAV = {
     ],
     admin: [
         { to: '/admin', label: 'Dashboard', icon: IconGrid },
-        { to: '/admin/announcements', label: 'Announcements', icon: IconSpeakerphone },
+        { to: '/admin/announcements', label: 'Announcements', icon: IconSpeakerphone, badgeKey: 'unreadAnnouncements' },
         { to: '/admin/messages', label: 'Messages', icon: IconChat, badgeKey: 'unreadMessages' },
         { to: '/admin/approvals', label: 'Approvals', icon: IconShieldCheck, badgeKey: 'pendingUsers' },
         { to: '/admin/students', label: 'Students', icon: IconUsers },
@@ -108,18 +108,27 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }) 
                 .catch(() => { })
         }
 
-        // Fetch unread messages
+        // Fetch unread messages & announcements
         const fetchUnread = () => {
             api.get('/messages/unread')
                 .then(res => {
                     setBadges(prev => ({ ...prev, unreadMessages: res.data?.unread_count || 0 }))
                 })
                 .catch(() => { })
+
+            api.get('/announcements')
+                .then(res => {
+                    const list = res.data?.announcements || []
+                    const lastRead = localStorage.getItem(`announcements_last_read_${user?.id}`)
+                    const unread = list.filter(a => !lastRead || new Date(a.CreatedAt) > new Date(lastRead)).length
+                    setBadges(prev => ({ ...prev, unreadAnnouncements: unread }))
+                })
+                .catch(() => { })
         }
         fetchUnread()
-        const interval = setInterval(fetchUnread, 30000) // Poll every 30s
+        const interval = setInterval(fetchUnread, 15000) // Poll every 15s
         return () => clearInterval(interval)
-    }, [user?.role])
+    }, [user?.role, user?.id])
 
     const handleLogout = () => {
         setShowLogoutConfirm(true)
