@@ -68,6 +68,8 @@ func GetFacultyStudents(c *gin.Context) {
 	completedOJT := 0
 	behindSchedule := 0
 	atRiskStudents := 0
+	evaluatedCount := 0
+	pendingEvaluations := 0
 
 	for _, a := range assignments {
 		// Sum approved hours
@@ -123,6 +125,12 @@ func GetFacultyStudents(c *gin.Context) {
 			behindSchedule++
 		}
 
+		if latestScore > 0 {
+			evaluatedCount++
+		} else {
+			pendingEvaluations++
+		}
+
 		students = append(students, FacultyStudentView{
 			StudentID:      a.StudentID,
 			StudentName:    a.Student.Name,
@@ -156,13 +164,15 @@ func GetFacultyStudents(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"summary": gin.H{
-			"total_students":  len(students),
-			"completed_ojt":   completedOJT,
-			"behind_schedule": behindSchedule,
-			"at_risk_students": atRiskStudents,
-			"department_id":   faculty.DepartmentID,
-			"department_name": deptName,
-			"has_department":  faculty.DepartmentID != nil,
+			"total_students":      len(students),
+			"completed_ojt":       completedOJT,
+			"behind_schedule":     behindSchedule,
+			"at_risk_students":    atRiskStudents,
+			"evaluated_count":     evaluatedCount,
+			"pending_evaluations": pendingEvaluations,
+			"department_id":       faculty.DepartmentID,
+			"department_name":     deptName,
+			"has_department":      faculty.DepartmentID != nil,
 		},
 		"students": students,
 	})

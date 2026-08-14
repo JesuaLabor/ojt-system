@@ -341,6 +341,7 @@ func GetStudentEvaluations(c *gin.Context) {
 			"avg_attendance":              round(sumAtt),
 			"avg_cooperation":             round(sumCoop),
 			"avg_company_rules":           round(sumCRO),
+			"avg_company_rules_observance":round(sumCRO),
 			"avg_personality":             round(sumPer),
 			"avg_safety_housekeeping":     round(sumSH),
 			"avg_tools_equipment":         round(sumTE),
