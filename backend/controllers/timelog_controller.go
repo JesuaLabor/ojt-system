@@ -448,6 +448,81 @@ func ApproveTimeLog(c *gin.Context) {
 	entry.ApprovedBy = &uid
 	config.DB.Save(&entry)
 
+	// Notify Student of approved log
+	dateStr := entry.ClockIn.Format("Jan 02, 2006")
+	config.DB.Create(&models.Notification{
+		UserID:  entry.StudentID,
+		Message: fmt.Sprintf("✅ Your time log for %s (%.1fh) was approved.", dateStr, entry.TotalHours),
+		Link:    "/student/timelogs",
+	})
+
+	// Check if student completed required OJT hours
+	var totalHours float64
+	config.DB.Model(&models.TimeLog{}).
+		Where("student_id = ? AND status = 'approved'", entry.StudentID).
+		Select("COALESCE(SUM(total_hours), 0)").Scan(&totalHours)
+
+	var assignment models.OJTAssignment
+	if err := config.DB.Preload("Student").Preload("Department").Where("student_id = ?", entry.StudentID).First(&assignment).Error; err == nil {
+		reqHours := assignment.RequiredHours
+		if reqHours == 0 {
+			reqHours = 600
+		}
+
+		if totalHours >= float64(reqHours) && assignment.Status != "completed" {
+			assignment.Status = "completed"
+			config.DB.Save(&assignment)
+
+			studentName := assignment.Student.Name
+			deptName := "Department"
+			deptID := uint(0)
+			if assignment.Department.ID != 0 {
+				deptName = assignment.Department.Name
+				deptID = assignment.Department.ID
+			}
+
+			// 1. Notify Student
+			config.DB.Create(&models.Notification{
+				UserID:  entry.StudentID,
+				Message: fmt.Sprintf("🎓 Congratulations! You have completed your required OJT hours (%.1fh / %dh).", totalHours, reqHours),
+				Link:    "/student/overview",
+			})
+
+			// 2. Notify Faculty members in Student's Department
+			if deptID != 0 {
+				var facultyMembers []models.User
+				config.DB.Where("role = 'faculty' AND department_id = ?", deptID).Find(&facultyMembers)
+				for _, f := range facultyMembers {
+					config.DB.Create(&models.Notification{
+						UserID:  f.ID,
+						Message: fmt.Sprintf("🎓 Student %s from %s has completed their OJT requirement (%.1fh / %dh).", studentName, deptName, totalHours, reqHours),
+						Link:    "/faculty/students",
+					})
+				}
+			}
+
+			// 3. Notify Coordinators
+			var coordinators []models.User
+			config.DB.Where("role = 'coordinator'").Find(&coordinators)
+			for _, coord := range coordinators {
+				config.DB.Create(&models.Notification{
+					UserID:  coord.ID,
+					Message: fmt.Sprintf("🎓 Student %s (%s) has completed their OJT requirement (%.1fh / %dh).", studentName, deptName, totalHours, reqHours),
+					Link:    "/coordinator/students",
+				})
+			}
+
+			// 4. Notify Supervisor
+			if assignment.SupervisorID != 0 {
+				config.DB.Create(&models.Notification{
+					UserID:  assignment.SupervisorID,
+					Message: fmt.Sprintf("🎓 Student %s has completed their required OJT hours (%.1fh / %dh). You can now submit their evaluation and certificate.", studentName, totalHours, reqHours),
+					Link:    "/supervisor/students",
+				})
+			}
+		}
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Time log approved",
 		"log":     entry,
@@ -480,6 +555,14 @@ func RejectTimeLog(c *gin.Context) {
 	entry.Status = "rejected"
 	entry.Remarks = input.Remarks
 	config.DB.Save(&entry)
+
+	// Notify Student of rejected log
+	dateStr := entry.ClockIn.Format("Jan 02, 2006")
+	config.DB.Create(&models.Notification{
+		UserID:  entry.StudentID,
+		Message: fmt.Sprintf("❌ Your time log for %s was rejected: \"%s\"", dateStr, input.Remarks),
+		Link:    "/student/timelogs",
+	})
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Time log rejected",

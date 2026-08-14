@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"ojt-system/config"
 	"ojt-system/models"
@@ -64,6 +66,43 @@ func CreateAnnouncement(c *gin.Context) {
 
 	// Preload author for the response
 	config.DB.Preload("Author").First(&announcement, announcement.ID)
+
+	// Notify targeted users about the new announcement
+	var targetUsers []models.User
+	userQuery := config.DB.Where("id != ?", userID.(uint)) // Don't notify the author
+
+	switch target {
+	case "students":
+		userQuery = userQuery.Where("role = 'student'")
+	case "supervisors":
+		userQuery = userQuery.Where("role = 'supervisor'")
+	case "faculty":
+		userQuery = userQuery.Where("role = 'faculty'")
+	case "coordinators":
+		userQuery = userQuery.Where("role = 'coordinator'")
+	case "all":
+		// All users except author
+	}
+
+	userQuery.Find(&targetUsers)
+
+	for _, targetUser := range targetUsers {
+		link := fmt.Sprintf("/%s/announcements", targetUser.Role)
+		notif := models.Notification{
+			UserID:  targetUser.ID,
+			Message: fmt.Sprintf("📢 Announcement: \"%s\"", req.Title),
+			Link:    link,
+		}
+		config.DB.Create(&notif)
+
+		// Broadcast real-time WebSocket event for immediate notification pop-up
+		notifJSON, _ := json.Marshal(map[string]interface{}{
+			"type":         "new_notification",
+			"notification": notif,
+			"announcement": announcement,
+		})
+		MainHub.BroadcastToUser(targetUser.ID, notifJSON)
+	}
 
 	c.JSON(http.StatusCreated, gin.H{"message": "Announcement posted successfully", "announcement": announcement})
 }

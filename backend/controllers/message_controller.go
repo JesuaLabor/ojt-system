@@ -188,6 +188,31 @@ func SendMessage(c *gin.Context) {
 	})
 	MainHub.BroadcastToUser(message.ReceiverID, msgJSON)
 
+	// Create persistent notification for receiver
+	var receiverUser models.User
+	var senderUser models.User
+	config.DB.First(&senderUser, message.SenderID)
+	if err := config.DB.First(&receiverUser, message.ReceiverID).Error; err == nil {
+		snippet := content
+		if snippet == "" && fileURL != "" {
+			if fileType == "image" {
+				snippet = "Sent an image attachment"
+			} else {
+				snippet = "Sent a document attachment"
+			}
+		} else if len(snippet) > 50 {
+			snippet = snippet[:47] + "..."
+		}
+
+		link := fmt.Sprintf("/%s/messages", receiverUser.Role)
+
+		config.DB.Create(&models.Notification{
+			UserID:  message.ReceiverID,
+			Message: fmt.Sprintf("💬 New message from %s: \"%s\"", senderUser.Name, snippet),
+			Link:    link,
+		})
+	}
+
 	c.JSON(http.StatusCreated, gin.H{"message": message})
 }
 
