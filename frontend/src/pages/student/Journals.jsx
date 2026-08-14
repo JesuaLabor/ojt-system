@@ -8,6 +8,7 @@ export default function StudentJournals() {
     const [loading, setLoading] = useState(true)
     const [showForm, setShowForm] = useState(false)
     const [submitting, setSubmitting] = useState(false)
+    const [downloading, setDownloading] = useState(false)
     const [form, setForm] = useState({ date: format(new Date(), 'yyyy-MM-dd'), tasks: '', learnings: '' })
 
     const fetchJournals = async () => {
@@ -40,106 +41,224 @@ export default function StudentJournals() {
         }
     }
 
-    // ── PDF Download ──────────────────────────────────────────────────────────
-    const downloadJournalPDF = async (journal) => {
-        const { jsPDF } = await import('jspdf')
-        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
+    // ── Combined PDF Download (all acknowledged journals) ─────────────────────
+    const downloadAllJournalsPDF = async () => {
+        const acknowledged = journals
+            .filter(j => j.status === 'acknowledged')
+            .sort((a, b) => new Date(a.date) - new Date(b.date)) // oldest first
 
-        const pageW = doc.internal.pageSize.getWidth()
-        const margin = 18
-        const contentW = pageW - margin * 2
-        let y = 0
+        if (acknowledged.length === 0) {
+            toast.error('No acknowledged journals to download.')
+            return
+        }
 
-        // ── Header bar ──────────────────────────────────────────────────────
-        doc.setFillColor(15, 118, 110) // teal-700
-        doc.rect(0, 0, pageW, 30, 'F')
-        doc.setTextColor(255, 255, 255)
-        doc.setFont('helvetica', 'bold')
-        doc.setFontSize(16)
-        doc.text('OJT Accomplishment Journal', margin, 13)
-        doc.setFontSize(8)
-        doc.setFont('helvetica', 'normal')
-        doc.text('On-the-Job Training Management System', margin, 20)
+        setDownloading(true)
+        try {
+            const { jsPDF } = await import('jspdf')
+            const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
 
-        // ── Acknowledged stamp (top-right) ───────────────────────────────────
-        doc.setFillColor(5, 150, 105) // emerald-600
-        doc.roundedRect(pageW - margin - 36, 5, 36, 12, 2, 2, 'F')
-        doc.setFont('helvetica', 'bold')
-        doc.setFontSize(8)
-        doc.setTextColor(255, 255, 255)
-        doc.text('ACKNOWLEDGED', pageW - margin - 33, 13)
+            const pageW = doc.internal.pageSize.getWidth()
+            const pageH = doc.internal.pageSize.getHeight()
+            const margin = 18
+            const contentW = pageW - margin * 2
 
-        y = 40
+            // ── Helper: draw page header bar ────────────────────────────────
+            const drawHeader = (pageLabel) => {
+                doc.setFillColor(15, 118, 110)
+                doc.rect(0, 0, pageW, 28, 'F')
+                doc.setFont('helvetica', 'bold')
+                doc.setFontSize(13)
+                doc.setTextColor(255, 255, 255)
+                doc.text('OJT Accomplishment Journals', margin, 12)
+                doc.setFont('helvetica', 'normal')
+                doc.setFontSize(7.5)
+                doc.text('On-the-Job Training Management System', margin, 19)
+                // Page label badge (top-right)
+                doc.setFillColor(5, 150, 105)
+                doc.roundedRect(pageW - margin - 42, 5, 42, 11, 2, 2, 'F')
+                doc.setFont('helvetica', 'bold')
+                doc.setFontSize(7.5)
+                doc.setTextColor(255, 255, 255)
+                doc.text(pageLabel, pageW - margin - 39, 12.5)
+            }
 
-        // ── Meta info ────────────────────────────────────────────────────────
-        doc.setTextColor(30, 41, 59)
-        doc.setFillColor(241, 245, 249)
-        doc.roundedRect(margin, y, contentW, 22, 3, 3, 'F')
+            // ── Helper: section block ────────────────────────────────────────
+            const addSection = (doc, title, content, r, g, b, yRef) => {
+                let y = yRef
+                doc.setFillColor(r, g, b)
+                doc.setLineWidth(0.4)
+                doc.roundedRect(margin, y, contentW, 7.5, 2, 2, 'F')
+                doc.setFont('helvetica', 'bold')
+                doc.setFontSize(7.5)
+                doc.setTextColor(255, 255, 255)
+                doc.text(title.toUpperCase(), margin + 4, y + 5.2)
+                y += 11
 
-        doc.setFont('helvetica', 'bold')
-        doc.setFontSize(9)
-        doc.setTextColor(100, 116, 139)
-        doc.text('JOURNAL DATE', margin + 4, y + 7)
-        doc.text('SUPERVISOR', margin + contentW / 2 + 4, y + 7)
+                doc.setFont('helvetica', 'normal')
+                doc.setFontSize(10)
+                doc.setTextColor(51, 65, 85)
+                const lines = doc.splitTextToSize(content, contentW)
+                lines.forEach(line => {
+                    if (y > pageH - 20) {
+                        doc.addPage()
+                        drawHeader('continued')
+                        y = 36
+                    }
+                    doc.text(line, margin, y)
+                    y += 5.5
+                })
+                return y + 5
+            }
 
-        doc.setFont('helvetica', 'bold')
-        doc.setFontSize(11)
-        doc.setTextColor(15, 23, 42)
-        doc.text(format(new Date(journal.date), 'MMMM d, yyyy'), margin + 4, y + 16)
-        doc.text(journal.supervisor?.name || 'Supervisor', margin + contentW / 2 + 4, y + 16)
+            // ── Helper: page footer ──────────────────────────────────────────
+            const drawFooter = (doc, label) => {
+                const totalPages = doc.internal.getNumberOfPages()
+                for (let i = 1; i <= totalPages; i++) {
+                    doc.setPage(i)
+                    doc.setDrawColor(203, 213, 225)
+                    doc.setLineWidth(0.3)
+                    doc.line(margin, pageH - 8, pageW - margin, pageH - 8)
+                    doc.setFont('helvetica', 'normal')
+                    doc.setFontSize(7)
+                    doc.setTextColor(148, 163, 184)
+                    doc.text(label, margin, pageH - 4)
+                    doc.text(`Page ${i} of ${totalPages}`, pageW - margin, pageH - 4, { align: 'right' })
+                }
+            }
 
-        y += 30
+            // ════════════════════════════════════════════════════════════════
+            // PAGE 1 — Cover / Summary
+            // ════════════════════════════════════════════════════════════════
+            drawHeader('COVER PAGE')
 
-        // ── Helper: section block ────────────────────────────────────────────
-        const addSection = (title, content, r, g, b) => {
-            doc.setFillColor(r, g, b)
-            doc.setDrawColor(r, g, b)
-            doc.setLineWidth(0.4)
-            doc.roundedRect(margin, y, contentW, 8, 2, 2, 'F')
+            let y = 36
+
+            // Big title block
+            doc.setFillColor(241, 245, 249)
+            doc.roundedRect(margin, y, contentW, 28, 4, 4, 'F')
             doc.setFont('helvetica', 'bold')
-            doc.setFontSize(8)
-            doc.setTextColor(255, 255, 255)
-            doc.text(title.toUpperCase(), margin + 4, y + 5.5)
-            y += 12
-
+            doc.setFontSize(20)
+            doc.setTextColor(15, 23, 42)
+            doc.text('Accomplishment Journal', margin + contentW / 2, y + 12, { align: 'center' })
             doc.setFont('helvetica', 'normal')
             doc.setFontSize(10)
-            doc.setTextColor(51, 65, 85)
-            const lines = doc.splitTextToSize(content, contentW)
-            lines.forEach(line => {
-                if (y > 270) { doc.addPage(); y = 20 }
-                doc.text(line, margin, y)
-                y += 5.5
+            doc.setTextColor(100, 116, 139)
+            doc.text('Compilation of Acknowledged OJT Journal Entries', margin + contentW / 2, y + 21, { align: 'center' })
+            y += 36
+
+            // Stats row
+            const statW = contentW / 3 - 3
+            const stats = [
+                { label: 'Total Entries', value: String(acknowledged.length) },
+                { label: 'Date From', value: format(new Date(acknowledged[0].date), 'MMM d, yyyy') },
+                { label: 'Date To', value: format(new Date(acknowledged[acknowledged.length - 1].date), 'MMM d, yyyy') },
+            ]
+            stats.forEach((s, i) => {
+                const x = margin + i * (statW + 4.5)
+                doc.setFillColor(15, 118, 110, 0.08)
+                doc.setFillColor(236, 253, 245)
+                doc.roundedRect(x, y, statW, 18, 3, 3, 'F')
+                doc.setFont('helvetica', 'bold')
+                doc.setFontSize(14)
+                doc.setTextColor(15, 118, 110)
+                doc.text(s.value, x + statW / 2, y + 10, { align: 'center' })
+                doc.setFont('helvetica', 'normal')
+                doc.setFontSize(7.5)
+                doc.setTextColor(100, 116, 139)
+                doc.text(s.label.toUpperCase(), x + statW / 2, y + 16, { align: 'center' })
             })
-            y += 6
-        }
+            y += 26
 
-        addSection('Tasks Accomplished', journal.tasks, 15, 118, 110)
-        addSection('Key Learnings / Challenges', journal.learnings, 99, 102, 241)
-
-        if (journal.feedback) {
-            addSection('Supervisor Feedback', journal.feedback, 245, 158, 11)
-        }
-
-        // ── Footer ───────────────────────────────────────────────────────────
-        const totalPages = doc.internal.getNumberOfPages()
-        for (let i = 1; i <= totalPages; i++) {
-            doc.setPage(i)
+            // Table of contents
+            doc.setFont('helvetica', 'bold')
+            doc.setFontSize(9)
+            doc.setTextColor(100, 116, 139)
+            doc.text('INDEX OF JOURNAL ENTRIES', margin, y)
+            y += 5
             doc.setDrawColor(203, 213, 225)
             doc.setLineWidth(0.3)
-            doc.line(margin, 285, pageW - margin, 285)
-            doc.setFont('helvetica', 'normal')
-            doc.setFontSize(7)
-            doc.setTextColor(148, 163, 184)
-            doc.text(`OJT Journal — ${format(new Date(journal.date), 'MMMM d, yyyy')}`, margin, 290)
-            doc.text(`Page ${i} of ${totalPages}`, pageW - margin, 290, { align: 'right' })
-        }
+            doc.line(margin, y, pageW - margin, y)
+            y += 6
 
-        const fileName = `Journal_${format(new Date(journal.date), 'yyyy-MM-dd')}.pdf`
-        doc.save(fileName)
-        toast.success(`Downloaded: ${fileName}`)
+            acknowledged.forEach((j, idx) => {
+                if (y > pageH - 20) return // safety
+                const isEven = idx % 2 === 0
+                if (isEven) {
+                    doc.setFillColor(248, 250, 252)
+                    doc.rect(margin, y - 4, contentW, 8, 'F')
+                }
+                doc.setFont('helvetica', 'bold')
+                doc.setFontSize(9)
+                doc.setTextColor(15, 23, 42)
+                doc.text(`${String(idx + 1).padStart(2, '0')}.  ${format(new Date(j.date), 'MMMM d, yyyy')}`, margin + 3, y)
+                doc.setFont('helvetica', 'normal')
+                doc.setTextColor(100, 116, 139)
+                doc.text(j.supervisor?.name || 'Supervisor', pageW - margin - 3, y, { align: 'right' })
+                // Acknowledged badge dot
+                doc.setFillColor(5, 150, 105)
+                doc.circle(margin + contentW / 2, y - 1.2, 1.5, 'F')
+                y += 9
+            })
+
+            // ════════════════════════════════════════════════════════════════
+            // PAGES 2+ — One entry per new page
+            // ════════════════════════════════════════════════════════════════
+            acknowledged.forEach((j, idx) => {
+                doc.addPage()
+                drawHeader(`ENTRY ${String(idx + 1).padStart(2, '0')} OF ${acknowledged.length}`)
+
+                let ey = 36
+
+                // Entry meta card
+                doc.setFillColor(241, 245, 249)
+                doc.roundedRect(margin, ey, contentW, 20, 3, 3, 'F')
+
+                doc.setFont('helvetica', 'bold')
+                doc.setFontSize(8.5)
+                doc.setTextColor(100, 116, 139)
+                doc.text('JOURNAL DATE', margin + 4, ey + 6)
+                doc.text('SUPERVISOR', margin + contentW / 2 + 4, ey + 6)
+
+                doc.setFont('helvetica', 'bold')
+                doc.setFontSize(12)
+                doc.setTextColor(15, 23, 42)
+                doc.text(format(new Date(j.date), 'MMMM d, yyyy'), margin + 4, ey + 15)
+                doc.text(j.supervisor?.name || 'Supervisor', margin + contentW / 2 + 4, ey + 15)
+
+                // Acknowledged stamp
+                doc.setFillColor(5, 150, 105)
+                doc.roundedRect(pageW - margin - 40, ey + 4, 40, 11, 2, 2, 'F')
+                doc.setFont('helvetica', 'bold')
+                doc.setFontSize(7.5)
+                doc.setTextColor(255, 255, 255)
+                doc.text('✓ ACKNOWLEDGED', pageW - margin - 37, ey + 11)
+
+                ey += 28
+
+                ey = addSection(doc, 'Tasks Accomplished', j.tasks, 15, 118, 110, ey)
+                ey = addSection(doc, 'Key Learnings / Challenges', j.learnings, 99, 102, 241, ey)
+
+                if (j.feedback) {
+                    ey = addSection(doc, 'Supervisor Feedback', j.feedback, 245, 158, 11, ey)
+                }
+            })
+
+            // ── Apply footer to all pages ────────────────────────────────────
+            drawFooter(doc, `OJT Journals — ${acknowledged.length} acknowledged entries`)
+
+            const fileName = `OJT_Journals_${format(new Date(), 'yyyy-MM-dd')}.pdf`
+            doc.save(fileName)
+            toast.success(`Downloaded ${acknowledged.length} journal entries as PDF!`)
+        } catch (err) {
+            console.error(err)
+            toast.error('Failed to generate PDF.')
+        } finally {
+            setDownloading(false)
+        }
     }
     // ─────────────────────────────────────────────────────────────────────────
+
+    const acknowledgedCount = journals.filter(j => j.status === 'acknowledged').length
 
     return (
         <div className="fade-in space-y-6 max-w-5xl mx-auto">
@@ -148,9 +267,32 @@ export default function StudentJournals() {
                     <h1 className="page-title">Accomplishment Journals</h1>
                     <p className="page-sub">Document your daily progress and learnings.</p>
                 </div>
-                <button onClick={() => setShowForm(!showForm)} className="btn btn-primary">
-                    {showForm ? 'Cancel Entry' : '+ New Journal Entry'}
-                </button>
+                <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                    {/* Download All button — only shows when there are acknowledged entries */}
+                    {acknowledgedCount > 0 && (
+                        <button
+                            onClick={downloadAllJournalsPDF}
+                            disabled={downloading}
+                            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            title={`Download all ${acknowledgedCount} acknowledged journal${acknowledgedCount > 1 ? 's' : ''} as one PDF`}
+                        >
+                            {downloading ? (
+                                <span className="w-4 h-4 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin" />
+                            ) : (
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                            )}
+                            <span>Download Journals</span>
+                            <span className="px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">
+                                {acknowledgedCount}
+                            </span>
+                        </button>
+                    )}
+                    <button onClick={() => setShowForm(!showForm)} className="btn btn-primary">
+                        {showForm ? 'Cancel Entry' : '+ New Journal Entry'}
+                    </button>
+                </div>
             </div>
 
             {showForm && (
@@ -202,25 +344,10 @@ export default function StudentJournals() {
                                         </p>
                                     </div>
                                 </div>
-
-                                {/* Status badge + Download button */}
-                                <div className="flex items-center gap-2 shrink-0">
-                                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${j.status === 'acknowledged' ? 'bg-emerald-500/10 text-emerald-400' : j.status === 'rejected' ? 'bg-red-500/10 text-red-400' : 'bg-amber-500/10 text-amber-400'}`}>
-                                        {j.status}
-                                    </span>
-                                    {j.status === 'acknowledged' && (
-                                        <button
-                                            onClick={() => downloadJournalPDF(j)}
-                                            title="Download acknowledged journal as PDF"
-                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20 transition-all"
-                                        >
-                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                            </svg>
-                                            <span className="hidden sm:inline">PDF</span>
-                                        </button>
-                                    )}
-                                </div>
+                                {/* Status badge only */}
+                                <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shrink-0 ${j.status === 'acknowledged' ? 'bg-emerald-500/10 text-emerald-400' : j.status === 'rejected' ? 'bg-red-500/10 text-red-400' : 'bg-amber-500/10 text-amber-400'}`}>
+                                    {j.status}
+                                </span>
                             </div>
                             <div className="p-5 space-y-4">
                                 <div>
