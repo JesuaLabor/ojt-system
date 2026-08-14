@@ -352,6 +352,27 @@ func GetStudentTimeLogs(c *gin.Context) {
 		}
 	}
 
+	var companyInfo gin.H
+	var assignment models.OJTAssignment
+	if err := config.DB.Where("student_id = ? AND status = 'active'", studentID).First(&assignment).Error; err == nil {
+		var company models.Company
+		if err := config.DB.Where("LOWER(name) = LOWER(?)", strings.TrimSpace(assignment.CompanyName)).First(&company).Error; err == nil {
+			companyInfo = gin.H{
+				"name":       company.Name,
+				"latitude":   company.Latitude,
+				"longitude":  company.Longitude,
+				"geo_radius": company.GeoRadius,
+			}
+		} else {
+			companyInfo = gin.H{
+				"name":       assignment.CompanyName,
+				"latitude":   0,
+				"longitude":  0,
+				"geo_radius": 200,
+			}
+		}
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"student": gin.H{
 			"id":    student.ID,
@@ -363,7 +384,8 @@ func GetStudentTimeLogs(c *gin.Context) {
 			"total_approved_hours": math.Round(totalApproved*100) / 100,
 			"total_pending_hours":  math.Round(totalPending*100) / 100,
 		},
-		"logs": logs,
+		"company": companyInfo,
+		"logs":    logs,
 	})
 }
 
