@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from 'react-router-dom'
+import { NavLink, Link, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import useAuthStore from '../../store/authStore'
 import useBadgeStore from '../../store/badgeStore'
@@ -184,33 +184,37 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }) 
                 </div>
 
                 {/* User info strip */}
-                <div className={`mt-3 rounded-xl bg-slate-800/60 border border-slate-700/50 transition-all ${
-                    collapsed ? 'mx-2 p-2 flex justify-center' : 'mx-3 px-4 py-3'
-                }`}>
-                    <div className="flex items-center gap-2.5" title={`${user?.name} (${meta.label})`}>
+                <Link
+                    to={`/${user?.role || 'student'}/profile`}
+                    onClick={onClose}
+                    className={`mt-3 rounded-xl bg-slate-800/60 border border-slate-700/50 hover:bg-slate-800/90 hover:border-indigo-500/40 transition-all block group ${
+                        collapsed ? 'mx-2 p-2 flex justify-center' : 'mx-3 px-3.5 py-2.5'
+                    }`}
+                >
+                    <div className="flex items-center gap-2.5" title={`${user?.name || 'User'} (${meta.label || user?.role || ''})`}>
                         {user?.profile_photo ? (
                             <img
                                 src={user.profile_photo}
                                 alt="Avatar"
-                                className="w-8 h-8 rounded-full object-cover flex-shrink-0 border border-slate-600/50"
+                                className="w-8 h-8 rounded-full object-cover shrink-0 border border-slate-600/50 group-hover:border-indigo-400/60 transition-colors"
                             />
                         ) : (
                             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-teal-500 to-cyan-600
-                                flex items-center justify-center flex-shrink-0">
-                                <span className="text-white text-xs font-bold">
-                                    {user?.name?.charAt(0).toUpperCase()}
+                                flex items-center justify-center shrink-0">
+                                <span className="text-white text-xs font-bold leading-none">
+                                    {user?.name ? user.name.charAt(0).toUpperCase() : '?'}
                                 </span>
                             </div>
                         )}
                         <div className={`min-w-0 flex-1 ${collapsed ? 'md:hidden' : 'block'}`}>
-                            <p className="text-xs font-semibold text-white truncate">{user?.name}</p>
+                            <p className="text-xs font-semibold text-white truncate group-hover:text-indigo-300 transition-colors">{user?.name || 'User'}</p>
                             <div className="flex items-center gap-1 mt-0.5">
-                                <span className={`w-1.5 h-1.5 rounded-full ${meta.dot}`} />
-                                <p className={`text-[10px] font-medium ${meta.color}`}>{meta.label}</p>
+                                <span className={`w-1.5 h-1.5 rounded-full ${meta.dot || 'bg-slate-400'}`} />
+                                <p className={`text-[10px] font-medium ${meta.color || 'text-slate-400'}`}>{meta.label || user?.role}</p>
                             </div>
                         </div>
                     </div>
-                </div>
+                </Link>
 
                 {/* Nav links */}
                 <nav className="flex-1 overflow-y-auto py-3 px-3 space-y-1">
