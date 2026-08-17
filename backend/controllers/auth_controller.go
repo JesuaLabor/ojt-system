@@ -89,12 +89,9 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	// Only Coordinators default to "active" so they can set up the system.
-	// Faculty, Students, and Supervisors start as "pending" and require approval.
+	// All self-registered roles (student, supervisor, coordinator, faculty) start as "pending"
+	// and require approval by an existing approved Coordinator or Superadmin.
 	status := "pending"
-	if input.Role == "coordinator" {
-		status = "active"
-	}
 
 	user := models.User{
 		Name:         input.Name,

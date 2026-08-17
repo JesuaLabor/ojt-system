@@ -18,8 +18,13 @@ export default function LoginPage() {
     setLoading(true)
     try {
       const user = await login(form.email, form.password)
-      toast.success(`Welcome back, ${user.name}! 👋`)
-      navigate(ROLE_ROUTES[user.role] || '/')
+      if (user.status === 'pending') {
+        toast('Your account application is pending approval by a Coordinator or Superadmin.', { icon: '⏳' })
+        navigate('/waiting-room')
+      } else {
+        toast.success(`Welcome back, ${user.name}! 👋`)
+        navigate(ROLE_ROUTES[user.role] || '/')
+      }
     } catch (err) {
       toast.error(err.response?.data?.error || 'Login failed. Please try again.')
     } finally {

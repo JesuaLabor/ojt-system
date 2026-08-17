@@ -143,8 +143,8 @@ ojt-system/
 |------|---------------|-------------|
 | **Student** | `pending` | Log hours, upload documents, view own evaluations & progress |
 | **Supervisor** | `pending` | View/approve assigned student logs, submit evaluations, generate reports |
-| **Coordinator** | `active` | Full admin: manage assignments, companies, users, documents; view everything; generate reports |
-| **Faculty** | `active` | Read-only: view all students, evaluations, reports |
+| **Coordinator** | `pending` | Full admin: manage assignments, companies, users, documents; view everything; generate reports |
+| **Faculty** | `pending` | Read-only: view all students, evaluations, reports |
 | **Admin** | `active` | Super admin: all coordinator capabilities + system-wide oversight. Auto-seeded on first run. |
 
 **Account lifecycle:** `pending` → coordinator approves → `active` | coordinator rejects → `rejected`
@@ -334,8 +334,9 @@ Request → AuthMiddleware → [RoleMiddleware] → Controller
 ```
 
 **Registration Logic:**
-- `coordinator`, `faculty`, and `admin` → auto `active`
-- `student` and `supervisor` → `pending` until coordinator/admin approves
+- All self-registered roles (`coordinator`, `faculty`, `student`, `supervisor`) → `pending` until approved by an existing active Coordinator or Superadmin
+- Only the auto-seeded `admin` (Superadmin) account starts as `active`
+- Pending accounts are directed to `/waiting-room` upon registration or login
 - Rejected accounts (`rejected`) are blocked at login with a friendly message
 
 **Admin Bootstrap:**

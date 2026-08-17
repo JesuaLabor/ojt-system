@@ -48,7 +48,7 @@ export default function PendingApproval() {
 
         <h1 className="text-2xl font-black text-white mb-2">Account Pending Approval</h1>
         <p className="text-slate-400 text-sm leading-relaxed mb-8">
-          Welcome, <span className="text-indigo-400 font-semibold">{user?.name}</span>. Your {user?.role} account has been created successfully, but is currently awaiting review by the School Coordinator.
+          Welcome, <span className="text-indigo-400 font-semibold">{user?.name}</span>. Your <span className="capitalize">{user?.role}</span> account has been created successfully, but is currently awaiting review by an existing School Coordinator or Superadmin.
         </p>
 
         <div className="bg-slate-800/40 rounded-2xl p-4 mb-8">

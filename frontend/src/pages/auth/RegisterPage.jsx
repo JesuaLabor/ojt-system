@@ -36,7 +36,7 @@ export default function RegisterPage() {
         delete payload.department_id
       }
       await api.post('/auth/register', payload)
-      toast.success('Account created! Please sign in.')
+      toast.success('Account created! Please wait for approval by a Coordinator or Superadmin.')
       navigate('/login')
     } catch (err) {
       toast.error(err.response?.data?.error || 'Registration failed.')
