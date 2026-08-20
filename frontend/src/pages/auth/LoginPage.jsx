@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import useAuthStore from '../../store/authStore'
@@ -8,10 +8,21 @@ export default function LoginPage() {
   const [form, setForm] = useState({ email: '', password: '' })
   const [loading, setLoading] = useState(false)
   const [showPw, setShowPw] = useState(false)
-  const { login } = useAuthStore()
+  const { login, user } = useAuthStore()
   const navigate = useNavigate()
 
-  const ROLE_ROUTES = { student: '/student', supervisor: '/supervisor', coordinator: '/coordinator', faculty: '/faculty' }
+  const ROLE_ROUTES = { student: '/student', supervisor: '/supervisor', coordinator: '/coordinator', faculty: '/faculty', admin: '/admin' }
+
+  // Auto-redirect if already logged in on this device
+  useEffect(() => {
+    if (user) {
+      if (user.status === 'pending') {
+        navigate('/waiting-room', { replace: true })
+      } else {
+        navigate(ROLE_ROUTES[user.role] || '/', { replace: true })
+      }
+    }
+  }, [user, navigate])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
