@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"encoding/json"
 	"fmt"
 	"math"
 	"net/http"
@@ -219,6 +220,28 @@ func ClockIn(c *gin.Context) {
 		return
 	}
 
+	// ── Real-time: notify supervisor of new pending timelog ───────────────────
+	go func(studentID uint) {
+		var asgn models.OJTAssignment
+		if config.DB.Where("student_id = ?", studentID).First(&asgn).Error == nil && asgn.SupervisorID > 0 {
+			var studentUser models.User
+			config.DB.Select("id, name").First(&studentUser, studentID)
+
+			notif := models.Notification{
+				UserID:  asgn.SupervisorID,
+				Message: fmt.Sprintf("🕐 %s has clocked in and is awaiting time log approval", studentUser.Name),
+				Link:    "/supervisor/timelogs",
+			}
+			config.DB.Create(&notif)
+
+			notifJSON, _ := json.Marshal(map[string]interface{}{
+				"type":         "new_notification",
+				"notification": notif,
+			})
+			MainHub.BroadcastToUser(asgn.SupervisorID, notifJSON)
+		}
+	}(entry.StudentID)
+
 	c.JSON(http.StatusCreated, gin.H{"message": "Clocked in successfully with photo verification", "log": entry})
 }
 
@@ -279,6 +302,28 @@ func ClockOut(c *gin.Context) {
 	entry.ClockOutLng = clockOutLng
 	entry.TotalHours = calcHours(entry.ClockIn, now, entry.TotalBreakMinutes)
 	config.DB.Save(&entry)
+
+	// ── Real-time: notify supervisor that student has clocked out ─────────────
+	go func(studentID uint) {
+		var asgn models.OJTAssignment
+		if config.DB.Where("student_id = ?", studentID).First(&asgn).Error == nil && asgn.SupervisorID > 0 {
+			var studentUser models.User
+			config.DB.Select("id, name").First(&studentUser, studentID)
+
+			notif := models.Notification{
+				UserID:  asgn.SupervisorID,
+				Message: fmt.Sprintf("🕐 %s has clocked out — time log pending your approval", studentUser.Name),
+				Link:    "/supervisor/timelogs",
+			}
+			config.DB.Create(&notif)
+
+			notifJSON, _ := json.Marshal(map[string]interface{}{
+				"type":         "new_notification",
+				"notification": notif,
+			})
+			MainHub.BroadcastToUser(asgn.SupervisorID, notifJSON)
+		}
+	}(entry.StudentID)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message":     "Clocked out successfully with photo verification",
