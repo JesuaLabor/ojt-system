@@ -6,9 +6,7 @@ export default function UserApprovals() {
     const [users, setUsers] = useState([])
     const [loading, setLoading] = useState(true)
     const [activeTab, setActiveTab] = useState('pending') // pending, active, rejected
-    const [departments, setDepartments] = useState([])
     const [approvingId, setApprovingId] = useState(null) // user ID being approved
-    const [selectedDept, setSelectedDept] = useState('')
 
     const fetchUsers = async (statusArg) => {
         setLoading(true)
@@ -22,25 +20,18 @@ export default function UserApprovals() {
         }
     }
 
-    useEffect(() => {
-        fetchUsers()
-        api.get('/departments')
-            .then(res => setDepartments(res.data?.departments || []))
-            .catch(() => {})
-    }, [activeTab])
+    useEffect(() => { fetchUsers() }, [activeTab])
 
     const handleAction = async (id, action) => {
         if (action === 'approve') {
-            // Show inline dept picker if not confirmed yet
+            // Show confirm step first
             if (approvingId !== id) {
                 setApprovingId(id)
-                setSelectedDept('')
                 return
             }
-            // Confirmed — send with optional dept
+            // Confirmed — approve with no department override
             try {
-                const body = selectedDept ? { department_id: Number(selectedDept) } : {}
-                await api.patch(`/coordinator/users/${id}/approve`, body)
+                await api.patch(`/coordinator/users/${id}/approve`, {})
                 toast.success('User approved successfully!')
                 setApprovingId(null)
                 fetchUsers()
@@ -142,19 +133,7 @@ export default function UserApprovals() {
 
                                     {activeTab === 'pending' ? (
                                         <div className="flex flex-col gap-2 w-full">
-                                            {approvingId === u.id && (
-                                                <select
-                                                    value={selectedDept}
-                                                    onChange={e => setSelectedDept(e.target.value)}
-                                                    className="input text-xs py-1.5"
-                                                    autoFocus
-                                                >
-                                                    <option value="">— No dept / keep current —</option>
-                                                    {departments.map(d => (
-                                                        <option key={d.id} value={d.id}>{d.name}</option>
-                                                    ))}
-                                                </select>
-                                            )}
+
                                             <div className="flex gap-2">
                                                 <button
                                                     onClick={() => handleAction(u.id, 'approve')}
