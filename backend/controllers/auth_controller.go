@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"ojt-system/config"
@@ -106,6 +107,29 @@ func Register(c *gin.Context) {
 		c.JSON(http.StatusConflict, gin.H{"error": "Email already exists"})
 		return
 	}
+
+	// ── Real-time: notify all online coordinators & admins of the new pending user ──
+	go func() {
+		var staffUsers []models.User
+		config.DB.Select("id, role").
+			Where("role IN ? AND status = 'active'", []string{"coordinator", "admin"}).
+			Find(&staffUsers)
+
+		for _, staff := range staffUsers {
+			notif := models.Notification{
+				UserID:  staff.ID,
+				Message: fmt.Sprintf("🧑‍💼 New %s registration: %s is awaiting approval", user.Role, user.Name),
+				Link:    fmt.Sprintf("/%s/approvals", staff.Role),
+			}
+			config.DB.Create(&notif)
+
+			notifJSON, _ := json.Marshal(map[string]interface{}{
+				"type":         "new_notification",
+				"notification": notif,
+			})
+			MainHub.BroadcastToUser(staff.ID, notifJSON)
+		}
+	}()
 
 	// Always generate a token so the frontend can identify the user and show the Pending page
 	tokenStr, err := generateToken(user)
