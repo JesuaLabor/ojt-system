@@ -193,9 +193,11 @@ export default function FacultyEvaluations() {
                                                 <h2 className="text-lg font-bold text-white">🎓 OJT Completion Evaluation</h2>
                                                 <span className="badge badge-approved text-[9px] uppercase tracking-widest font-black">Submitted</span>
                                             </div>
-                                            <p className="text-xs text-slate-500">
-                                                By <span className="text-slate-300 font-semibold">{ev.Supervisor?.name || ev.supervisor_name}</span>
-                                            </p>
+                                            {(ev.supervisor?.name || ev.supervisor_name) && (
+                                                <p className="text-xs text-slate-500">
+                                                    Evaluated by <span className="text-slate-300 font-semibold">{ev.supervisor?.name || ev.supervisor_name}</span>
+                                                </p>
+                                            )}
                                         </div>
                                         <div className={`w-20 h-20 rounded-2xl border flex flex-col items-center justify-center ${grade.ring}`}>
                                             <span className={`text-3xl font-black ${grade.color}`}>{ev.overall_score ?? ev.OverallScore}</span>
