@@ -237,24 +237,24 @@ export default function Messages() {
     };
 
     return (
-        <div className="flex h-[calc(100vh-120px)] bg-[#0B0D14] rounded-3xl overflow-hidden border border-slate-800/40">
+        <div className="flex h-[calc(100vh-85px)] sm:h-[calc(100vh-120px)] bg-[#0B0D14] rounded-2xl sm:rounded-3xl overflow-hidden border border-slate-800/40">
             {/* Left Sidebar */}
             <div className={`w-full md:w-72 bg-[#0B0D14] flex flex-col border-r border-slate-800/40 ${activeContact ? 'hidden md:flex' : 'flex'}`}>
-                <div className="p-6 pb-2">
-                    <h1 className="text-2xl font-bold text-white mb-6">Messages</h1>
+                <div className="p-4 sm:p-6 pb-2">
+                    <h1 className="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">Messages</h1>
                     <div className="relative group">
-                        <svg className="absolute left-4 top-3.5 w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                        <svg className="absolute left-3.5 top-3 w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                         <input
                             type="text"
                             placeholder="Search contacts..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-[#1A1D26] border-none rounded-full pl-11 pr-4 py-3 text-sm text-slate-300 focus:ring-0 placeholder:text-slate-500"
+                            className="w-full bg-[#1A1D26] border-none rounded-full pl-10 pr-4 py-2.5 text-xs sm:text-sm text-slate-300 focus:ring-0 placeholder:text-slate-500"
                         />
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2 custom-scrollbar">
+                <div className="flex-1 overflow-y-auto px-2.5 sm:px-4 py-3 sm:py-4 space-y-1.5 sm:space-y-2 custom-scrollbar">
                     {filteredContacts.map(c => {
                         const contactId = c.ID || c.id;
                         const activeId = activeContact?.ID || activeContact?.id;
@@ -266,29 +266,29 @@ export default function Messages() {
                             <button
                                 key={contactId}
                                 onClick={() => setActiveContact(c)}
-                                className={`w-full p-3.5 rounded-2xl flex items-center gap-3 transition-all relative group ${isActive ? 'bg-[#3F4EE8] shadow-[0_8px_30px_rgb(63,78,232,0.4)]' : hasUnread ? 'bg-[#3F4EE8]/10 border border-indigo-500/20' : 'hover:bg-white/5'}`}
+                                className={`w-full p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl flex items-center gap-2.5 sm:gap-3 transition-all relative group ${isActive ? 'bg-[#3F4EE8] shadow-[0_8px_30px_rgb(63,78,232,0.4)]' : hasUnread ? 'bg-[#3F4EE8]/10 border border-indigo-500/20' : 'hover:bg-white/5'}`}
                             >
 
                                     <div className="relative shrink-0">
                                         {c.profile_photo ? (
-                                            <img src={c.profile_photo} alt="" className="w-11 h-11 rounded-full object-cover" />
+                                            <img src={c.profile_photo} alt="" className="w-10 h-10 sm:w-11 sm:h-11 rounded-full object-cover" />
                                         ) : (
-                                            <div className={`w-11 h-11 rounded-full flex items-center justify-center font-bold ${isActive ? 'bg-white/20 text-white' : 'bg-slate-800 text-slate-500'}`}>
+                                            <div className={`w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center font-bold text-sm sm:text-base ${isActive ? 'bg-white/20 text-white' : 'bg-slate-800 text-slate-500'}`}>
                                                 {c.name.charAt(0)}
                                             </div>
                                         )}
-                                        {isOnline && <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 rounded-full border-2 border-[#0B0D14]"></div>}
+                                        {isOnline && <div className="absolute bottom-0 right-0 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-emerald-500 rounded-full border-2 border-[#0B0D14]"></div>}
                                     </div>
                                 <div className="flex-1 min-w-0 text-left">
-                                    <div className="flex items-center justify-between gap-2">
-                                        <p className={`text-sm font-bold truncate ${isActive ? 'text-white' : 'text-slate-200'}`}>{c.name}</p>
+                                    <div className="flex items-center justify-between gap-1.5">
+                                        <p className={`text-xs sm:text-sm font-bold truncate ${isActive ? 'text-white' : 'text-slate-200'}`}>{c.name}</p>
                                         {c.department?.name && (
-                                            <span className={`shrink-0 text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-tighter border ${isActive ? 'bg-white/20 border-white/20 text-white' : 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400'}`}>
+                                            <span className={`shrink-0 text-[8px] sm:text-[9px] px-1.5 sm:px-2 py-0.5 rounded-full font-black uppercase tracking-tighter border ${isActive ? 'bg-white/20 border-white/20 text-white' : 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400'}`}>
                                                 {c.department.name}
                                             </span>
                                         )}
                                     </div>
-                                    <p className={`text-[12px] font-medium truncate mt-0.5 ${isActive ? 'text-indigo-100/90' : hasUnread ? 'text-white' : 'text-slate-500'}`}>
+                                    <p className={`text-[11px] sm:text-[12px] font-medium truncate mt-0.5 ${isActive ? 'text-indigo-100/90' : hasUnread ? 'text-white' : 'text-slate-500'}`}>
                                         {c.has_conversation ? (
                                             <>
                                                 {c.is_last_sender ? 'You: ' : ''}{c.last_message}
@@ -300,7 +300,7 @@ export default function Messages() {
                                     </p>
                                 </div>
                                 {c.unread_count > 0 && !isActive && (
-                                    <div className="w-2.5 h-2.5 bg-rose-500 rounded-full shadow-lg shadow-rose-900/40"></div>
+                                    <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-rose-500 rounded-full shadow-lg shadow-rose-900/40"></div>
                                 )}
                             </button>
                         );
@@ -315,10 +315,10 @@ export default function Messages() {
                 {activeContact ? (
                     <>
                         {/* Header */}
-                        <div className="p-4 border-b border-slate-800/40 flex items-center justify-between bg-[#0B0D14]/80 backdrop-blur-md sticky top-0 z-20">
+                        <div className="p-3 sm:p-4 border-b border-slate-800/40 flex items-center justify-between bg-[#0B0D14]/80 backdrop-blur-md sticky top-0 z-20 gap-2">
                             {isSearchingInChat ? (
-                                <div className="flex-1 flex items-center gap-3 animate-in fade-in slide-in-from-top-1 duration-300">
-                                    <button onClick={() => { setIsSearchingInChat(false); setChatSearchQuery('') }} className="text-slate-500 hover:text-white transition-colors">
+                                <div className="flex-1 flex items-center gap-2 sm:gap-3 animate-in fade-in slide-in-from-top-1 duration-300">
+                                    <button onClick={() => { setIsSearchingInChat(false); setChatSearchQuery('') }} className="text-slate-500 hover:text-white transition-colors p-1 shrink-0">
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
                                     </button>
                                     <input 
@@ -327,54 +327,56 @@ export default function Messages() {
                                         placeholder="Search messages..."
                                         value={chatSearchQuery}
                                         onChange={(e) => setChatSearchQuery(e.target.value)}
-                                        className="flex-1 bg-white/5 border border-white/10 rounded-full px-4 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500/50 transition-all"
+                                        className="flex-1 bg-white/5 border border-white/10 rounded-full px-3.5 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500/50 transition-all"
                                     />
                                 </div>
                             ) : (
                                 <>
-                                    <div className="flex items-center gap-3">
-                                        <button onClick={() => setActiveContact(null)} className="md:hidden text-slate-400"><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg></button>
-                                        <div className="relative">
-                                            {currentContact.profile_photo ? <img src={currentContact.profile_photo} alt="" className="w-10 h-10 rounded-full object-cover" /> : <div className="w-10 h-10 rounded-full bg-[#3F4EE8] flex items-center justify-center text-white font-bold">{currentContact.name.charAt(0)}</div>}
+                                    <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                                        <button onClick={() => setActiveContact(null)} className="md:hidden text-slate-400 p-1 hover:text-white shrink-0">
+                                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
+                                        </button>
+                                        <div className="relative shrink-0">
+                                            {currentContact.profile_photo ? <img src={currentContact.profile_photo} alt="" className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover" /> : <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#3F4EE8] flex items-center justify-center text-white font-bold text-sm sm:text-base">{currentContact.name.charAt(0)}</div>}
                                             {currentContact.is_online && <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-[#0B0D14]"></div>}
                                         </div>
-                                        <div>
-                                            <h3 className="text-sm font-bold text-white leading-tight">{currentContact.name}</h3>
-                                            <div className="flex items-center gap-2 mt-1">
-                                                <div className="flex items-center gap-1.5">
+                                        <div className="min-w-0">
+                                            <h3 className="text-xs sm:text-sm font-bold text-white leading-tight truncate">{currentContact.name}</h3>
+                                            <div className="flex items-center gap-1.5 sm:gap-2 mt-0.5 min-w-0">
+                                                <div className="flex items-center gap-1 shrink-0">
                                                     <div className={`w-1.5 h-1.5 rounded-full ${currentContact.is_online ? 'bg-emerald-500 animate-pulse' : 'bg-slate-600'}`}></div>
-                                                    <p className={`text-[10px] font-black uppercase tracking-widest ${currentContact.is_online ? 'text-emerald-400' : 'text-slate-500'}`}>
+                                                    <p className={`text-[9px] sm:text-[10px] font-black uppercase tracking-wider ${currentContact.is_online ? 'text-emerald-400' : 'text-slate-500'}`}>
                                                         {otherUserTyping ? 'Typing...' : currentContact.is_online ? 'Online' : formatLastSeen(currentContact.last_seen)}
                                                     </p>
                                                 </div>
                                                 {currentContact.department?.name && (
                                                     <>
-                                                        <span className="text-slate-800 text-[10px]">•</span>
-                                                        <div className="flex items-center gap-1 bg-white/5 border border-white/10 px-2 py-0.5 rounded-full">
+                                                        <span className="text-slate-800 text-[10px] hidden sm:inline">•</span>
+                                                        <div className="hidden sm:flex items-center gap-1 bg-white/5 border border-white/10 px-2 py-0.5 rounded-full shrink-0">
                                                             <svg className="w-2.5 h-2.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-                                                            <p className="text-[9px] text-slate-400 font-bold uppercase tracking-tight">{activeContact.department.name}</p>
+                                                            <p className="text-[9px] text-slate-400 font-bold uppercase tracking-tight truncate max-w-[90px]">{activeContact.department.name}</p>
                                                         </div>
                                                     </>
                                                 )}
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <button onClick={() => setIsSearchingInChat(true)} className="text-slate-500 hover:text-white p-2 transition-colors"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg></button>
-                                        <button onClick={() => setShowSharedMedia(!showSharedMedia)} className={`p-2 transition-colors ${showSharedMedia ? 'text-indigo-400' : 'text-slate-500 hover:text-white'}`}><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></button>
+                                    <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+                                        <button onClick={() => setIsSearchingInChat(true)} className="text-slate-500 hover:text-white p-1.5 sm:p-2 transition-colors"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg></button>
+                                        <button onClick={() => setShowSharedMedia(!showSharedMedia)} className={`p-1.5 sm:p-2 transition-colors ${showSharedMedia ? 'text-indigo-400' : 'text-slate-500 hover:text-white'}`}><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></button>
                                     </div>
                                 </>
                             )}
                         </div>
 
                         {/* Messages Area */}
-                        <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 custom-scrollbar">
+                        <div className="flex-1 overflow-y-auto p-3 sm:p-5 md:p-8 space-y-4 sm:space-y-6 custom-scrollbar">
                             {filteredMessages.length === 0 && chatSearchQuery && (
                                 <div className="flex flex-col items-center justify-center h-full text-slate-500 animate-in fade-in duration-500">
-                                    <div className="w-16 h-16 bg-slate-800/30 rounded-full flex items-center justify-center mb-4">
-                                        <svg className="w-8 h-8 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                                    <div className="w-14 h-14 sm:w-16 sm:h-16 bg-slate-800/30 rounded-full flex items-center justify-center mb-4">
+                                        <svg className="w-7 h-7 sm:w-8 sm:h-8 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                                     </div>
-                                    <p className="text-sm font-medium">No messages matching "{chatSearchQuery}"</p>
+                                    <p className="text-xs sm:text-sm font-medium">No messages matching "{chatSearchQuery}"</p>
                                 </div>
                             )}
 
@@ -382,22 +384,22 @@ export default function Messages() {
                                 const senderId = m.sender_id || m.SenderID;
                                 const isMe = Number(senderId) === Number(user?.ID || user?.id);
                                 return (
-                                    <div key={m.ID} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[80%] ${isMe ? 'self-end' : 'self-start'} relative`}>
-                                        <div className={`p-4 shadow-sm relative group ${isMe ? 'bg-gradient-to-br from-[#3F4EE8] to-[#4F46E5] text-white rounded-[20px] rounded-tr-md' : 'bg-[#1A1D26] text-slate-200 rounded-[20px] rounded-tl-md'}`}>
-                                            {m.content && <p className="text-[13px] leading-relaxed font-medium">{m.content}</p>}
+                                    <div key={m.ID} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[90%] sm:max-w-[80%] ${isMe ? 'self-end' : 'self-start'} relative`}>
+                                        <div className={`p-3 sm:p-4 shadow-sm relative group ${isMe ? 'bg-gradient-to-br from-[#3F4EE8] to-[#4F46E5] text-white rounded-[18px] sm:rounded-[20px] rounded-tr-md' : 'bg-[#1A1D26] text-slate-200 rounded-[18px] sm:rounded-[20px] rounded-tl-md'}`}>
+                                            {m.content && <p className="text-xs sm:text-[13px] leading-relaxed font-medium">{m.content}</p>}
                                             {m.file_url && (
-                                                <div className={m.content ? "mt-3" : ""}>
+                                                <div className={m.content ? "mt-2 sm:mt-3" : ""}>
                                                     {m.file_type === 'image' ? (
                                                         <div className="rounded-xl overflow-hidden border border-white/10 shadow-lg cursor-pointer transition-transform hover:scale-[1.02]" onClick={() => window.open(m.file_url)}>
-                                                            <img src={m.file_url} alt="Shared" className="max-w-[200px] sm:max-w-[300px] object-contain rounded-xl" />
+                                                            <img src={m.file_url} alt="Shared" className="max-w-[170px] xs:max-w-[220px] sm:max-w-[300px] object-contain rounded-xl" />
                                                         </div>
                                                     ) : (
-                                                        <a href={m.file_url} target="_blank" rel="noreferrer" className="flex items-center gap-3 p-3 bg-black/20 rounded-xl hover:bg-black/30 transition-all border border-white/5">
-                                                            <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center text-white">
-                                                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+                                                        <a href={m.file_url} target="_blank" rel="noreferrer" className="flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 bg-black/20 rounded-xl hover:bg-black/30 transition-all border border-white/5">
+                                                            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white/10 rounded-lg flex items-center justify-center text-white shrink-0">
+                                                                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
                                                             </div>
                                                             <div className="min-w-0">
-                                                                <p className="text-[11px] font-bold text-white truncate max-w-[150px]">View Attachment</p>
+                                                                <p className="text-[11px] font-bold text-white truncate max-w-[130px] sm:max-w-[150px]">View Attachment</p>
                                                             </div>
                                                         </a>
                                                     )}
@@ -406,43 +408,43 @@ export default function Messages() {
 
                                             {/* Reactions Display */}
                                             {m.reaction && (
-                                                <div className={`absolute -bottom-2 ${isMe ? '-left-2' : '-right-2'} bg-[#1A1D26] border border-slate-700/50 rounded-full px-1.5 py-0.5 text-xs shadow-lg animate-in zoom-in-50 duration-300 cursor-default select-none`}>
+                                                <div className={`absolute -bottom-2 ${isMe ? '-left-2' : '-right-2'} bg-[#1A1D26] border border-slate-700/50 rounded-full px-1.5 py-0.5 text-[10px] sm:text-xs shadow-lg animate-in zoom-in-50 duration-300 cursor-default select-none`}>
                                                     {m.reaction}
                                                 </div>
                                             )}
 
                                             {/* Quick Reactions on Hover */}
-                                            <div className={`absolute top-0 ${isMe ? '-left-36' : '-right-36'} opacity-0 group-hover:opacity-100 transition-all duration-300 flex gap-1 p-1.5 bg-[#1A1D26] border border-slate-700/50 rounded-full shadow-xl z-10 scale-90 group-hover:scale-100`}>
+                                            <div className={`absolute ${isMe ? '-top-9 right-0 sm:top-0 sm:right-auto sm:-left-36' : '-top-9 left-0 sm:top-0 sm:left-auto sm:-right-36'} opacity-0 group-hover:opacity-100 transition-all duration-300 flex gap-0.5 sm:gap-1 p-1 sm:p-1.5 bg-[#1A1D26] border border-slate-700/50 rounded-full shadow-xl z-10 scale-90 group-hover:scale-100`}>
                                                 {['❤️', '😂', '😮', '😢', '🔥', '👍'].map(emoji => (
                                                     <button
                                                         key={emoji}
                                                         onClick={() => handleReact(m.ID, emoji)}
-                                                        className={`hover:scale-125 transition-transform px-1 ${m.reaction === emoji ? 'bg-indigo-500/20 rounded-md' : ''}`}
+                                                        className={`hover:scale-125 transition-transform px-0.5 sm:px-1 ${m.reaction === emoji ? 'bg-indigo-500/20 rounded-md' : ''}`}
                                                     >
                                                         {emoji}
                                                     </button>
                                                 ))}
                                             </div>
                                         </div>
-                                        <div className="mt-2 flex items-center gap-1.5 px-1">
-                                            <span className="text-[10px] text-slate-600 font-bold uppercase tracking-tight">{format(new Date(m.CreatedAt), 'h:mm a')}</span>
+                                        <div className="mt-1.5 sm:mt-2 flex items-center gap-1.5 px-1">
+                                            <span className="text-[9px] sm:text-[10px] text-slate-600 font-bold uppercase tracking-tight">{format(new Date(m.CreatedAt), 'h:mm a')}</span>
                                             {isMe && (
                                                 <div className="flex items-center">
                                                     {m.is_read ? (
                                                         m.ID === lastReadMessageId && (
-                                                            <div className="w-4 h-4 rounded-full overflow-hidden border border-[#0B0D14] ring-1 ring-slate-800 animate-in zoom-in-50 duration-300">
+                                                            <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full overflow-hidden border border-[#0B0D14] ring-1 ring-slate-800 animate-in zoom-in-50 duration-300">
                                                                 {activeContact.profile_photo ? (
                                                                     <img src={activeContact.profile_photo} alt="" className="w-full h-full object-cover" />
                                                                 ) : (
-                                                                    <div className="w-full h-full bg-[#3F4EE8] flex items-center justify-center text-[8px] text-white font-black">
+                                                                    <div className="w-full h-full bg-[#3F4EE8] flex items-center justify-center text-[7px] sm:text-[8px] text-white font-black">
                                                                         {activeContact.name.charAt(0)}
                                                                     </div>
                                                                 )}
                                                             </div>
                                                         )
                                                     ) : (
-                                                        <div className="w-4 h-4 rounded-full border border-slate-700 flex items-center justify-center bg-transparent">
-                                                            <svg className="w-2.5 h-2.5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full border border-slate-700 flex items-center justify-center bg-transparent">
+                                                            <svg className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                                                             </svg>
                                                         </div>
@@ -457,57 +459,57 @@ export default function Messages() {
                         </div>
 
                         {/* Input Area */}
-                        <div className="p-4 bg-[#0B0D14] border-t border-slate-800/40">
+                        <div className="p-2.5 sm:p-4 bg-[#0B0D14] border-t border-slate-800/40">
                             {selectedFile && (
-                                <div className="mb-3 p-3 bg-slate-800/40 rounded-2xl flex items-center justify-between border border-slate-700/50 animate-in slide-in-from-bottom-2">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 bg-indigo-500/20 rounded-lg flex items-center justify-center text-indigo-400">📁</div>
+                                <div className="mb-2.5 sm:mb-3 p-2.5 sm:p-3 bg-slate-800/40 rounded-2xl flex items-center justify-between border border-slate-700/50 animate-in slide-in-from-bottom-2">
+                                    <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                                        <div className="w-7 h-7 sm:w-8 sm:h-8 bg-indigo-500/20 rounded-lg flex items-center justify-center text-indigo-400 shrink-0">📁</div>
                                         <div className="min-w-0">
-                                            <p className="text-xs text-white font-bold truncate max-w-[200px]">{selectedFile.name}</p>
-                                            <p className="text-[10px] text-slate-500 uppercase font-black">Ready to send</p>
+                                            <p className="text-xs text-white font-bold truncate max-w-[160px] sm:max-w-[200px]">{selectedFile.name}</p>
+                                            <p className="text-[9px] sm:text-[10px] text-slate-500 uppercase font-black">Ready to send</p>
                                         </div>
                                     </div>
-                                    <button onClick={() => setSelectedFile(null)} className="text-slate-500 hover:text-white">✕</button>
+                                    <button onClick={() => setSelectedFile(null)} className="text-slate-500 hover:text-white p-1">✕</button>
                                 </div>
                             )}
-                            <form onSubmit={handleSendMessage} className="flex items-center gap-3 bg-[#1A1D26] p-2 rounded-[24px] border border-slate-700/30 focus-within:border-indigo-500/50 transition-all shadow-lg">
-                                <div className="flex items-center gap-1 px-1">
+                            <form onSubmit={handleSendMessage} className="flex items-center gap-1.5 sm:gap-3 bg-[#1A1D26] p-1.5 sm:p-2 rounded-[24px] border border-slate-700/30 focus-within:border-indigo-500/50 transition-all shadow-lg">
+                                <div className="flex items-center gap-0.5 sm:gap-1 px-0.5 sm:px-1 shrink-0">
                                     <div className="relative">
-                                        <button type="button" onClick={() => setShowEmojis(!showEmojis)} className="p-2 text-slate-400 hover:text-white transition-colors"><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></button>
+                                        <button type="button" onClick={() => setShowEmojis(!showEmojis)} className="p-1.5 sm:p-2 text-slate-400 hover:text-white transition-colors"><svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></button>
                                         {showEmojis && (
-                                            <div className="absolute bottom-14 left-0 bg-[#1A1D26] border border-slate-700 rounded-2xl p-2 shadow-2xl z-50 flex gap-2 w-max animate-in slide-in-from-bottom-2 duration-200">
+                                            <div className="absolute bottom-12 sm:bottom-14 left-0 bg-[#1A1D26] border border-slate-700 rounded-2xl p-1.5 sm:p-2 shadow-2xl z-50 flex gap-1.5 sm:gap-2 w-max animate-in slide-in-from-bottom-2 duration-200">
                                                 {['❤️', '😂', '😮', '😢', '🔥', '👍'].map(emoji => (
-                                                    <button key={emoji} type="button" onClick={() => { setNewMessage(prev => prev + emoji); setShowEmojis(false) }} className="text-xl hover:scale-125 transition-transform p-1">{emoji}</button>
+                                                    <button key={emoji} type="button" onClick={() => { setNewMessage(prev => prev + emoji); setShowEmojis(false) }} className="text-lg sm:text-xl hover:scale-125 transition-transform p-0.5 sm:p-1">{emoji}</button>
                                                 ))}
                                             </div>
                                         )}
                                     </div>
-                                    <button type="button" onClick={() => fileInputRef.current?.click()} className="p-2 text-slate-400 hover:text-white transition-colors relative">
-                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg>
-                                        {selectedFile && <div className="absolute top-1 right-1 w-2.5 h-2.5 bg-indigo-500 rounded-full border-2 border-[#1A1D26]"></div>}
+                                    <button type="button" onClick={() => fileInputRef.current?.click()} className="p-1.5 sm:p-2 text-slate-400 hover:text-white transition-colors relative">
+                                        <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg>
+                                        {selectedFile && <div className="absolute top-1 right-1 w-2 h-2 sm:w-2.5 sm:h-2.5 bg-indigo-500 rounded-full border-2 border-[#1A1D26]"></div>}
                                     </button>
                                     <input type="file" ref={fileInputRef} className="hidden" onChange={(e) => setSelectedFile(e.target.files[0])} />
                                 </div>
-                                <input type="text" value={newMessage} onChange={handleInputChange} placeholder="Type a message..." className="flex-1 bg-transparent border-none focus:ring-0 text-slate-200 placeholder-slate-500 text-sm py-2" />
-                                <button type="submit" disabled={!newMessage.trim() && !selectedFile} className="bg-[#3F4EE8] hover:bg-[#4F46E5] disabled:opacity-50 disabled:hover:bg-[#3F4EE8] text-white p-2.5 rounded-full transition-all shadow-lg shadow-indigo-900/20 active:scale-95"><svg className="w-5 h-5 rotate-90" fill="currentColor" viewBox="0 0 20 20"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" /></svg></button>
+                                <input type="text" value={newMessage} onChange={handleInputChange} placeholder="Type a message..." className="flex-1 min-w-0 bg-transparent border-none focus:ring-0 text-slate-200 placeholder-slate-500 text-xs sm:text-sm py-1.5 sm:py-2" />
+                                <button type="submit" disabled={!newMessage.trim() && !selectedFile} className="bg-[#3F4EE8] hover:bg-[#4F46E5] disabled:opacity-50 disabled:hover:bg-[#3F4EE8] text-white p-2 sm:p-2.5 rounded-full transition-all shadow-lg shadow-indigo-900/20 active:scale-95 shrink-0"><svg className="w-4 h-4 sm:w-5 sm:h-5 rotate-90" fill="currentColor" viewBox="0 0 20 20"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" /></svg></button>
                             </form>
                         </div>
                     </>
                 ) : (
-                    <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-[#0B0D14] relative overflow-hidden">
+                    <div className="flex-1 flex flex-col items-center justify-center p-6 sm:p-8 text-center bg-[#0B0D14] relative overflow-hidden">
                         {/* Abstract Background Elements */}
                         <div className="absolute top-1/4 -left-20 w-64 h-64 bg-indigo-600/10 rounded-full blur-3xl"></div>
                         <div className="absolute bottom-1/4 -right-20 w-64 h-64 bg-purple-600/10 rounded-full blur-3xl"></div>
                         
                         <div className="relative z-10 max-w-sm">
-                            <div className="w-24 h-24 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-[32px] flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-indigo-900/40 rotate-3 animate-bounce-subtle">
-                                <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                            <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-[28px] sm:rounded-[32px] flex items-center justify-center mx-auto mb-6 sm:mb-8 shadow-2xl shadow-indigo-900/40 rotate-3 animate-bounce-subtle">
+                                <svg className="w-10 h-10 sm:w-12 sm:h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
                             </div>
-                            <h2 className="text-2xl font-black text-white mb-3 tracking-tight">OJT Messenger</h2>
-                            <p className="text-slate-500 text-sm leading-relaxed font-medium">Select a colleague or supervisor from the list to start a high-security conversation. All shared files are encrypted.</p>
-                            <div className="mt-8 flex flex-wrap justify-center gap-2">
-                                <span className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-bold text-slate-400 uppercase tracking-widest">End-to-End Encrypted</span>
-                                <span className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-bold text-slate-400 uppercase tracking-widest">Real-time</span>
+                            <h2 className="text-xl sm:text-2xl font-black text-white mb-2.5 sm:mb-3 tracking-tight">OJT Messenger</h2>
+                            <p className="text-slate-500 text-xs sm:text-sm leading-relaxed font-medium">Select a colleague or supervisor from the list to start a high-security conversation. All shared files are encrypted.</p>
+                            <div className="mt-6 sm:mt-8 flex flex-wrap justify-center gap-2">
+                                <span className="px-2.5 sm:px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest">End-to-End Encrypted</span>
+                                <span className="px-2.5 sm:px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest">Real-time</span>
                             </div>
                         </div>
                     </div>
@@ -516,10 +518,10 @@ export default function Messages() {
 
                 {/* Shared Media Sidebar */}
                 {activeContact && showSharedMedia && (
-                    <div className="w-80 bg-[#0B0D14] border-l border-slate-800/40 flex flex-col animate-in slide-in-from-right duration-300">
+                    <div className="w-full md:w-80 absolute md:relative inset-0 md:inset-auto z-30 bg-[#0B0D14] border-l border-slate-800/40 flex flex-col animate-in slide-in-from-right duration-300">
                         <div className="p-4 border-b border-slate-800/40 flex items-center justify-between">
                             <h3 className="text-xs font-black text-white uppercase tracking-widest">Conversation Info</h3>
-                            <button onClick={() => setShowSharedMedia(false)} className="text-slate-500 hover:text-white transition-colors">
+                            <button onClick={() => setShowSharedMedia(false)} className="text-slate-500 hover:text-white transition-colors p-1">
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
                             </button>
                         </div>

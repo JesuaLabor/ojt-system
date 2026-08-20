@@ -35,7 +35,7 @@ export default function Layout({ children }) {
                     collapsed={collapsed}
                     onToggleCollapse={toggleCollapse}
                 />
-                <main className="flex-1 p-5 md:p-7 fade-in">
+                <main className="flex-1 p-3 sm:p-5 md:p-7 fade-in">
                     {children}
                 </main>
             </div>
