@@ -1,6 +1,9 @@
 package controllers
 
 import (
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -37,6 +40,15 @@ type UpdateProfileInput struct {
 type ChangePasswordInput struct {
 	CurrentPassword string `json:"current_password" binding:"required"`
 	NewPassword     string `json:"new_password"     binding:"required,min=6"`
+}
+
+type ForgotPasswordInput struct {
+	Email string `json:"email" binding:"required,email"`
+}
+
+type ResetPasswordInput struct {
+	Token    string `json:"token"    binding:"required"`
+	Password string `json:"password" binding:"required,min=6"`
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -317,4 +329,98 @@ func ChangePassword(c *gin.Context) {
 	config.DB.Model(&user).Update("password", string(hashed))
 
 	c.JSON(http.StatusOK, gin.H{"message": "Password changed successfully"})
+}
+
+// ─── POST /api/auth/forgot-password ──────────────────────────────────────────
+
+func ForgotPassword(c *gin.Context) {
+	var input ForgotPasswordInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Always respond with the same message to prevent email enumeration
+	genericMsg := gin.H{"message": "If that email is registered, a password reset link has been sent."}
+
+	var user models.User
+	if result := config.DB.Where("email = ?", input.Email).First(&user); result.Error != nil {
+		c.JSON(http.StatusOK, genericMsg)
+		return
+	}
+
+	// Generate a secure 32-byte random token
+	raw := make([]byte, 32)
+	if _, err := rand.Read(raw); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
+		return
+	}
+	rawToken := hex.EncodeToString(raw) // 64-char hex string sent in the URL
+
+	// Store only the SHA-256 hash of the token in the DB
+	hash := sha256.Sum256([]byte(rawToken))
+	hashedToken := hex.EncodeToString(hash[:])
+	expiry := time.Now().Add(1 * time.Hour)
+
+	config.DB.Model(&user).Updates(map[string]interface{}{
+		"reset_token":            hashedToken,
+		"reset_token_expires_at": expiry,
+	})
+
+	// Build the reset link and send the email
+	frontendURL := config.GetEnv("FRONTEND_URL", "http://localhost:5173")
+	resetLink := fmt.Sprintf("%s/reset-password?token=%s", frontendURL, rawToken)
+
+	go func() {
+		_ = config.SendPasswordResetEmail(user.Email, resetLink)
+	}()
+
+	c.JSON(http.StatusOK, genericMsg)
+}
+
+// ─── POST /api/auth/reset-password ───────────────────────────────────────────
+
+func ResetPassword(c *gin.Context) {
+	var input ResetPasswordInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Hash the incoming raw token so we can look it up in the DB
+	hash := sha256.Sum256([]byte(input.Token))
+	hashedToken := hex.EncodeToString(hash[:])
+
+	var user models.User
+	result := config.DB.Where("reset_token = ?", hashedToken).First(&user)
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid or expired reset token"})
+		return
+	}
+
+	// Check expiry
+	if user.ResetTokenExpiresAt == nil || time.Now().After(*user.ResetTokenExpiresAt) {
+		// Clear stale token
+		config.DB.Model(&user).Updates(map[string]interface{}{
+			"reset_token":            "",
+			"reset_token_expires_at": nil,
+		})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid or expired reset token"})
+		return
+	}
+
+	// Hash and save the new password
+	hashed, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
+		return
+	}
+
+	config.DB.Model(&user).Updates(map[string]interface{}{
+		"password":               string(hashed),
+		"reset_token":            "",
+		"reset_token_expires_at": nil,
+	})
+
+	c.JSON(http.StatusOK, gin.H{"message": "Password reset successfully. You can now log in."})
 }

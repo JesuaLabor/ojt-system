@@ -17,8 +17,10 @@ func RegisterRoutes(r *gin.Engine) {
 	// ─── Public Routes ────────────────────────────────────────────────────────
 	auth := api.Group("/auth")
 	{
-		auth.POST("/register", controllers.Register) // Create account + get token
-		auth.POST("/login", controllers.Login)       // Login → get token
+		auth.POST("/register", controllers.Register)               // Create account + get token
+		auth.POST("/login", controllers.Login)                     // Login → get token
+		auth.POST("/forgot-password", controllers.ForgotPassword)  // Request password reset email
+		auth.POST("/reset-password", controllers.ResetPassword)    // Reset password with token
 		auth.POST("/change-password",
 			middleware.AuthMiddleware(),
 			controllers.ChangePassword, // Change password (needs token)
@@ -197,21 +199,21 @@ func RegisterRoutes(r *gin.Engine) {
 		assignments := protected.Group("/assignments")
 		assignments.Use(middleware.RoleMiddleware("coordinator", "admin")) // Only coordinators manage assignments
 		{
-			assignments.GET("", controllers.GetAssignments)              // GET    /api/assignments
-			assignments.GET("/options", controllers.GetAssignmentOptions) // GET    /api/assignments/options
-			assignments.POST("", controllers.CreateAssignment)           // POST   /api/assignments
-			assignments.PATCH("/:id", controllers.UpdateAssignment)       // PATCH  /api/assignments/:id
-			assignments.DELETE("/:id", controllers.DeleteAssignment)      // DELETE /api/assignments/:id
+			assignments.GET("", controllers.GetAssignments)               // GET    /api/assignments
+			assignments.GET("/options", controllers.GetAssignmentOptions)  // GET    /api/assignments/options
+			assignments.POST("", controllers.CreateAssignment)            // POST   /api/assignments
+			assignments.PATCH("/:id", controllers.UpdateAssignment)        // PATCH  /api/assignments/:id
+			assignments.DELETE("/:id", controllers.DeleteAssignment)       // DELETE /api/assignments/:id
 		}
 
 		// ── Companies ─────────────────────────────────────────────────────────
 		companies := protected.Group("/companies")
 		companies.Use(middleware.RoleMiddleware("coordinator", "admin", "faculty")) // Faculty can list companies
 		{
-			companies.GET("", controllers.GetCompanies)        // GET    /api/companies
-			companies.POST("", controllers.CreateCompany)      // POST   /api/companies
-			companies.PATCH("/:id", controllers.UpdateCompany)  // PATCH  /api/companies/:id
-			companies.DELETE("/:id", controllers.DeleteCompany) // DELETE /api/companies/:id
+			companies.GET("", controllers.GetCompanies)         // GET    /api/companies
+			companies.POST("", controllers.CreateCompany)       // POST   /api/companies
+			companies.PATCH("/:id", controllers.UpdateCompany)   // PATCH  /api/companies/:id
+			companies.DELETE("/:id", controllers.DeleteCompany)  // DELETE /api/companies/:id
 		}
 	}
 

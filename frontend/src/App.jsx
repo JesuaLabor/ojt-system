@@ -9,6 +9,8 @@ import InstallPrompt from './components/InstallPrompt'
 import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
 import PendingApproval from './pages/auth/PendingApproval'
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
+import ResetPasswordPage from './pages/auth/ResetPasswordPage'
 
 // Role Dashboards
 import StudentDashboard from './pages/student/Dashboard'
@@ -84,6 +86,8 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/waiting-room" element={<PendingApproval />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/ui-kit" element={<UIKit />} />
 
           {/* Auto redirect based on role */}
