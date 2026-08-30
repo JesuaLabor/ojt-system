@@ -280,7 +280,7 @@ func ClockOut(c *gin.Context) {
 	}
 
 	now := time.Now()
-	
+
 	// If they are on break while clocking out, end the break first
 	if entry.BreakStartedAt != nil {
 		breakDur := int(now.Sub(*entry.BreakStartedAt).Minutes())
@@ -356,12 +356,17 @@ func GetMyTimeLogs(c *gin.Context) {
 		requiredHours = assignment.RequiredHours
 	}
 
+	workMode := ""
+	if hasAssignment {
+		workMode = assignment.WorkMode
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"total":          len(logs),
 		"logs":           logs,
 		"required_hours": requiredHours,
 		"has_assignment": hasAssignment,
-		"work_mode":      assignment.WorkMode,
+		"work_mode":      workMode,
 	})
 }
 
@@ -509,8 +514,8 @@ func ApproveTimeLog(c *gin.Context) {
 		return
 	}
 
-	if entry.Status == "approved" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Time log is already approved"})
+	if entry.Status != "pending" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Only pending logs can be approved"})
 		return
 	}
 
@@ -624,8 +629,8 @@ func RejectTimeLog(c *gin.Context) {
 		return
 	}
 
-	if entry.Status == "rejected" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Time log is already rejected"})
+	if entry.Status != "pending" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Only pending logs can be rejected"})
 		return
 	}
 
@@ -646,6 +651,7 @@ func RejectTimeLog(c *gin.Context) {
 		"log":     entry,
 	})
 }
+
 // ─── PATCH /api/timelogs/break/start ──────────────────────────────────────────
 // Student starts a break.
 func StartBreak(c *gin.Context) {
@@ -654,6 +660,11 @@ func StartBreak(c *gin.Context) {
 	var entry models.TimeLog
 	if result := config.DB.Where("student_id = ? AND clock_out IS NULL", userID).First(&entry); result.Error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "No active clock-in session found"})
+		return
+	}
+
+	if entry.Status != "pending" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot modify an already processed log"})
 		return
 	}
 
@@ -677,6 +688,11 @@ func EndBreak(c *gin.Context) {
 	var entry models.TimeLog
 	if result := config.DB.Where("student_id = ? AND clock_out IS NULL", userID).First(&entry); result.Error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "No active clock-in session found"})
+		return
+	}
+
+	if entry.Status != "pending" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot modify an already processed log"})
 		return
 	}
 
