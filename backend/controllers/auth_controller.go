@@ -6,10 +6,12 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"ojt-system/config"
 	"ojt-system/middleware"
 	"ojt-system/models"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -343,8 +345,10 @@ func ForgotPassword(c *gin.Context) {
 	// Always respond with the same message to prevent email enumeration
 	genericMsg := gin.H{"message": "If that email is registered, a password reset link has been sent."}
 
+	cleanEmail := strings.ToLower(strings.TrimSpace(input.Email))
 	var user models.User
-	if result := config.DB.Where("email = ?", input.Email).First(&user); result.Error != nil {
+	if result := config.DB.Where("LOWER(TRIM(email)) = ?", cleanEmail).First(&user); result.Error != nil {
+		log.Printf("ℹ️ [ForgotPassword] Email not found in DB: %s", cleanEmail)
 		c.JSON(http.StatusOK, genericMsg)
 		return
 	}
@@ -372,7 +376,11 @@ func ForgotPassword(c *gin.Context) {
 	resetLink := fmt.Sprintf("%s/reset-password?token=%s", frontendURL, rawToken)
 
 	go func() {
-		_ = config.SendPasswordResetEmail(user.Email, resetLink)
+		if err := config.SendPasswordResetEmail(user.Email, resetLink); err != nil {
+			log.Printf("❌ [SMTP ERROR] Failed to send password reset email to %s: %v", user.Email, err)
+		} else {
+			log.Printf("✅ [SMTP SUCCESS] Password reset email sent to %s", user.Email)
+		}
 	}()
 
 	c.JSON(http.StatusOK, genericMsg)

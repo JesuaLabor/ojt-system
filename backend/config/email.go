@@ -3,15 +3,20 @@ package config
 import (
 	"fmt"
 	"net/smtp"
-	"os"
+	"strings"
+
+	"github.com/joho/godotenv"
 )
 
 // SendPasswordResetEmail sends an HTML password reset email via Gmail SMTP.
 func SendPasswordResetEmail(toEmail, resetLink string) error {
+	// Reload .env from disk so credential changes take effect immediately without a server restart
+	_ = godotenv.Overload()
+
 	smtpHost := GetEnv("SMTP_HOST", "smtp.gmail.com")
 	smtpPort := GetEnv("SMTP_PORT", "587")
-	smtpUser := os.Getenv("SMTP_USER")
-	smtpPass := os.Getenv("SMTP_PASS")
+	smtpUser := GetEnv("SMTP_USER", "")
+	smtpPass := strings.ReplaceAll(GetEnv("SMTP_PASS", ""), " ", "")
 
 	if smtpUser == "" || smtpPass == "" {
 		return fmt.Errorf("SMTP credentials not configured")
