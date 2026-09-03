@@ -566,7 +566,7 @@ func ApproveTimeLog(c *gin.Context) {
 			// 1. Notify Student
 			config.DB.Create(&models.Notification{
 				UserID:  entry.StudentID,
-				Message: fmt.Sprintf("🎓 Congratulations! You have completed your required OJT hours (%.1fh / %dh).", totalHours, reqHours),
+				Message: fmt.Sprintf("🎓 Congratulations! You have completed your required OJT hours (%.1fh / %dh).", totalHours, int(reqHours)),
 				Link:    "/student/overview",
 			})
 
@@ -577,7 +577,7 @@ func ApproveTimeLog(c *gin.Context) {
 				for _, f := range facultyMembers {
 					config.DB.Create(&models.Notification{
 						UserID:  f.ID,
-						Message: fmt.Sprintf("🎓 Student %s from %s has completed their OJT requirement (%.1fh / %dh).", studentName, deptName, totalHours, reqHours),
+						Message: fmt.Sprintf("🎓 Student %s from %s has completed their OJT requirement (%.1fh / %dh).", studentName, deptName, totalHours, int(reqHours)),
 						Link:    "/faculty/students",
 					})
 				}
@@ -589,7 +589,7 @@ func ApproveTimeLog(c *gin.Context) {
 			for _, coord := range coordinators {
 				config.DB.Create(&models.Notification{
 					UserID:  coord.ID,
-					Message: fmt.Sprintf("🎓 Student %s (%s) has completed their OJT requirement (%.1fh / %dh).", studentName, deptName, totalHours, reqHours),
+					Message: fmt.Sprintf("🎓 Student %s (%s) has completed their OJT requirement (%.1fh / %dh).", studentName, deptName, totalHours, int(reqHours)),
 					Link:    "/coordinator/students",
 				})
 			}
@@ -598,7 +598,7 @@ func ApproveTimeLog(c *gin.Context) {
 			if assignment.SupervisorID != 0 {
 				config.DB.Create(&models.Notification{
 					UserID:  assignment.SupervisorID,
-					Message: fmt.Sprintf("🎓 Student %s has completed their required OJT hours (%.1fh / %dh). You can now submit their evaluation and certificate.", studentName, totalHours, reqHours),
+					Message: fmt.Sprintf("🎓 Student %s has completed their required OJT hours (%.1fh / %dh). You can now submit their evaluation and certificate.", studentName, totalHours, int(reqHours)),
 					Link:    "/supervisor/students",
 				})
 			}
