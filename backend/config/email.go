@@ -1,24 +1,29 @@
 package config
 
 import (
+	"bytes"
+	"context"
 	"fmt"
-	"net/smtp"
-	"strings"
+
+	brevo "github.com/getbrevo/brevo-go/lib"
 )
 
-// SendPasswordResetEmail sends an HTML password reset email via Gmail SMTP.
+// SendPasswordResetEmail sends an HTML password reset email via the Brevo (Sendinblue) API.
 func SendPasswordResetEmail(toEmail, resetLink string) error {
-	smtpHost := GetEnv("SMTP_HOST", "smtp.gmail.com")
-	smtpPort := GetEnv("SMTP_PORT", "587")
-	smtpUser := GetEnv("SMTP_USER", "")
-	// Strip spaces in case the app password was copied with spaces (e.g. "abcd efgh" → "abcdefgh")
-	smtpPass := strings.ReplaceAll(GetEnv("SMTP_PASS", ""), " ", "")
+	apiKey := GetEnv("BREVO_API_KEY", "")
+	fromEmail := GetEnv("BREVO_FROM_EMAIL", "")
+	fromName := GetEnv("BREVO_FROM_NAME", "OJT Tracker")
 
-	if smtpUser == "" || smtpPass == "" {
-		return fmt.Errorf("SMTP credentials not configured: SMTP_USER or SMTP_PASS is empty")
+	if apiKey == "" {
+		return fmt.Errorf("BREVO_API_KEY is not configured")
+	}
+	if fromEmail == "" {
+		return fmt.Errorf("BREVO_FROM_EMAIL is not configured")
 	}
 
-	auth := smtp.PlainAuth("", smtpUser, smtpPass, smtpHost)
+	cfg := brevo.NewConfiguration()
+	cfg.AddDefaultHeader("api-key", apiKey)
+	client := brevo.NewAPIClient(cfg)
 
 	subject := "Reset Your OJT Tracker Password"
 	body := fmt.Sprintf(`<!DOCTYPE html>
@@ -87,13 +92,27 @@ func SendPasswordResetEmail(toEmail, resetLink string) error {
 </body>
 </html>`, resetLink, resetLink, resetLink)
 
-	msg := []byte("MIME-Version: 1.0\r\n" +
-		"Content-Type: text/html; charset=UTF-8\r\n" +
-		"From: OJT Tracker <" + smtpUser + ">\r\n" +
-		"To: " + toEmail + "\r\n" +
-		"Subject: " + subject + "\r\n\r\n" +
-		body)
+	sendEmail := brevo.SendSmtpEmail{
+		Sender: &brevo.SendSmtpEmailSender{
+			Name:  fromName,
+			Email: fromEmail,
+		},
+		To: []brevo.SendSmtpEmailTo{
+			{Email: toEmail},
+		},
+		Subject:     subject,
+		HtmlContent: body,
+	}
 
-	addr := smtpHost + ":" + smtpPort
-	return smtp.SendMail(addr, auth, smtpUser, []string{toEmail}, msg)
+	_, _, err := client.TransactionalEmailsApi.SendTransacEmail(
+		context.Background(),
+		sendEmail,
+	)
+	if err != nil {
+		if ge, ok := err.(brevo.GenericSwaggerError); ok {
+			return fmt.Errorf("brevo API error: %s", bytes.TrimSpace(ge.Body()))
+		}
+		return fmt.Errorf("brevo send error: %w", err)
+	}
+	return nil
 }
