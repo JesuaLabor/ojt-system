@@ -376,11 +376,21 @@ func ForgotPassword(c *gin.Context) {
 	resetLink := fmt.Sprintf("%s/reset-password?token=%s", frontendURL, rawToken)
 
 	go func() {
-		if err := config.SendPasswordResetEmail(user.Email, resetLink); err != nil {
-			log.Printf("❌ [SMTP ERROR] Failed to send password reset email to %s: %v", user.Email, err)
-		} else {
-			log.Printf("✅ [SMTP SUCCESS] Password reset email sent to %s", user.Email)
+		const maxRetries = 3
+		var lastErr error
+		for attempt := 1; attempt <= maxRetries; attempt++ {
+			if err := config.SendPasswordResetEmail(user.Email, resetLink); err != nil {
+				lastErr = err
+				log.Printf("⚠️  [SMTP] Attempt %d/%d failed for %s: %v", attempt, maxRetries, user.Email, err)
+				if attempt < maxRetries {
+					time.Sleep(2 * time.Second)
+				}
+			} else {
+				log.Printf("✅ [SMTP SUCCESS] Password reset email sent to %s (attempt %d)", user.Email, attempt)
+				return
+			}
 		}
+		log.Printf("❌ [SMTP ERROR] All %d attempts failed for %s: %v", maxRetries, user.Email, lastErr)
 	}()
 
 	c.JSON(http.StatusOK, genericMsg)
